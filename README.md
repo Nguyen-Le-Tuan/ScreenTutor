@@ -35,7 +35,8 @@ cp .env.example .env   # rồi điền MODEL_API_KEY
 .venv/bin/python -m grounding_test.run check                          # key có hợp lệ không, model nào dùng được (không tốn tiền)
 .venv/bin/python -m grounding_test.run plan --stage calibration       # xem trước sẽ gọi gì, ước tính chi phí
 .venv/bin/python -m grounding_test.run run --stage calibration --yes  # bước 0: hiệu chuẩn
-.venv/bin/python -m grounding_test.run run --stage cases --yes        # bước 1: 12 ca thật
+.venv/bin/python -m grounding_test.run run --stage cases --yes        # bước 1: 12 ca thật (spark/m1, spark/m2, wonder/m2)
+.venv/bin/python -m grounding_test.run run --stage cases --models spark --methods m1 --effort low --yes  # bước 1: spark/m1 effort low
 .venv/bin/python -m grounding_test.run run --stage cases --models spark --methods m1 --resize 1366x768 --yes
 .venv/bin/python -m grounding_test.run run --stage cases --only case_01,case_06,case_09,case_11 --lang en --yes
 ```
