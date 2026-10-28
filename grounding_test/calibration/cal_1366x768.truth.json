@@ -1,0 +1,102 @@
+{
+  "image": "cal_1366x768.png",
+  "width": 1366,
+  "height": 768,
+  "targets": [
+    {
+      "id": "A",
+      "question_vi": "Bấm vào nút 'Mở giáo án'.",
+      "box_px": [
+        109,
+        108,
+        294,
+        154
+      ],
+      "center_px": [
+        202,
+        131
+      ],
+      "center_if_0_1000": [
+        148,
+        171
+      ],
+      "size_class": "lớn"
+    },
+    {
+      "id": "B",
+      "question_vi": "Bấm vào nút 'Gửi cho tổ trưởng'.",
+      "box_px": [
+        1093,
+        645,
+        1306,
+        691
+      ],
+      "center_px": [
+        1200,
+        668
+      ],
+      "center_if_0_1000": [
+        878,
+        870
+      ],
+      "size_class": "lớn"
+    },
+    {
+      "id": "C",
+      "question_vi": "Bấm vào nút 'Xuất PDF'.",
+      "box_px": [
+        847,
+        353,
+        954,
+        384
+      ],
+      "center_px": [
+        900,
+        368
+      ],
+      "center_if_0_1000": [
+        659,
+        480
+      ],
+      "size_class": "vừa"
+    },
+    {
+      "id": "D",
+      "question_vi": "Bấm vào biểu tượng thư mục màu vàng nhỏ ở phía dưới bên trái.",
+      "box_px": [
+        410,
+        538,
+        428,
+        554
+      ],
+      "center_px": [
+        419,
+        546
+      ],
+      "center_if_0_1000": [
+        307,
+        711
+      ],
+      "size_class": "nhỏ"
+    },
+    {
+      "id": "E",
+      "question_vi": "Bấm vào nút X nhỏ ở góc trên bên phải để đóng.",
+      "box_px": [
+        1341,
+        14,
+        1357,
+        30
+      ],
+      "center_px": [
+        1349,
+        22
+      ],
+      "center_if_0_1000": [
+        988,
+        29
+      ],
+      "size_class": "nhỏ"
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "_huong_dan": "Điền 'boxes' bằng khung đúng [x1, y1, x2, y2] đo trong Paint trên ảnh gốc (góc trên trái, góc dưới phải). Ca 5 có thể có nhiều khung (mỗi tab Sheet một khung). 'size_class' theo cạnh ngắn của khung: nhỏ < 32 px, vừa 32-80 px, lớn > 80 px. Ảnh .png đặt cùng thư mục, không commit (đã gitignore).",
+  "cases": [
+    {
+      "id": "case_01",
+      "file": "case_01.png",
+      "app": "Zalo",
+      "target": "Icon thư mục trên tin nhắn chứa file giáo án đã tải",
+      "question_vi": "Mẹ muốn mở chỗ chứa cái file giáo án này thì bấm vào đâu?",
+      "question_en": "Where do I click to open the folder that contains this lesson plan file?",
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_02",
+      "file": "case_02.png",
+      "app": "Zalo",
+      "target": "Nút đính kèm / gửi file ở thanh nhập tin nhắn",
+      "question_vi": "Mẹ muốn gửi một cái file cho cô tổ trưởng thì bấm vào đâu?",
+      "question_en": null,
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_03",
+      "file": "case_03.png",
+      "app": "Zalo",
+      "target": "Đường link Google Sheet trong tin nhắn",
+      "question_vi": "Mẹ muốn mở cái bảng tính cô gửi thì bấm vào đâu?",
+      "question_en": null,
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_04",
+      "file": "case_04.png",
+      "app": "Windows taskbar",
+      "target": "Biểu tượng trình duyệt (Brave) trên taskbar, khi Zalo đang ở trước",
+      "question_vi": "Mẹ bấm link rồi mà không thấy, giờ bấm vào đâu để xem?",
+      "question_en": null,
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_05",
+      "file": "case_05.png",
+      "app": "Brave",
+      "target": "Bất kỳ tab nào trong 3 tab trùng của Google Sheet (mỗi tab một khung)",
+      "question_vi": "Cái bảng tính cô gửi nằm ở tab nào, mẹ bấm vào đâu?",
+      "question_en": null,
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_06",
+      "file": "case_06.png",
+      "app": "Google Sheets (trong Brave)",
+      "target": "Tab trang tính 'Cô Mẫu' ở thanh dưới cùng",
+      "question_vi": "Mẹ là cô Mẫu, phần của mẹ nằm ở đâu?",
+      "question_en": "I am Ms. Mau. Where is my part of this spreadsheet?",
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_07",
+      "file": "case_07.png",
+      "app": "File Explorer",
+      "target": "File 'Giáo án mẫu Âm nhạc 8 (1).docx' trong Downloads",
+      "question_vi": "Mẹ muốn mở cái bản giáo án có số 1 ở cuối tên.",
+      "question_en": null,
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_08",
+      "file": "case_08.png",
+      "app": "File Explorer",
+      "target": "Mục Downloads ở khung điều hướng bên trái",
+      "question_vi": "Mẹ muốn vào chỗ chứa file tải về thì bấm vào đâu?",
+      "question_en": null,
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_09",
+      "file": "case_09.png",
+      "app": "Word (màn hình Home/Open)",
+      "target": "Mục 'Giáo án mẫu Âm nhạc 8.docx' nằm trong ổ D trong danh sách Recent",
+      "question_vi": "Mở cái bản giáo án nằm trong ổ D.",
+      "question_en": "Open the copy of the lesson plan that is on drive D.",
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_10",
+      "file": "case_10.png",
+      "app": "Word (đang mở giáo án)",
+      "target": "Tab/menu 'File' góc trên bên trái",
+      "question_vi": "Mẹ muốn xuất ra PDF thì bấm vào đâu trước?",
+      "question_en": null,
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_11",
+      "file": "case_11.png",
+      "app": "Word (File > Export)",
+      "target": "Nút 'Create PDF/XPS'",
+      "question_vi": "Bấm vào đâu để tạo file PDF?",
+      "question_en": "Where do I click to create the PDF file?",
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    },
+    {
+      "id": "case_12",
+      "file": "case_12.png",
+      "app": "Word Save As + hộp báo lỗi tên file",
+      "target": "Nút OK của hộp báo lỗi tên file không hợp lệ",
+      "question_vi": "Cái bảng báo lỗi này, mẹ bấm vào đâu để tắt?",
+      "question_en": null,
+      "boxes": [],
+      "size_class": null,
+      "notes": ""
+    }
+  ]
+}

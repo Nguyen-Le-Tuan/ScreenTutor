@@ -218,3 +218,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Grounding test: real screenshots and API outputs stay local (this repo is public)
+grounding_test/cases/*.png
+grounding_test/cases/*.jpg
+grounding_test/results/
