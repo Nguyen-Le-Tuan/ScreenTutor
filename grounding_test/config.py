@@ -16,8 +16,9 @@ MODELS = {
 }
 
 # (model short name, method). M1 = computer use, M2 = image understanding + JSON.
-# Wonder only runs M1, as in the plan.
-DEFAULT_COMBOS = [("spark", "m1"), ("spark", "m2"), ("wonder", "m1")]
+# Wonder runs M2 only: on 28/10/2026 the API rejected the computer tool for
+# muse-wonder-1.0 with HTTP 400 "Unsupported tool type: 'computer'".
+DEFAULT_COMBOS = [("spark", "m1"), ("spark", "m2"), ("wonder", "m2")]
 
 # USD per 1M tokens, Standard tier.
 PRICES = {
@@ -34,6 +35,7 @@ ADOPT_MIN_HITS = 10
 REJECT_MAX_HITS = 7
 LATENCY_LIMIT_S = 5.0
 
-# Rough token guess per call, only for the pre-run estimate.
-EST_INPUT_TOKENS = 2500
-EST_OUTPUT_TOKENS = 300
+# Rough token guess per call, only for the pre-run estimate. Smoke test on a
+# 1920x1080 image (28/10/2026): ~2,800-4,900 in, ~430-800 out incl. reasoning.
+EST_INPUT_TOKENS = 4000
+EST_OUTPUT_TOKENS = 700
