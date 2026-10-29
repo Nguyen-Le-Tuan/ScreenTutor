@@ -154,7 +154,8 @@ class MetaAPI:
             }
         return res
 
-    def vision_point(self, model: str, data_url: str, question: str, state: str | None = None) -> CallResult:
+    def vision_point(self, model: str, data_url: str, question: str, state: str | None = None,
+                     effort: str | None = None) -> CallResult:
         """M2: ask for a JSON point on the 0-1000 grid described in the image-understanding docs."""
         res = CallResult(action_type="json")
         body = {
@@ -168,6 +169,8 @@ class MetaAPI:
                 "json_schema": {"name": "ui_point", "schema": POINT_SCHEMA},
             },
         }
+        if effort:
+            body["reasoning_effort"] = effort
         resp, elapsed = self._post("/chat/completions", body)
         res.raw.append(resp)
         res.latency_s = elapsed

@@ -6,6 +6,7 @@
   python -m grounding_test.run run --stage cases --yes
   python -m grounding_test.run run --stage cases --models spark --methods m1 --resize 1366x768 --yes
   python -m grounding_test.run run --stage cases --only case_01,case_06,case_09,case_11 --lang en --yes
+  python -m grounding_test.run run --stage cases --models spark --methods m2 --effort low --yes
 """
 
 from __future__ import annotations
@@ -159,7 +160,8 @@ def cmd_run(args) -> None:
                         if method == "m1":
                             res = api.computer_use_point(model_id, data_url, question, args.effort)
                         else:
-                            res = api.vision_point(model_id, data_url, question, it.meta.get("state"))
+                            res = api.vision_point(model_id, data_url, question, it.meta.get("state"),
+                                                   args.effort)
                     except (ApiError, httpx.HTTPError) as e:
                         res = CallResult(error=str(e))
                     scores = score_point(res.point, sent_size, orig_size, it.boxes, config.NEAR_PX)
@@ -200,7 +202,8 @@ def main(argv=None) -> None:
         p.add_argument("--lang", choices=["vi", "en"], default="vi")
         p.add_argument("--only", help="danh sách mục, ví dụ: case_01,case_06 hoặc cal_1920x1080")
         p.add_argument("--effort", choices=["minimal", "low", "medium", "high"],
-                       help="reasoning.effort cho M1; bỏ trống = mặc định của model")
+                       help="mức suy luận (M1: reasoning.effort, M2: reasoning_effort); "
+                            "bỏ trống = mặc định của model")
         p.add_argument("--state", help="file JSON {mục: trạng thái Windows dạng chữ}, gửi kèm ảnh (chỉ M2)")
         if name == "run":
             p.add_argument("--yes", action="store_true", help="xác nhận gọi API có tính phí")
