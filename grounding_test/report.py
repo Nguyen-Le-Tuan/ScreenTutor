@@ -98,7 +98,8 @@ def summarize(records: list[dict], run_info: dict | None = None) -> str:
     if run_info:
         out.append(f"Giai đoạn: **{run_info.get('stage')}**; bắt đầu {run_info.get('started')}; "
                    f"resize: {run_info.get('resize') or 'không'}; ngôn ngữ câu hỏi: {run_info.get('lang')}; "
-                   f"effort: {run_info.get('effort') or 'mặc định'}.")
+                   f"effort: {run_info.get('effort') or 'mặc định'}; "
+                   f"trạng thái Windows gửi kèm: {run_info.get('state_file') or 'không'}.")
     total_cost = sum(call_cost(r) for r in records)
     errors = sum(1 for r in records if r.get("error"))
     out += [f"Tổng số lần gọi: {len(records)} (lỗi: {errors}). Chi phí ước tính: ${total_cost:.4f}.", ""]

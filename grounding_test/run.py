@@ -53,6 +53,15 @@ def _select(args) -> tuple[list, list[tuple[str, str]], list[str]]:
         items = [i for i in items if i.question_en]
         problems += [f"{s}: không có question_en, bỏ qua" for s in skipped]
 
+    if args.state:
+        states = {k: v for k, v in json.loads(Path(args.state).read_text(encoding="utf-8")).items()
+                  if not k.startswith("_")}
+        problems += [f"{i.item_id}: không có trạng thái trong {args.state}, bỏ qua"
+                     for i in items if i.item_id not in states]
+        items = [i for i in items if i.item_id in states]
+        for i in items:
+            i.meta["state"] = states[i.item_id]
+
     models = set(args.models.split(",")) if args.models else None
     methods = set(args.methods.split(",")) if args.methods else None
     combos = [(m, k) for m, k in config.DEFAULT_COMBOS
@@ -61,6 +70,8 @@ def _select(args) -> tuple[list, list[tuple[str, str]], list[str]]:
         unknown = models - set(config.MODELS)
         if unknown:
             sys.exit(f"Model không có trong config: {sorted(unknown)}")
+    if args.state and any(k != "m2" for _, k in combos):
+        sys.exit("--state chỉ dùng với M2. Thêm --methods m2.")
     return items, combos, problems
 
 
@@ -121,12 +132,13 @@ def cmd_run(args) -> None:
 
     resize = parse_size(args.resize) if args.resize else None
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    suffix = "".join([f"-{args.resize}" if args.resize else "", "-en" if args.lang == "en" else ""])
+    suffix = "".join([f"-{args.resize}" if args.resize else "", "-en" if args.lang == "en" else "",
+                      "-state" if args.state else ""])
     out_dir = RESULTS_DIR / f"{stamp}-{args.stage}{suffix}"
     (out_dir / "raw").mkdir(parents=True)
     (out_dir / "run.json").write_text(json.dumps({
         "stage": args.stage, "started": stamp, "resize": args.resize, "lang": args.lang,
-        "effort": args.effort, "runs": args.runs, "combos": usable,
+        "effort": args.effort, "runs": args.runs, "combos": usable, "state_file": args.state,
         "items": [i.item_id for i in items],
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -147,7 +159,7 @@ def cmd_run(args) -> None:
                         if method == "m1":
                             res = api.computer_use_point(model_id, data_url, question, args.effort)
                         else:
-                            res = api.vision_point(model_id, data_url, question)
+                            res = api.vision_point(model_id, data_url, question, it.meta.get("state"))
                     except (ApiError, httpx.HTTPError) as e:
                         res = CallResult(error=str(e))
                     scores = score_point(res.point, sent_size, orig_size, it.boxes, config.NEAR_PX)
@@ -156,7 +168,7 @@ def cmd_run(args) -> None:
                                                     encoding="utf-8")
                     rec = {
                         "stage": it.stage, "item_id": it.item_id, "size_class": it.size_class,
-                        "question": question, "lang": args.lang,
+                        "question": question, "lang": args.lang, "state": it.meta.get("state"),
                         "model": model, "model_id": model_id, "method": method, "run": run,
                         "sent_size": sent_size, "orig_size": orig_size, "resize": args.resize,
                         "raw_point": res.point, "action_type": res.action_type, "found": res.found,
@@ -189,6 +201,7 @@ def main(argv=None) -> None:
         p.add_argument("--only", help="danh sách mục, ví dụ: case_01,case_06 hoặc cal_1920x1080")
         p.add_argument("--effort", choices=["minimal", "low", "medium", "high"],
                        help="reasoning.effort cho M1; bỏ trống = mặc định của model")
+        p.add_argument("--state", help="file JSON {mục: trạng thái Windows dạng chữ}, gửi kèm ảnh (chỉ M2)")
         if name == "run":
             p.add_argument("--yes", action="store_true", help="xác nhận gọi API có tính phí")
     args = parser.parse_args(argv)

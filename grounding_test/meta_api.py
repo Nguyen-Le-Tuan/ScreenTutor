@@ -26,11 +26,23 @@ CU_INSTRUCTIONS = (
 
 VISION_PROMPT = (
     "Đây là ảnh chụp toàn màn hình một máy tính Windows.\n"
+    "{state}"
     "Người dùng hỏi: \"{question}\"\n"
     "Hãy xác định phần tử giao diện cần bấm để làm đúng điều người dùng hỏi, rồi trả về "
     "toạ độ tâm của phần tử đó trên thang chuẩn hoá 0-1000: x=0 là mép trái, x=1000 là mép phải, "
     "y=0 là mép trên, y=1000 là mép dưới. Nếu không thấy phần tử phù hợp, đặt found=false."
 )
+
+# Optional Windows state sent as text next to the screenshot (Decision 2, test T1).
+STATE_BLOCK = (
+    "Trạng thái Windows do chương trình đọc trực tiếp từ hệ điều hành, đáng tin cậy "
+    "và có thể cho biết những điều ảnh chụp không thấy:\n{state}\n"
+)
+
+
+def vision_prompt(question: str, state: str | None = None) -> str:
+    """Without state the text is identical to the stage 0/1 prompt."""
+    return VISION_PROMPT.format(question=question, state=STATE_BLOCK.format(state=state) if state else "")
 
 POINT_SCHEMA = {
     "type": "object",
@@ -142,13 +154,13 @@ class MetaAPI:
             }
         return res
 
-    def vision_point(self, model: str, data_url: str, question: str) -> CallResult:
+    def vision_point(self, model: str, data_url: str, question: str, state: str | None = None) -> CallResult:
         """M2: ask for a JSON point on the 0-1000 grid described in the image-understanding docs."""
         res = CallResult(action_type="json")
         body = {
             "model": model,
             "messages": [{"role": "user", "content": [
-                {"type": "text", "text": VISION_PROMPT.format(question=question)},
+                {"type": "text", "text": vision_prompt(question, state)},
                 {"type": "image_url", "image_url": {"url": data_url}},
             ]}],
             "response_format": {
