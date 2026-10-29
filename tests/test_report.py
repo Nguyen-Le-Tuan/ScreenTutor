@@ -32,6 +32,13 @@ def test_summary_renders_decision_for_cases():
     assert "spark / M1" in text
 
 
+def test_subset_of_cases_gets_no_verdict():
+    recs = [_rec(f"case_{i:02d}", run, (150, 120)) for i in range(1, 7) for run in (1, 2)]
+    text = summarize(recs, {"stage": "cases", "started": "x", "lang": "vi"})
+    assert "Đề xuất theo ngưỡng" not in text
+    assert "6/12" in text
+
+
 def test_summary_handles_errors_and_missing_points():
     recs = [_rec("cal/A", 1, None, stage="calibration", error="HTTP 400: bad"), _rec("cal/B", 1, None, stage="calibration")]
     text = summarize(recs, None)

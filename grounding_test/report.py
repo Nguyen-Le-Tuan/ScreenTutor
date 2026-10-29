@@ -78,7 +78,8 @@ def _decision(recs: list[dict], conv: str) -> list[str]:
     lines = [f"Trúng theo từng lần chạy: {hits_per_run} trên {n_items} ảnh; thấp nhất {min_hits}.",
              f"Mọi mục tiêu cỡ vừa và lớn đều trúng ở mọi lần: {'có' if big_all_hit else 'không'}."]
     if n_items != config.CASES_TOTAL:
-        lines.append(f"Lưu ý: mới có {n_items}/{config.CASES_TOTAL} ảnh, ngưỡng dưới đây chỉ để tham khảo.")
+        lines.append(f"Bộ này có {n_items}/{config.CASES_TOTAL} ảnh nên không áp ngưỡng ở mục 8 của kế hoạch.")
+        return lines
     if min_hits <= config.REJECT_MAX_HITS:
         verdict = "Không dùng toạ độ Meta làm cách grounding duy nhất; bàn lại UI Automation hoặc đổi model."
     elif min_hits >= config.ADOPT_MIN_HITS and big_all_hit and med <= config.LATENCY_LIMIT_S:
