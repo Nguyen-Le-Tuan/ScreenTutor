@@ -1,0 +1,100 @@
+T2: THỬ CẢM BIẾN TRẠNG THÁI WINDOWS (thành phần 1), 29/10/2026
+=================================================================
+Mục đích: xem cảm biến đọc từ Windows có ĐÚNG không, trên máy giống hệt máy mẹ.
+Phép thử này chỉ đọc. Không bấm, không gõ, không sửa gì trên máy.
+Kết quả mỗi lần chạy: một đoạn chữ tiếng Việt, đúng thứ sẽ gửi kèm ảnh cho Spark M2.
+
+Luật chấm (ghi trước khi chạy):
+  - Đạt: mọi dòng khớp với "Đáp án" bạn ghi trước.
+  - Trượt nhẹ: có dòng "Không đọc được ...", tức là cảm biến báo lỗi rõ ràng.
+  - TRƯỢT NẶNG: có dòng SAI mà không báo lỗi. Loại này nguy hiểm nhất, vì tutor sẽ tin.
+  - Tổng thời gian đọc (dòng "Thời gian đọc ... tổng") nên dưới 500 ms.
+
+
+A. CHUẨN BỊ (một lần)
+---------------------
+[ ] A1. Lấy code về Windows (chọn một cách):
+        - Có git: mở PowerShell ở thư mục bạn muốn rồi chạy
+              git clone -b mvp https://github.com/Nguyen-Le-Tuan/ScreenTutor.git
+        - Không có git: tải https://github.com/Nguyen-Le-Tuan/ScreenTutor/archive/refs/heads/mvp.zip
+          rồi giải nén.
+[ ] A2. Mở PowerShell trong thư mục ScreenTutor (chỗ có thư mục "screentutor").
+        Kiểm tra Python:   py --version     (cần 3.10 trở lên)
+        Phần cảm biến chỉ dùng thư viện có sẵn của Python, KHÔNG cần pip install.
+[ ] A3. Chạy thử một lần:
+              py -m screentutor.state
+        Lần này cửa sổ trước mặt sẽ là PowerShell. Bình thường, chỉ để chắc lệnh chạy được.
+        Nếu báo lỗi đỏ: chụp màn hình lỗi, gửi Claude, dừng ở đây.
+
+Cách chạy cho mỗi kịch bản bên dưới:
+        py -m screentutor.state --delay 6 --out t2_results\S-1
+  -> trong 6 giây đếm ngược, bấm sang cửa sổ cần thử (đừng bấm lại vào PowerShell).
+  -> xong thì quay lại PowerShell đọc kết quả. File lưu ở t2_results\S-1.txt và .json.
+  Đổi S-1 thành S-2, S-3... cho từng kịch bản.
+
+
+B. KỊCH BẢN (ghi "Đáp án" TRƯỚC khi chạy, rồi mới chạy và so)
+------------------------------------------------------------
+[ ] S-1. Dựng lại case_04: Brave đang mở trang Sheet "Bảng kê khai thi đua...",
+         rồi bấm Zalo để Zalo nằm trước, phóng to. Chạy lệnh, trong 6 giây bấm vào Zalo.
+         Đáp án: cửa sổ trước mặt = Zalo; trong danh sách có Brave với tiêu đề trang Sheet.
+         Ghi kết quả: ____________________________________________
+
+[ ] S-2. Dựng lại case_12: Word, File > Save As, gõ tên có dấu ? hoặc ", bấm Save để hiện
+         hộp báo lỗi "The file name is not valid". Chạy lệnh, trong 6 giây bấm vào hộp báo lỗi.
+         Đáp án: cửa sổ trước mặt = Word, là hộp thoại của "Save As", nằm trên cửa sổ Word
+                 đang mở giáo án (tức là chuỗi: hộp lỗi -> Save As -> Word).
+         Ghi kết quả: ____________________________________________
+
+[ ] S-3. File Explorer đang mở Downloads. Chạy lệnh, trong 6 giây bấm vào Explorer.
+         Đáp án: cửa sổ trước mặt = File Explorer, tiêu đề có "Downloads".
+         Ghi kết quả: ____________________________________________
+
+[ ] S-4. BẪY APP STORE: mở một ảnh .jpg bằng app Photos (bấm đúp ảnh trong Explorer).
+         Chạy lệnh, trong 6 giây bấm vào cửa sổ Photos.
+         Đáp án: cửa sổ trước mặt = Photos (KHÔNG phải "ApplicationFrameHost").
+         Ghi kết quả: ____________________________________________
+
+[ ] S-5. Thu nhỏ Word xuống taskbar, để Zalo ở trước. Chạy lệnh, bấm vào Zalo.
+         Đáp án: Word có trong danh sách và ghi "đang thu nhỏ".
+         Ghi kết quả: ____________________________________________
+
+[ ] S-6. App mặc định và thư mục chuẩn (đọc từ kết quả của bất kỳ lần chạy nào ở trên).
+         Trước khi xem kết quả, tự tra đáp án:
+           - Settings > Apps > Default apps: trình duyệt mặc định là ________
+             file .docx mở bằng ________   file .pdf mở bằng ________
+             file .xlsx mở bằng ________   file .jpg mở bằng ________
+           - Trong Explorer, chuột phải Downloads > Properties > tab Location: ________
+             Làm tương tự với Desktop: ________  Documents: ________
+             (Chú ý: Desktop/Documents có thể nằm trong OneDrive.)
+         Đáp án = những gì bạn vừa tra. So với dòng "App mở mặc định" và "Thư mục chuẩn".
+         Ghi kết quả: ____________________________________________
+
+[ ] S-7. File mới:
+         (a) Tải một file .docx từ Zalo về (cách mẹ hay làm). Chạy lệnh ngay sau đó.
+             Đáp án: file đó đứng ĐẦU dòng "File mới hoặc vừa sửa", đúng thư mục.
+         (b) Mở file đó, sửa một chữ, Ctrl+S, đóng Word. Chạy lệnh.
+             Đáp án: file vẫn đứng đầu, ghi "sửa hôm nay HH:MM" đúng giờ vừa lưu.
+         (c) Nếu có thư mục "Zalo Received Files" trong Documents: xem file Zalo tải về
+             nằm ở đó hay ở Downloads. Ghi lại: ________
+         Ghi kết quả: ____________________________________________
+
+[ ] S-8. Ghi thời gian: dòng "(Thời gian đọc: ...)" ở S-1: tổng = ______ ms
+
+[ ] S-9. BẪY MÀN HÌNH NỀN: chạy lệnh, trong 6 giây bấm Win+D (hiện màn hình nền),
+         rồi bấm một lần vào chỗ trống trên màn hình nền.
+         Đáp án: cửa sổ trước mặt = "màn hình nền (Desktop)", KHÔNG phải File Explorer.
+         Ghi kết quả: ____________________________________________
+
+[ ] S-10. BẪY APP STORE THU NHỎ: mở Calculator, thu nhỏ nó xuống taskbar, để Zalo ở trước.
+          Chạy lệnh, bấm vào Zalo.
+          Đáp án: trong danh sách có Calculator (tên exe có thể là CalculatorApp.exe),
+                  KHÔNG phải "ApplicationFrameHost".
+          Ghi kết quả: ____________________________________________
+
+
+C. GỬI LẠI
+----------
+[ ] Nén thư mục t2_results thành zip, gửi qua Messenger như lần trước, kèm file này đã điền.
+    Về Ubuntu bỏ vào ScreenTutor/docs/tests/t2_results/ (thư mục này không được commit,
+    vì có tiêu đề cửa sổ và tên file cá nhân), rồi nhắn Claude: "Đã chạy T2".

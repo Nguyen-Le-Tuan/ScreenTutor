@@ -229,3 +229,16 @@ grounding_test/cases/review.html
 
 # HeyClicky test photos show personal file names
 docs/heyclicky_comparison/results/*.jpeg
+
+# Local TTS evaluation: venv, downloaded models, generated audio
+tts_eval/.venv/
+tts_eval/models/
+tts_eval/out/
+
+# T2 output holds window titles and personal file names
+t2_results/
+
+# Recordings of real voices stay on this machine
+stt_eval/audio/
+stt_eval/results/
+stt_eval/audio_synth/

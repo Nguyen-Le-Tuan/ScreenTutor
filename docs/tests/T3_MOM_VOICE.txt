@@ -1,0 +1,59 @@
+T3: THỬ NHẬN GIỌNG MẸ BẰNG MUSE VOICE TRANSCRIBE, 29/10/2026
+==========================================================
+Mục đích: biết máy nghe giọng thật của mẹ có đúng ý không, trước khi chọn "nói là chính".
+Ngưỡng (founder đồng ý tạm, chưa chốt cứng):
+  >= 7/8 câu còn ý chính  -> nói là cách hỏi chính.
+  <= 5/8                  -> gõ là chính, hoặc nói nhưng bắt buộc xác nhận lại câu hỏi.
+  6/8                     -> bàn thêm.
+
+
+1. TIN NHẮN GỬI MẸ (dán vào Zalo, sửa lời cho giống giọng bạn)
+--------------------------------------------------------------
+Mẹ ơi, con đang làm một phần mềm giúp mẹ dùng máy tính: tối mẹ kẹt chỗ nào thì hỏi nó,
+nó chỉ cho mẹ bấm vào đâu, khỏi phải chờ ba. Con cần thử xem máy nghe giọng mẹ có rõ không.
+
+Mẹ gửi con khoảng 8 tin nhắn thoại trên Zalo nha, mỗi tin là một câu mẹ hay hỏi ba khi
+dùng máy tính. Mẹ cứ nói tự nhiên như đang hỏi ba, không cần nói chậm hay nói to.
+Mấy kiểu câu như:
+  - cái file giáo án mẹ sửa hôm qua nằm đâu
+  - sao mở file ra lại thấy trắng trơn
+  - gửi file cho cô tổ trưởng thì làm sao
+  - lưu file mà máy báo lỗi tên file
+  - đổi file Word ra PDF thì bấm đâu
+  - phần của mẹ trong bảng tính nằm chỗ nào
+  - bấm link rồi mà không thấy gì
+  - một câu mẹ tự nghĩ ra
+Mẹ không cần nói đúng y mấy câu trên đâu, cứ hỏi theo cách của mẹ.
+
+Con chỉ dùng mấy tin này để thử phần máy nghe giọng (gửi qua dịch vụ nhận giọng của Meta),
+không đưa cho người nào khác. Con cảm ơn mẹ nhiều!
+
+
+2. LẤY FILE GHI ÂM VỀ UBUNTU
+----------------------------
+Chưa chắc Zalo cho tải tin nhắn thoại thành file. Thử theo thứ tự:
+  a. Zalo PC hoặc Zalo điện thoại: nhấn giữ hoặc chuột phải vào tin thoại, xem có
+     "Lưu", "Tải về" hay "Chia sẻ" không. Nếu có: lưu từng tin thành file.
+  b. Nếu không có: nhờ mẹ ghi bằng app Ghi âm có sẵn trên điện thoại, rồi gửi các file
+     ghi âm qua Zalo (gửi dạng file).
+  c. Ghi lại cách nào dùng được, để lần sau làm nhanh hơn.
+Bỏ các file (đuôi gì cũng được: m4a, aac, mp3, ogg, wav) vào:
+     /home/nguyenletuan/Desktop/ScreenTutor/stt_eval/audio/
+Đặt tên theo thứ tự: me_01.m4a, me_02.m4a, ... (thư mục này không được commit).
+
+
+3. GHI LẠI CÂU MẸ NÓI THẬT (trước khi xem kết quả máy)
+-----------------------------------------------------
+Nghe từng tin, gõ lại đúng câu mẹ nói vào file:
+     /home/nguyenletuan/Desktop/ScreenTutor/stt_eval/audio/refs.tsv
+Mỗi dòng: tên file, phím Tab, câu nói. Ví dụ:
+     me_01.m4a	Cái file giáo án mẹ sửa hôm qua nó nằm đâu rồi con
+Gõ xong mới nhắn Claude, để câu đáp án không bị ảnh hưởng bởi kết quả của máy.
+
+
+4. NHẮN CLAUDE
+--------------
+"Đã có giọng mẹ". Claude sẽ chạy:
+     .venv/bin/python -m stt_eval.transcribe --label me --refs stt_eval/audio/refs.tsv stt_eval/audio/me_*
+rồi gửi lại PHIEU_CHAM.md. Bạn chấm mỗi câu: còn / một phần / mất.
+Chi phí: khoảng 0,18 USD cho mỗi giờ âm thanh, tức là gần như 0.

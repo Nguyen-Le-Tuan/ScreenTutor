@@ -1,0 +1,70 @@
+NGHE THỬ GIỌNG VIENEU (việc của founder, đóng vai mẹ), 29/10/2026
+=================================================================
+Mục đích: chọn giọng tutor sẽ dùng để nói với mẹ. Máy không chấm được phần này.
+Làm trên Ubuntu, ngay bây giờ được. Mất khoảng 20 phút. Nên dùng tai nghe hoặc loa laptop
+(loa laptop giống điều kiện của mẹ hơn).
+
+Đóng vai: mẹ, buổi tối, hơi mệt, đang kẹt với máy tính, ba đã đi ngủ.
+Câu hỏi trong đầu khi nghe: "Giọng này nói thì mẹ có muốn nghe tiếp không? Có tin không?"
+
+
+BƯỚC 1. Lọc nhanh 25 giọng (khoảng 10 phút)
+-------------------------------------------
+Mở trong trình duyệt:
+    /home/nguyenletuan/Desktop/ScreenTutor/tts_eval/out/nghe_thu.html
+Mỗi giọng có 2 câu:
+    S3: câu dài, có chữ tiếng Anh (Brave, Zalo, taskbar).
+    S5: tên file có "(1).docx", giờ "chín giờ tối qua", chữ "Downloads".
+Gạch ngay giọng nào: nghe đùa cợt, nghe như quảng cáo hay TikTok, quá nhanh, khó nghe.
+Ghi số thứ tự các giọng CÒN LẠI: ________________________________
+
+
+BƯỚC 2. Chấm kỹ 3–5 giọng tốt nhất (khoảng 8 phút)
+--------------------------------------------------
+Thang 1–5 (5 là tốt nhất).
+  Ấm        : nghe gần gũi như người nhà, không lạnh.
+  Rõ        : nghe rõ từng chữ ngay lần đầu.
+  Đáng tin  : nghe an toàn, nghiêm túc vừa phải, không trêu chọc.
+  Tốc độ    : ghi "chậm", "vừa" hoặc "nhanh" (với mẹ).
+  Tiếng Anh : đọc Brave, Zalo, taskbar, Downloads có nghe ra không? (đúng / tạm / sai)
+  Tên file  : đọc "(1).docx" và giờ giấc có dễ hiểu không? (đúng / tạm / sai)
+  Miền      : giọng Bắc / Trung / Nam
+
+  Số | Tên giọng      | Ấm | Rõ | Đáng tin | Tốc độ | Tiếng Anh | Tên file | Miền
+  ---+----------------+----+----+----------+--------+-----------+----------+-----
+     |                |    |    |          |        |           |          |
+     |                |    |    |          |        |           |          |
+     |                |    |    |          |        |           |          |
+     |                |    |    |          |        |           |          |
+     |                |    |    |          |        |           |          |
+
+Giọng chọn số 1: ______________   Số 2 (dự phòng): ______________
+Mẹ quen nghe giọng miền nào nhất? ______________
+
+
+BƯỚC 3. Nghe mù A và B (khoảng 2 phút)
+--------------------------------------
+Mở:  /home/nguyenletuan/Desktop/ScreenTutor/tts_eval/out/so_sanh_A_B.html
+Mỗi giọng có bản A và bản B, cùng một câu. ĐỪNG xem đáp án ở cuối file này trước.
+Với mỗi cặp ghi: "không nghe khác", "A hay hơn" hoặc "B hay hơn", và vì sao (méo, rè, ngắt...).
+  1. Ngọc Huyền : ______________________
+  2. Trúc Ly    : ______________________
+  3. Thùy Dung  : ______________________
+  4. Hải Đăng   : ______________________
+
+
+BƯỚC 4. Gửi lại
+---------------
+Lưu file này (đã điền), nhắn Claude: "Đã nghe xong".
+
+
+Lưu ý: model đọc có yếu tố ngẫu nhiên, nên nếu một câu bị đọc vấp một lần thì
+ghi lại, chưa chắc lần sau cũng vấp.
+
+
+
+
+
+
+(Đáp án bước 3, chỉ xem sau khi nghe: A = fp32, bản đầy đủ, chậm hơn;
+ B = int8, bản nén, nhanh gấp đôi trên máy này. Nếu không nghe khác thì dùng B.)

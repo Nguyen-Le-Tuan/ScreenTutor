@@ -1,0 +1,224 @@
+{
+  "loads": {
+    "fp32": 2.7849836380009947,
+    "int8": 2.1164026539991028
+  },
+  "rows": [
+    {
+      "precision": "fp32",
+      "sentence": "S1",
+      "rep": 1,
+      "ttfa_s": 0.349,
+      "total_s": 2.085,
+      "audio_s": 2.24,
+      "rtf": 0.931
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S1",
+      "rep": 2,
+      "ttfa_s": 0.306,
+      "total_s": 2.08,
+      "audio_s": 2.32,
+      "rtf": 0.896
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S2",
+      "rep": 1,
+      "ttfa_s": 0.689,
+      "total_s": 4.033,
+      "audio_s": 3.76,
+      "rtf": 1.073
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S2",
+      "rep": 2,
+      "ttfa_s": 0.322,
+      "total_s": 3.07,
+      "audio_s": 3.92,
+      "rtf": 0.783
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S3",
+      "rep": 1,
+      "ttfa_s": 0.325,
+      "total_s": 5.24,
+      "audio_s": 5.76,
+      "rtf": 0.91
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S3",
+      "rep": 2,
+      "ttfa_s": 0.359,
+      "total_s": 4.95,
+      "audio_s": 6.08,
+      "rtf": 0.814
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S4",
+      "rep": 1,
+      "ttfa_s": 0.352,
+      "total_s": 4.576,
+      "audio_s": 5.28,
+      "rtf": 0.867
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S4",
+      "rep": 2,
+      "ttfa_s": 0.477,
+      "total_s": 5.448,
+      "audio_s": 5.2,
+      "rtf": 1.048
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S5",
+      "rep": 1,
+      "ttfa_s": 0.395,
+      "total_s": 6.261,
+      "audio_s": 6.24,
+      "rtf": 1.003
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S5",
+      "rep": 2,
+      "ttfa_s": 0.404,
+      "total_s": 5.216,
+      "audio_s": 5.92,
+      "rtf": 0.881
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S6",
+      "rep": 1,
+      "ttfa_s": 0.328,
+      "total_s": 3.465,
+      "audio_s": 4.08,
+      "rtf": 0.849
+    },
+    {
+      "precision": "fp32",
+      "sentence": "S6",
+      "rep": 2,
+      "ttfa_s": 0.464,
+      "total_s": 3.974,
+      "audio_s": 4.16,
+      "rtf": 0.955
+    },
+    {
+      "precision": "int8",
+      "sentence": "S1",
+      "rep": 1,
+      "ttfa_s": 0.221,
+      "total_s": 1.105,
+      "audio_s": 2.32,
+      "rtf": 0.476
+    },
+    {
+      "precision": "int8",
+      "sentence": "S1",
+      "rep": 2,
+      "ttfa_s": 0.16,
+      "total_s": 0.995,
+      "audio_s": 2.4,
+      "rtf": 0.415
+    },
+    {
+      "precision": "int8",
+      "sentence": "S2",
+      "rep": 1,
+      "ttfa_s": 0.175,
+      "total_s": 1.911,
+      "audio_s": 3.84,
+      "rtf": 0.498
+    },
+    {
+      "precision": "int8",
+      "sentence": "S2",
+      "rep": 2,
+      "ttfa_s": 0.23,
+      "total_s": 1.745,
+      "audio_s": 3.84,
+      "rtf": 0.454
+    },
+    {
+      "precision": "int8",
+      "sentence": "S3",
+      "rep": 1,
+      "ttfa_s": 0.189,
+      "total_s": 2.734,
+      "audio_s": 5.76,
+      "rtf": 0.475
+    },
+    {
+      "precision": "int8",
+      "sentence": "S3",
+      "rep": 2,
+      "ttfa_s": 0.19,
+      "total_s": 2.942,
+      "audio_s": 6.0,
+      "rtf": 0.49
+    },
+    {
+      "precision": "int8",
+      "sentence": "S4",
+      "rep": 1,
+      "ttfa_s": 0.182,
+      "total_s": 2.454,
+      "audio_s": 5.2,
+      "rtf": 0.472
+    },
+    {
+      "precision": "int8",
+      "sentence": "S4",
+      "rep": 2,
+      "ttfa_s": 0.281,
+      "total_s": 2.909,
+      "audio_s": 5.12,
+      "rtf": 0.568
+    },
+    {
+      "precision": "int8",
+      "sentence": "S5",
+      "rep": 1,
+      "ttfa_s": 0.203,
+      "total_s": 3.058,
+      "audio_s": 6.08,
+      "rtf": 0.503
+    },
+    {
+      "precision": "int8",
+      "sentence": "S5",
+      "rep": 2,
+      "ttfa_s": 0.194,
+      "total_s": 3.085,
+      "audio_s": 6.32,
+      "rtf": 0.488
+    },
+    {
+      "precision": "int8",
+      "sentence": "S6",
+      "rep": 1,
+      "ttfa_s": 0.175,
+      "total_s": 2.009,
+      "audio_s": 4.32,
+      "rtf": 0.465
+    },
+    {
+      "precision": "int8",
+      "sentence": "S6",
+      "rep": 2,
+      "ttfa_s": 0.183,
+      "total_s": 2.024,
+      "audio_s": 4.08,
+      "rtf": 0.496
+    }
+  ]
+}
