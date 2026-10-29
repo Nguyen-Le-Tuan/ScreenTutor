@@ -223,3 +223,6 @@ __marimo__/
 grounding_test/cases/*.png
 grounding_test/cases/*.jpg
 grounding_test/results/
+
+# Label review page embeds the original screenshots
+grounding_test/cases/review.html

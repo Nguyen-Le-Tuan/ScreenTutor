@@ -1,0 +1,593 @@
+{
+  "schema": "grounding-labels-review/v1",
+  "date_local": "2026-10-29",
+  "annotation_method": "AI visual labeling of original pixels; inspected original images and nearest-neighbor diagnostic crops with original-coordinate rulers. User confirmed case_03 preview-title click opens the correct Sheet. Other controls and exact bbox edges have not been independently validated by live clicks or human review.",
+  "coordinate_system": {
+    "origin": "top_left",
+    "units": "original_image_pixels",
+    "indexing": "zero_based",
+    "bbox_format": "[x1,y1,x2,y2]",
+    "right_bottom": "exclusive",
+    "contains": "x1 <= x < x2 and y1 <= y < y2",
+    "display_scale": "125% is capture context only; do not multiply or divide coordinates by 1.25"
+  },
+  "size_rule": "min(x2-x1,y2-y1): nhỏ <32; vừa 32..80 inclusive; lớn >80",
+  "evaluation_ready": false,
+  "annotation_complete": true,
+  "blockers": [],
+  "evaluation_readiness_note": "No known capture/annotation blockers remain. User visual review and adaptation to the actual Ubuntu evaluation script schema are still pending; evaluation_ready does not imply a completed Meta test.",
+  "review_recommendation": "Case_03 preview-title action was confirmed by the user. Review exact bbox edges for all cases before freezing ground truth; action confirmation does not validate every pixel of a bounding box.",
+  "source_images_unchanged": true,
+  "redactions_applied": false,
+  "unique_image_count": 10,
+  "duplicate_groups": [
+    [
+      "case_01.png",
+      "case_02.png"
+    ],
+    [
+      "case_03.png",
+      "case_04.png"
+    ]
+  ],
+  "integration_note": "This labels.json is a documented interchange format, not a claim to match the Ubuntu evaluation script cases.json. Map fields after inspecting the actual script/schema. All current boxes have role=accepted and all cases have been visually reviewed from the screenshots; human visual review is recommended before freezing ground truth.",
+  "cases": [
+    {
+      "id": "case_01",
+      "image": "case_01.png",
+      "question": "Mẹ muốn mở chỗ chứa cái file giáo án này thì bấm vào đâu?",
+      "target": "Nút icon thư mục của đúng tin nhắn giáo án",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "folder_button",
+          "bbox_xyxy": [
+            1082,
+            770,
+            1114,
+            802
+          ],
+          "width_px": 32,
+          "height_px": 32,
+          "short_edge_px": 32,
+          "size_vi": "vừa",
+          "center_xy": [
+            1098,
+            786
+          ],
+          "role": "accepted",
+          "note": ""
+        }
+      ],
+      "notes": "Chỉ nút thư mục; không gồm nút tải ở bên phải. Cùng ảnh gốc với case_02. Tin nhắn nằm ở nửa dưới khung chat. Không suy ra được vị trí chuột khi chụp.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "67e4209df1beca556fec78e23d61af9872c8e1550130d51d55cd74572351be82",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    },
+    {
+      "id": "case_02",
+      "image": "case_02.png",
+      "question": "Mẹ muốn gửi một cái file cho cô tổ trưởng thì bấm vào đâu?",
+      "target": "Icon kẹp giấy trên thanh công cụ phía trên ô nhập",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "paperclip_icon",
+          "bbox_xyxy": [
+            684,
+            913,
+            710,
+            938
+          ],
+          "width_px": 26,
+          "height_px": 25,
+          "short_edge_px": 25,
+          "size_vi": "nhỏ",
+          "center_xy": [
+            697,
+            925
+          ],
+          "role": "accepted",
+          "note": ""
+        }
+      ],
+      "notes": "Khoanh icon kẹp giấy, không lấy icon ảnh hay danh thiếp bên cạnh. Ô nhập trống. Cùng ảnh gốc với case_01. Không có tooltip để kiểm chứng chức năng trực tiếp.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "67e4209df1beca556fec78e23d61af9872c8e1550130d51d55cd74572351be82",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    },
+    {
+      "id": "case_03",
+      "image": "case_03.png",
+      "question": "Mẹ muốn mở cái bảng tính cô gửi thì bấm vào đâu?",
+      "target": "URL Google Sheets xuống 3 dòng và tiêu đề thẻ xem trước đã được người dùng xác nhận mở Sheet",
+      "status": "visually_reviewed_user_confirmed_target",
+      "boxes": [
+        {
+          "name": "url_line_1",
+          "bbox_xyxy": [
+            921,
+            641,
+            1419,
+            667
+          ],
+          "width_px": 498,
+          "height_px": 26,
+          "short_edge_px": 26,
+          "size_vi": "nhỏ",
+          "center_xy": [
+            1170,
+            654
+          ],
+          "role": "accepted",
+          "note": ""
+        },
+        {
+          "name": "url_line_2",
+          "bbox_xyxy": [
+            921,
+            671,
+            1417,
+            697
+          ],
+          "width_px": 496,
+          "height_px": 26,
+          "short_edge_px": 26,
+          "size_vi": "nhỏ",
+          "center_xy": [
+            1169,
+            684
+          ],
+          "role": "accepted",
+          "note": ""
+        },
+        {
+          "name": "url_line_3",
+          "bbox_xyxy": [
+            921,
+            701,
+            981,
+            727
+          ],
+          "width_px": 60,
+          "height_px": 26,
+          "short_edge_px": 26,
+          "size_vi": "nhỏ",
+          "center_xy": [
+            951,
+            714
+          ],
+          "role": "accepted",
+          "note": ""
+        },
+        {
+          "name": "preview_title",
+          "bbox_xyxy": [
+            921,
+            737,
+            1244,
+            765
+          ],
+          "width_px": 323,
+          "height_px": 28,
+          "short_edge_px": 28,
+          "size_vi": "nhỏ",
+          "center_xy": [
+            1082,
+            751
+          ],
+          "role": "accepted",
+          "note": "Người dùng xác nhận ngày 29/10/2026: bấm tiêu đề mở đúng bảng tính. Khoanh sát tiêu đề; không suy rộng xác nhận sang tên miền, khoảng trống hay mốc giờ."
+        }
+      ],
+      "notes": "URL xuống 3 dòng, mỗi dòng một khung. Người dùng đã xác nhận bấm tiêu đề thẻ mở đúng Sheet; thêm khung thứ tư bao tiêu đề vào accepted. Cùng ảnh gốc với case_04.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "ecfb2ae148dd880634b7379d954b8950b5722e6847067bdf2fb12f1e033f80a0",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ],
+      "user_verification": {
+        "date_local": "2026-10-29",
+        "source": "Direct user reply in this chat",
+        "statement_vi": "Đã kiểm tra, bấm tiêu đề mở đúng bảng tính",
+        "scope": "Clicking the preview title opens the correct spreadsheet; not a pixel-by-pixel hitbox verification."
+      }
+    },
+    {
+      "id": "case_04",
+      "image": "case_04.png",
+      "question": "Mẹ bấm link rồi mà không thấy, giờ bấm vào đâu để xem?",
+      "target": "Icon Brave trên taskbar",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "brave_taskbar_icon",
+          "bbox_xyxy": [
+            837,
+            1034,
+            865,
+            1066
+          ],
+          "width_px": 28,
+          "height_px": 32,
+          "short_edge_px": 28,
+          "size_vi": "nhỏ",
+          "center_xy": [
+            851,
+            1050
+          ],
+          "role": "accepted",
+          "note": ""
+        }
+      ],
+      "notes": "Icon Brave, không phải Chrome bên phải Zalo. Zalo ở tiền cảnh. Ảnh tĩnh không chứng minh được nội dung cửa sổ Brave phía sau; ảnh case_06 cho thấy Sheet mở ở Brave vào thời điểm khác. Cùng ảnh gốc với case_03.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "ecfb2ae148dd880634b7379d954b8950b5722e6847067bdf2fb12f1e033f80a0",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    },
+    {
+      "id": "case_05",
+      "image": "case_05.png",
+      "question": "Cái bảng tính cô gửi nằm ở tab nào, mẹ bấm vào đâu?",
+      "target": "Ba tab Sheet ở nền trên thanh tab Brave",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "sheet_browser_tab_1",
+          "bbox_xyxy": [
+            330,
+            5,
+            659,
+            50
+          ],
+          "width_px": 329,
+          "height_px": 45,
+          "short_edge_px": 45,
+          "size_vi": "vừa",
+          "center_xy": [
+            494,
+            27
+          ],
+          "role": "accepted",
+          "note": "Toàn ô tab theo checklist."
+        },
+        {
+          "name": "sheet_browser_tab_2",
+          "bbox_xyxy": [
+            660,
+            5,
+            989,
+            50
+          ],
+          "width_px": 329,
+          "height_px": 45,
+          "short_edge_px": 45,
+          "size_vi": "vừa",
+          "center_xy": [
+            824,
+            27
+          ],
+          "role": "accepted",
+          "note": "Toàn ô tab theo checklist."
+        },
+        {
+          "name": "sheet_browser_tab_3",
+          "bbox_xyxy": [
+            990,
+            5,
+            1318,
+            50
+          ],
+          "width_px": 328,
+          "height_px": 45,
+          "short_edge_px": 45,
+          "size_vi": "vừa",
+          "center_xy": [
+            1154,
+            27
+          ],
+          "role": "accepted",
+          "note": "Toàn ô tab theo checklist."
+        }
+      ],
+      "notes": "Tab khác đang chọn là Zalo AI Challenge 2026 thay cho ví dụ google.com; ba tab Sheet đều ở nền. Toàn ô tab theo checklist; khi bấm thực tế nên vào icon/tên, tránh vùng nút đóng có thể hiện khi rê chuột.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "eb7fd43255b45836bb4267879ce85cabf9f6779e5e1330e570041efd8c2fc179",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    },
+    {
+      "id": "case_06",
+      "image": "case_06.png",
+      "question": "Mẹ là cô Mẫu, phần của mẹ nằm ở đâu?",
+      "target": "Phần chính ô tab trang tính Cô Mẫu ở thanh dưới",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "co_mau_sheet_tab",
+          "bbox_xyxy": [
+            344,
+            974,
+            454,
+            1019
+          ],
+          "width_px": 110,
+          "height_px": 45,
+          "short_edge_px": 45,
+          "size_vi": "vừa",
+          "center_xy": [
+            399,
+            996
+          ],
+          "role": "accepted",
+          "note": "Loại mũi tên menu ở bên phải để khung chỉ nhận thao tác chọn trang tính."
+        }
+      ],
+      "notes": "Tổng hợp đang chọn. Ba tab Tổng hợp, Cô Mẫu, Thầy Minh hiện rõ. Không gồm mũi tên menu riêng bên phải nhãn Cô Mẫu.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "b42e07e296085fd1ac8ee5ab5fccaf55242b2257a2d35d959bae66ca55a9b0d5",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    },
+    {
+      "id": "case_07",
+      "image": "case_07.png",
+      "question": "Mẹ muốn mở cái bản giáo án có số 1 ở cuối tên.",
+      "target": "Dòng file Giáo án mẫu Âm nhạc 8 (1).docx trong cột Name, chế độ Details",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "file_with_1_name_column",
+          "bbox_xyxy": [
+            304,
+            337,
+            548,
+            360
+          ],
+          "width_px": 244,
+          "height_px": 23,
+          "short_edge_px": 23,
+          "size_vi": "nhỏ",
+          "center_xy": [
+            426,
+            348
+          ],
+          "role": "accepted",
+          "note": "Đo lại từ ảnh thay thế mới nhất; chỉ icon tới hết tên file, không lấy các cột Date modified/Type/Size hoặc dòng bản không có (1)."
+        }
+      ],
+      "notes": "ĐÃ CẬP NHẬT ẢNH MỚI NHẤT: đúng View > Details, có cả hai file giáo án. Khung từ icon tới hết tên file có (1): 304,337,548,360; 244 × 23 px, cỡ nhỏ. Ảnh 1920 × 1080, metadata khoảng 120 DPI khớp 11 ảnh còn lại; kích thước giao diện nhất quán với Scale 125% đã ghi trong checklist.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "3a84dca53b75e3247eb987275c9a99dd57f36810d4d7937026cf8e948b6b2e0f",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    },
+    {
+      "id": "case_08",
+      "image": "case_08.png",
+      "question": "Mẹ muốn vào chỗ chứa file tải về thì bấm vào đâu?",
+      "target": "Icon và chữ Downloads ở khung điều hướng trái",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "downloads_navigation_label",
+          "bbox_xyxy": [
+            42,
+            377,
+            146,
+            401
+          ],
+          "width_px": 104,
+          "height_px": 24,
+          "short_edge_px": 24,
+          "size_vi": "nhỏ",
+          "center_xy": [
+            94,
+            389
+          ],
+          "role": "accepted",
+          "note": ""
+        }
+      ],
+      "notes": "Explorer đang mở Documents. Chỉ thấy một mục Downloads trong phần điều hướng hiển thị; không thêm khung cho mục ngoài ảnh.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "f2160e236ce95ffb6e395f82f9ddc75835d302aa45b2e5ea00c64b5674765e5a",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    },
+    {
+      "id": "case_09",
+      "image": "case_09.png",
+      "question": "Mở cái bản giáo án nằm trong ổ D.",
+      "target": "Toàn dòng Recent có đường dẫn D:\\iPhone\\Raw_srouces\\2026",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "recent_file_on_d_drive",
+          "bbox_xyxy": [
+            260,
+            574,
+            1839,
+            644
+          ],
+          "width_px": 1579,
+          "height_px": 70,
+          "short_edge_px": 70,
+          "size_vi": "vừa",
+          "center_xy": [
+            1049,
+            609
+          ],
+          "role": "accepted",
+          "note": "Toàn dòng gồm icon, tên, đường dẫn và vùng còn lại của hàng; không lấy hàng Downloads phía trên/dưới."
+        }
+      ],
+      "notes": "Hàng thứ hai, đường dẫn hiển thị D: » iPhone » Raw_srouces » 2026. Có 3 mục tên gốc và thêm một mục có (1). Tooltip Grant proposal ở phía trên, ngoài mục tiêu. Các tên file ngoài mục tiêu chưa được che.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "c0908248eedc55f2eb1e3bd248ac32defbdc3f5fa2ef7840e48cd2aaa12bbeba",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    },
+    {
+      "id": "case_10",
+      "image": "case_10.png",
+      "question": "Mẹ muốn xuất ra PDF thì bấm vào đâu trước?",
+      "target": "Chữ File ở góc trên trái ribbon",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "word_file_text",
+          "bbox_xyxy": [
+            26,
+            71,
+            54,
+            89
+          ],
+          "width_px": 28,
+          "height_px": 18,
+          "short_edge_px": 18,
+          "size_vi": "nhỏ",
+          "center_xy": [
+            40,
+            80
+          ],
+          "role": "accepted",
+          "note": ""
+        }
+      ],
+      "notes": "Khoanh sát chữ File; không lấy biểu tượng Word hay Home.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "c603eca353f887887ae84884edc6753d411f4cf9ab0d45c6f1b23acaa93663c5",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    },
+    {
+      "id": "case_11",
+      "image": "case_11.png",
+      "question": "Bấm vào đâu để tạo file PDF?",
+      "target": "Nút Create PDF/XPS bên phải trong trang Export",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "create_pdf_xps_button",
+          "bbox_xyxy": [
+            677,
+            275,
+            780,
+            382
+          ],
+          "width_px": 103,
+          "height_px": 107,
+          "short_edge_px": 103,
+          "size_vi": "lớn",
+          "center_xy": [
+            728,
+            328
+          ],
+          "role": "accepted",
+          "note": ""
+        }
+      ],
+      "notes": "Chỉ nút bên phải. Không khoanh mục Create PDF/XPS Document ở cột chọn bên trái.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "d610879d9a2dccd49ae2c319218dd9c0b5a052b33269aaef96c38daf9350c1a5",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    },
+    {
+      "id": "case_12",
+      "image": "case_12.png",
+      "question": "Cái bảng báo lỗi này, mẹ bấm vào đâu để tắt?",
+      "target": "Nút OK của hộp lỗi Save As",
+      "status": "visually_reviewed",
+      "boxes": [
+        {
+          "name": "invalid_filename_ok_button",
+          "bbox_xyxy": [
+            1072,
+            512,
+            1157,
+            539
+          ],
+          "width_px": 85,
+          "height_px": 27,
+          "short_edge_px": 27,
+          "size_vi": "nhỏ",
+          "center_xy": [
+            1114,
+            525
+          ],
+          "role": "accepted",
+          "note": ""
+        }
+      ],
+      "notes": "Nguyên văn nội dung hộp lỗi (2 dòng): Giáo án \"Âm nhạc 8\"?.docx / The file name is not valid. Khung chỉ nút OK, không lấy Save hoặc Cancel của hộp lưu phía dưới.",
+      "issues": [],
+      "eligible_for_scoring_after_human_review": true,
+      "image_width_px": 1920,
+      "image_height_px": 1080,
+      "image_sha256": "5ff6398031435f180867bbd734566ea423897676d463a1244a62bf0bdcda2641",
+      "image_dpi_metadata": [
+        119.9896,
+        119.9896
+      ]
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+[
+  {
+    "image": "case_01.png",
+    "sha256": "67e4209df1beca556fec78e23d61af9872c8e1550130d51d55cd74572351be82",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_02.png",
+    "sha256": "67e4209df1beca556fec78e23d61af9872c8e1550130d51d55cd74572351be82",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_03.png",
+    "sha256": "ecfb2ae148dd880634b7379d954b8950b5722e6847067bdf2fb12f1e033f80a0",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_04.png",
+    "sha256": "ecfb2ae148dd880634b7379d954b8950b5722e6847067bdf2fb12f1e033f80a0",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_05.png",
+    "sha256": "eb7fd43255b45836bb4267879ce85cabf9f6779e5e1330e570041efd8c2fc179",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_06.png",
+    "sha256": "b42e07e296085fd1ac8ee5ab5fccaf55242b2257a2d35d959bae66ca55a9b0d5",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_07.png",
+    "sha256": "3a84dca53b75e3247eb987275c9a99dd57f36810d4d7937026cf8e948b6b2e0f",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_08.png",
+    "sha256": "f2160e236ce95ffb6e395f82f9ddc75835d302aa45b2e5ea00c64b5674765e5a",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_09.png",
+    "sha256": "c0908248eedc55f2eb1e3bd248ac32defbdc3f5fa2ef7840e48cd2aaa12bbeba",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_10.png",
+    "sha256": "c603eca353f887887ae84884edc6753d411f4cf9ab0d45c6f1b23acaa93663c5",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_11.png",
+    "sha256": "d610879d9a2dccd49ae2c319218dd9c0b5a052b33269aaef96c38daf9350c1a5",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  },
+  {
+    "image": "case_12.png",
+    "sha256": "5ff6398031435f180867bbd734566ea423897676d463a1244a62bf0bdcda2641",
+    "width": 1920,
+    "height": 1080,
+    "dpi_metadata": [
+      119.9896,
+      119.9896
+    ]
+  }
+]

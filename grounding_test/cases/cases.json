@@ -8,8 +8,15 @@
       "target": "Icon thư mục trên tin nhắn chứa file giáo án đã tải",
       "question_vi": "Mẹ muốn mở chỗ chứa cái file giáo án này thì bấm vào đâu?",
       "question_en": "Where do I click to open the folder that contains this lesson plan file?",
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          1082,
+          770,
+          1114,
+          802
+        ]
+      ],
+      "size_class": "vừa",
       "notes": ""
     },
     {
@@ -17,10 +24,17 @@
       "file": "case_02.png",
       "app": "Zalo",
       "target": "Nút đính kèm / gửi file ở thanh nhập tin nhắn",
-      "question_vi": "Mẹ muốn gửi một cái file cho cô tổ trưởng thì bấm vào đâu?",
+      "question_vi": "Mẹ muốn gửi một cái file cho người này thì bấm vào đâu?",
       "question_en": null,
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          684,
+          913,
+          710,
+          938
+        ]
+      ],
+      "size_class": "nhỏ",
       "notes": ""
     },
     {
@@ -30,8 +44,33 @@
       "target": "Đường link Google Sheet trong tin nhắn",
       "question_vi": "Mẹ muốn mở cái bảng tính cô gửi thì bấm vào đâu?",
       "question_en": null,
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          921,
+          641,
+          1419,
+          667
+        ],
+        [
+          921,
+          671,
+          1417,
+          697
+        ],
+        [
+          921,
+          701,
+          981,
+          727
+        ],
+        [
+          921,
+          737,
+          1244,
+          765
+        ]
+      ],
+      "size_class": "nhỏ",
       "notes": ""
     },
     {
@@ -41,8 +80,15 @@
       "target": "Biểu tượng trình duyệt (Brave) trên taskbar, khi Zalo đang ở trước",
       "question_vi": "Mẹ bấm link rồi mà không thấy, giờ bấm vào đâu để xem?",
       "question_en": null,
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          837,
+          1034,
+          865,
+          1066
+        ]
+      ],
+      "size_class": "nhỏ",
       "notes": ""
     },
     {
@@ -52,8 +98,27 @@
       "target": "Bất kỳ tab nào trong 3 tab trùng của Google Sheet (mỗi tab một khung)",
       "question_vi": "Cái bảng tính cô gửi nằm ở tab nào, mẹ bấm vào đâu?",
       "question_en": null,
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          330,
+          5,
+          659,
+          50
+        ],
+        [
+          660,
+          5,
+          989,
+          50
+        ],
+        [
+          990,
+          5,
+          1318,
+          50
+        ]
+      ],
+      "size_class": "vừa",
       "notes": ""
     },
     {
@@ -63,8 +128,15 @@
       "target": "Tab trang tính 'Cô Mẫu' ở thanh dưới cùng",
       "question_vi": "Mẹ là cô Mẫu, phần của mẹ nằm ở đâu?",
       "question_en": "I am Ms. Mau. Where is my part of this spreadsheet?",
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          344,
+          974,
+          454,
+          1019
+        ]
+      ],
+      "size_class": "vừa",
       "notes": ""
     },
     {
@@ -74,8 +146,15 @@
       "target": "File 'Giáo án mẫu Âm nhạc 8 (1).docx' trong Downloads",
       "question_vi": "Mẹ muốn mở cái bản giáo án có số 1 ở cuối tên.",
       "question_en": null,
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          304,
+          337,
+          548,
+          360
+        ]
+      ],
+      "size_class": "nhỏ",
       "notes": ""
     },
     {
@@ -85,8 +164,15 @@
       "target": "Mục Downloads ở khung điều hướng bên trái",
       "question_vi": "Mẹ muốn vào chỗ chứa file tải về thì bấm vào đâu?",
       "question_en": null,
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          42,
+          377,
+          146,
+          401
+        ]
+      ],
+      "size_class": "nhỏ",
       "notes": ""
     },
     {
@@ -96,8 +182,15 @@
       "target": "Mục 'Giáo án mẫu Âm nhạc 8.docx' nằm trong ổ D trong danh sách Recent",
       "question_vi": "Mở cái bản giáo án nằm trong ổ D.",
       "question_en": "Open the copy of the lesson plan that is on drive D.",
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          260,
+          574,
+          1839,
+          644
+        ]
+      ],
+      "size_class": "vừa",
       "notes": ""
     },
     {
@@ -107,8 +200,15 @@
       "target": "Tab/menu 'File' góc trên bên trái",
       "question_vi": "Mẹ muốn xuất ra PDF thì bấm vào đâu trước?",
       "question_en": null,
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          26,
+          71,
+          54,
+          89
+        ]
+      ],
+      "size_class": "nhỏ",
       "notes": ""
     },
     {
@@ -118,8 +218,15 @@
       "target": "Nút 'Create PDF/XPS'",
       "question_vi": "Bấm vào đâu để tạo file PDF?",
       "question_en": "Where do I click to create the PDF file?",
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          677,
+          275,
+          780,
+          382
+        ]
+      ],
+      "size_class": "lớn",
       "notes": ""
     },
     {
@@ -129,9 +236,23 @@
       "target": "Nút OK của hộp báo lỗi tên file không hợp lệ",
       "question_vi": "Cái bảng báo lỗi này, mẹ bấm vào đâu để tắt?",
       "question_en": null,
-      "boxes": [],
-      "size_class": null,
+      "boxes": [
+        [
+          1072,
+          512,
+          1157,
+          539
+        ],
+        [
+          1138,
+          391,
+          1162,
+          415
+        ]
+      ],
+      "size_class": "nhỏ",
       "notes": ""
     }
-  ]
+  ],
+  "_nguon_nhan": "Khung đo ngày 29/10/2026 bằng công cụ AI đọc pixel ảnh gốc (labels.json, boxes.csv); founder xác nhận bấm thử case_03; Claude rà bằng mắt cả 12 ca, thêm khung nút X ở case_12 và sửa câu case_02 cho khớp cuộc trò chuyện trong ảnh, trước khi chạy model. x2/y2 trong boxes.csv là mép ngoài, lệch 1 px so với cách chấm, không đáng kể."
 }

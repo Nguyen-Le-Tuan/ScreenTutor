@@ -1,0 +1,205 @@
+﻿CHỤP 12 ẢNH CHO PHÉP THỬ GROUNDING — CHECKLIST TRÊN WINDOWS (soạn 28/10/2026)
+==============================================================================
+Mục đích: chụp 12 màn hình Windows thật, rồi đánh dấu TRƯỚC vị trí đúng
+cần bấm (gọi là "khung đúng"). Sau đó script hỏi model Meta "bấm vào đâu"
+và so câu trả lời với khung đúng.
+Thời gian: khoảng 60–75 phút. Toàn bộ dữ liệu là dữ liệu GIẢ.
+Không có script hay API nào chạy trên Windows: ở bên này bạn chỉ chụp ảnh và ghi số.
+
+
+A. CHUẨN BỊ CHUNG (làm 1 lần)
+-----------------------------
+[x] A1. Settings > System > Display: Scale = 125% (giống lần thử HeyClicky).
+        Ghi độ phân giải màn hình (Display resolution): 1920 x 1080
+[x] A2. Taskbar luôn hiện, không bật chế độ tự ẩn.
+        Kiểm tra ở Settings > Personalization > Taskbar > Taskbar behaviors.
+[x] A3. Đóng các cửa sổ có thông tin cá nhân không liên quan.
+[x] A4. Chuẩn bị dữ liệu giả:
+    - Chat Zalo "Truyền Anh" có tin nhắn file "Giáo án mẫu Âm nhạc 8.docx"
+      (đã có từ lần thử HeyClicky; file ở trạng thái "đã có trên máy").
+    - Chat Zalo "My Documents" có link Google Sheet "Bảng kê khai thi đua – Tổ Nghệ Thuật".
+    - Google Sheet đó cần có 3 tab trang tính ở thanh dưới cùng, đặt tên đúng là:
+      Tổng hợp | Cô Mẫu | Thầy Minh
+      (Thêm tab: bấm dấu "+" ở góc dưới bên trái. Đổi tên: chuột phải vào tab > Rename.)
+      Mỗi tab điền 3–4 dòng dữ liệu giả, ví dụ: Họ tên | Lớp | Hoạt động | Điểm.
+    - Thư mục Downloads phải có CẢ HAI file:
+        "Giáo án mẫu Âm nhạc 8.docx"
+        "Giáo án mẫu Âm nhạc 8 (1).docx"
+      Nếu chưa có bản (1): trong Zalo, bấm icon tải trên tin nhắn file, chọn thư mục
+      Downloads, rồi để Zalo tự thêm (1) vào tên.
+    - Danh sách Recent của Word vẫn còn 3 mục "Giáo án mẫu Âm nhạc 8.docx",
+      trong đó có 1 mục nằm ở D:\iPhone\Raw_srouces\2026 (có sẵn từ lần thử trước).
+
+[x] A5. CÁCH CHỤP (áp dụng cho cả 12 ảnh):
+    - Kéo chuột ra một chỗ TRỐNG, không để chuột nằm trên mục tiêu,
+      vì rê chuột lên sẽ làm nút đổi màu.
+    - Nhấn phím Windows + PrtScn. Màn hình tối đi một chút là đã chụp xong.
+      Ảnh được lưu ở Pictures\Screenshots.
+    - Đổi tên ảnh thành case_01.png, case_02.png, … đúng theo số thứ tự của ca.
+    - KHÔNG cắt ảnh, KHÔNG thu nhỏ. Cả 12 ảnh phải cùng kích thước.
+
+[x] A6. CÁCH ĐO "KHUNG ĐÚNG" TRONG PAINT:
+    Ghi nhận bổ sung: đã đo bằng công cụ đọc pixel ảnh gốc và kiểm tra ảnh phóng lớn,
+    không thao tác đo trong Paint. case_07 đã thay ảnh Details mới nhất và đo lại;
+    DPI hiện khớp các ảnh khác. Người dùng đã xác nhận tiêu đề case_03 mở đúng Sheet.
+    - Mở ảnh bằng Paint (chuột phải vào ảnh > Open with > Paint).
+    - Rê chuột tới GÓC TRÊN BÊN TRÁI của mục tiêu. Thanh trạng thái phía dưới
+      hiện toạ độ, ví dụ "812, 455px". Ghi lại: x1 = 812, y1 = 455.
+    - Rê chuột tới GÓC DƯỚI BÊN PHẢI của mục tiêu. Ghi lại x2, y2.
+    - Khung chỉ bao vùng bấm được của mục tiêu: sát mép nút, sát icon,
+      hoặc sát dòng chữ.
+    - Cỡ mục tiêu tính theo cạnh ngắn của khung:
+        nhỏ < 32 px, vừa từ 32 đến 80 px, lớn > 80 px.
+    - Ghi kích thước ảnh, hiện ở thanh trạng thái của Paint (ví dụ 1920 x 1080px).
+
+[x] A7. QUYỀN RIÊNG TƯ:
+    Ảnh sẽ được gửi lên Meta qua model Standard. Theo docs, model Standard không
+    dùng nội dung gửi lên để huấn luyện.
+    - Nếu ảnh có tên người thật hoặc tên file cá nhân NẰM NGOÀI khung mục tiêu,
+      có thể che bằng một hình chữ nhật trắng trong Paint
+      (Shapes > Rectangle, Fill = Solid).
+    - TUYỆT ĐỐI không che hay sửa gì bên trong khung mục tiêu.
+    - Che chỗ nào thì ghi vào cột "Ghi chú" ở mục C.
+
+
+B. 12 MÀN HÌNH CẦN DỰNG
+-----------------------
+Mỗi ca ghi theo thứ tự: màn hình cần dựng -> ảnh phải nhìn thấy gì -> mục tiêu cần khoanh.
+
+[x] case_01 — ZALO: ICON THƯ MỤC TRÊN TIN NHẮN FILE
+    Dựng: Zalo phóng to toàn màn hình, mở chat "Truyền Anh". Cuộn sao cho tin nhắn file
+          "Giáo án mẫu Âm nhạc 8.docx" nằm ở khoảng giữa khung chat.
+    Thấy: tin nhắn file có tên file, dung lượng, và 2 icon nhỏ bên phải
+          (icon thư mục và icon tải).
+          Nếu 2 icon chỉ hiện khi rê chuột: đặt chuột lên PHẦN THÂN tin nhắn
+          (không đặt lên icon) rồi mới chụp, và ghi điều này vào Ghi chú.
+    Khung đúng: CHỈ icon thư mục. Không lấy icon tải.
+    Câu hỏi sẽ dùng: "Mẹ muốn mở chỗ chứa cái file giáo án này thì bấm vào đâu?"
+
+[x] case_02 — ZALO: NÚT ĐÍNH KÈM / GỬI FILE
+    Dựng: vẫn chat "Truyền Anh", phóng to toàn màn hình. Ô nhập tin nhắn để trống.
+    Thấy: thanh công cụ ngay phía trên ô nhập tin nhắn (sticker, ảnh, đính kèm file, …).
+    Khung đúng: icon đính kèm file (thường là hình kẹp giấy, chú thích
+                "Attach file" hoặc "Gửi file"). Nếu không chắc icon nào,
+                rê chuột lên để xem chú thích TRƯỚC khi chụp, rồi kéo chuột
+                ra chỗ trống và chụp.
+    Câu hỏi: "Mẹ muốn gửi một cái file cho cô tổ trưởng thì bấm vào đâu?"
+
+[x] case_03 — ZALO: ĐƯỜNG LINK GOOGLE SHEET
+    Dựng: Zalo phóng to toàn màn hình, mở chat "My Documents", thấy tin nhắn có link Sheet.
+    Thấy: dòng link màu xanh, và có thể có thẻ xem trước (tiêu đề hoặc ảnh của Google Sheets).
+    Khung đúng: khung 1 = dòng chữ link. Nếu link xuống 2 dòng thì mỗi dòng một khung.
+                Nếu có thẻ xem trước bấm được thì thêm một khung cho thẻ đó.
+                Bấm vào khung nào trong số này cũng tính là đúng.
+    Câu hỏi: "Mẹ muốn mở cái bảng tính cô gửi thì bấm vào đâu?"
+
+[x] case_04 — TASKBAR: TRÌNH DUYỆT ĐANG NẰM SAU ZALO
+    Dựng: Brave đang mở trang Sheet (không thu nhỏ cũng được). Bấm vào Zalo để Zalo
+          nằm trước và phóng to toàn màn hình. Không nhìn thấy cửa sổ Brave.
+    Thấy: Zalo chiếm màn hình; dưới cùng là taskbar có icon Brave.
+    Khung đúng: icon Brave trên taskbar.
+    Câu hỏi: "Mẹ bấm link rồi mà không thấy, giờ bấm vào đâu để xem?"
+
+[x] case_05 — BRAVE: 3 TAB TRÙNG CỦA BẢNG TÍNH
+    Dựng: trong Brave mở 4 tab: 3 tab cùng link Sheet ("Bảng kê khai thi đua – …")
+          và 1 tab khác (ví dụ google.com). Bấm vào TAB KHÁC để nó đang được chọn,
+          sao cho 3 tab Sheet đều đang ở phía sau.
+    Thấy: thanh tab phía trên có 4 tab; trang đang hiện là google.com.
+    Khung đúng: 3 khung, mỗi khung bao một tab Sheet (cả ô tab: biểu tượng và tên).
+                Bấm vào tab nào trong 3 tab cũng tính là đúng.
+    Câu hỏi: "Cái bảng tính cô gửi nằm ở tab nào, mẹ bấm vào đâu?"
+
+[x] case_06 — GOOGLE SHEETS: TAB "CÔ MẪU"
+    Dựng: Brave phóng to, đang mở Sheet ở tab trang tính "Tổng hợp".
+    Thấy: thanh tab trang tính dưới cùng có: Tổng hợp | Cô Mẫu | Thầy Minh.
+    Khung đúng: ô tab "Cô Mẫu".
+    Câu hỏi: "Mẹ là cô Mẫu, phần của mẹ nằm ở đâu?"
+
+[x] case_07 — FILE EXPLORER: FILE CÓ ĐUÔI (1)
+    Dựng: mở File Explorer, vào Downloads. Chọn View > Details (dạng danh sách có cột).
+          Phóng to cửa sổ.
+    Thấy: danh sách file, trong đó có cả "Giáo án mẫu Âm nhạc 8.docx" và
+          "Giáo án mẫu Âm nhạc 8 (1).docx". Che tên các file cá nhân khác nếu cần.
+    Khung đúng: dòng "Giáo án mẫu Âm nhạc 8 (1).docx", khoanh từ icon file
+                tới hết chữ tên file (cột Name).
+    Câu hỏi: "Mẹ muốn mở cái bản giáo án có số 1 ở cuối tên."
+
+[x] case_08 — FILE EXPLORER: MỤC DOWNLOADS Ở KHUNG BÊN TRÁI
+    Dựng: File Explorer đang mở thư mục Documents (KHÔNG mở Downloads), phóng to.
+    Thấy: khung điều hướng bên trái có Home, Desktop, Downloads, Documents, …
+    Khung đúng: mục "Downloads" ở khung bên trái (icon và chữ).
+                Nếu Downloads hiện ở 2 chỗ (ví dụ cả trong Quick access lẫn
+                trong This PC) thì khoanh cả hai, mỗi chỗ một khung.
+    Câu hỏi: "Mẹ muốn vào chỗ chứa file tải về thì bấm vào đâu?"
+
+[x] case_09 — WORD: DANH SÁCH RECENT CÓ 3 FILE CÙNG TÊN
+    Dựng: mở Word, vào màn hình Home hoặc File > Open, chọn danh sách Recent.
+    Thấy: 3 dòng "Giáo án mẫu Âm nhạc 8.docx" với 3 đường dẫn khác nhau,
+          trong đó có D:\iPhone\Raw_srouces\2026. Che tên các file cá nhân khác.
+    Khung đúng: dòng có đường dẫn ổ D (cả dòng tên và dòng đường dẫn).
+    Câu hỏi: "Mở cái bản giáo án nằm trong ổ D."
+
+[x] case_10 — WORD: MENU FILE
+    Dựng: Word đang mở một bản giáo án ở màn hình soạn thảo thường, ribbon đang hiện.
+    Thấy: ribbon trên cùng có File | Home | Insert | …
+    Khung đúng: chữ "File" ở góc trên bên trái.
+    Câu hỏi: "Mẹ muốn xuất ra PDF thì bấm vào đâu trước?"
+
+[x] case_11 — WORD: TRANG EXPORT
+    Dựng: trong Word bấm File > Export. Mục "Create PDF/XPS Document" đang được chọn.
+    Thấy: bên phải có nút lớn "Create PDF/XPS".
+    Khung đúng: CHỈ nút "Create PDF/XPS" bên phải. Không lấy mục ở cột bên trái.
+    Câu hỏi: "Bấm vào đâu để tạo file PDF?"
+
+[x] case_12 — WORD: HỘP BÁO LỖI TÊN FILE
+    Dựng: trong Word bấm File > Save As > Browse để mở hộp lưu của Windows.
+          Gõ tên:  Giáo án "Âm nhạc 8"?   rồi bấm Save.
+          Một hộp báo lỗi tên file không hợp lệ sẽ hiện lên.
+    Thấy: hộp báo lỗi nằm trên hộp lưu, có nút OK.
+          Chép nguyên văn câu báo lỗi vào Ghi chú.
+    Khung đúng: nút OK của hộp báo lỗi.
+    Câu hỏi: "Cái bảng báo lỗi này, mẹ bấm vào đâu để tắt?"
+
+
+C. BẢNG GHI NHÃN (điền sau khi chụp)
+------------------------------------
+Kích thước ảnh (giống nhau cho cả 12 ảnh): 1920 x 1080 px
+Định dạng mỗi khung: x1, y1, x2, y2. Nhiều khung thì cách nhau bằng " | ".
+
+case_01 | khung: 1082, 770, 1114, 802 | cỡ: vừa | Ghi chú: Chỉ nút thư mục; không gồm nút tải ở bên phải. Cùng ảnh gốc với case_02. Tin nhắn nằm ở nửa dưới khung chat. Không suy ra được vị trí chuột khi chụp.
+case_02 | khung: 684, 913, 710, 938 | cỡ: nhỏ | Ghi chú: Khoanh icon kẹp giấy, không lấy icon ảnh hay danh thiếp bên cạnh. Ô nhập trống. Cùng ảnh gốc với case_01. Không có tooltip để kiểm chứng chức năng trực tiếp.
+case_03 | khung: 921, 641, 1419, 667 | 921, 671, 1417, 697 | 921, 701, 981, 727 | 921, 737, 1244, 765 | cỡ: nhỏ | nhỏ | nhỏ | nhỏ | Ghi chú: URL xuống 3 dòng, mỗi dòng một khung. Người dùng đã xác nhận bấm tiêu đề thẻ mở đúng Sheet; thêm khung thứ tư bao tiêu đề vào accepted. Cùng ảnh gốc với case_04.
+case_04 | khung: 837, 1034, 865, 1066 | cỡ: nhỏ | Ghi chú: Icon Brave, không phải Chrome bên phải Zalo. Zalo ở tiền cảnh. Ảnh tĩnh không chứng minh được nội dung cửa sổ Brave phía sau; ảnh case_06 cho thấy Sheet mở ở Brave vào thời điểm khác. Cùng ảnh gốc với case_03.
+case_05 | khung: 330, 5, 659, 50 | 660, 5, 989, 50 | 990, 5, 1318, 50 | cỡ: vừa | vừa | vừa | Ghi chú: Tab khác đang chọn là Zalo AI Challenge 2026 thay cho ví dụ google.com; ba tab Sheet đều ở nền. Toàn ô tab theo checklist; khi bấm thực tế nên vào icon/tên, tránh vùng nút đóng có thể hiện khi rê chuột.
+case_06 | khung: 344, 974, 454, 1019 | cỡ: vừa | Ghi chú: Tổng hợp đang chọn. Ba tab Tổng hợp, Cô Mẫu, Thầy Minh hiện rõ. Không gồm mũi tên menu riêng bên phải nhãn Cô Mẫu.
+case_07 | khung: 304, 337, 548, 360 | cỡ: nhỏ | Ghi chú: ĐÃ CẬP NHẬT ẢNH MỚI NHẤT: đúng View > Details, có cả hai file giáo án. Khung từ icon tới hết tên file có (1): 304,337,548,360; 244 × 23 px, cỡ nhỏ. Ảnh 1920 × 1080, metadata khoảng 120 DPI khớp 11 ảnh còn lại; kích thước giao diện nhất quán với Scale 125% đã ghi trong checklist.
+case_08 | khung: 42, 377, 146, 401 | cỡ: nhỏ | Ghi chú: Explorer đang mở Documents. Chỉ thấy một mục Downloads trong phần điều hướng hiển thị; không thêm khung cho mục ngoài ảnh.
+case_09 | khung: 260, 574, 1839, 644 | cỡ: vừa | Ghi chú: Hàng thứ hai, đường dẫn hiển thị D: » iPhone » Raw_srouces » 2026. Có 3 mục tên gốc và thêm một mục có (1). Tooltip Grant proposal ở phía trên, ngoài mục tiêu. Các tên file ngoài mục tiêu chưa được che.
+case_10 | khung: 26, 71, 54, 89 | cỡ: nhỏ | Ghi chú: Khoanh sát chữ File; không lấy biểu tượng Word hay Home.
+case_11 | khung: 677, 275, 780, 382 | cỡ: lớn | Ghi chú: Chỉ nút bên phải. Không khoanh mục Create PDF/XPS Document ở cột chọn bên trái.
+case_12 | khung: 1072, 512, 1157, 539 | cỡ: nhỏ | Ghi chú: Nguyên văn nội dung hộp lỗi (2 dòng): Giáo án "Âm nhạc 8"?.docx / The file name is not valid. Khung chỉ nút OK, không lấy Save hoặc Cancel của hộp lưu phía dưới.
+         (case_12: chép nguyên văn câu báo lỗi vào Ghi chú)
+
+Ví dụ minh họa đã bỏ khỏi bản điền để tránh nhầm với tọa độ thật.
+
+
+D. GỬI LẠI
+----------
+[ ] Gửi cho chính mình qua Messenger: 12 ảnh case_01.png … case_12.png
+    và file này (đã điền).
+[ ] Về Ubuntu: bỏ 12 ảnh và file này vào
+    /home/nguyenletuan/Desktop/ScreenTutor/grounding_test/cases/
+[ ] Nhắn Claude: "Đã có 12 ảnh". Claude chép khung vào cases.json, rồi chạy bước 1.
+
+
+E. KIỂM TRA BỔ SUNG NGÀY 29/10/2026
+----------------------------------
+Tọa độ dùng pixel ảnh gốc, gốc trên trái (0,0); x2/y2 là mép ngoài (không gồm).
+Không quy đổi tọa độ theo Scale 125%. Cỡ ghi theo từng khung theo đúng thứ tự.
+12 file, 10 ảnh độc lập; case_01 = case_02 và case_03 = case_04 theo SHA-256.
+case_07: ảnh mới nhất đúng Details, 1920 × 1080, khoảng 120 DPI khớp các ảnh khác.
+Đã đo lại khung: 304,337,548,360; 244 × 23 px; cỡ nhỏ. Đã xử lý chênh lệch DPI.
+Đã hoàn thành nhãn 12 ca; còn người dùng rà bản xem khung và chuyển schema sang script Ubuntu.
+case_03: đã xác nhận thao tác bấm tiêu đề mở Sheet; khung thứ tư khoanh sát tiêu đề.
+Không chỉnh sửa/che nội dung ảnh; chưa kiểm chứng lại các dấu [x] có sẵn trong mục A.
+Mục D chưa thực hiện. Chưa chuyển Ubuntu, chưa gửi Messenger/Claude, chưa gọi Meta.
