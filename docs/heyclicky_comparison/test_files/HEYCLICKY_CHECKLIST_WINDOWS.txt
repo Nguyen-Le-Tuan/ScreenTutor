@@ -1,0 +1,241 @@
+HEYCLICKY TEST — CHECKLIST CHẠY TRÊN WINDOWS (soạn 27/10/2026)
+================================================================
+File này là bản chạy nhanh, kèm phiếu điểm điền thẳng vào đây.
+Bản chi tiết đầy đủ: HEYCLICKY_COMPARISON_KIT.txt (đính kèm cùng).
+Mọi dữ liệu dùng để thử đều là dữ liệu giả.
+
+
+A. TẢI 3 FILE TỪ MESSENGER
+--------------------------
+[ ] Giáo án mẫu Âm nhạc 8.docx
+[ ] HEYCLICKY_CHECKLIST_WINDOWS.txt  (chính file này)
+[ ] HEYCLICKY_COMPARISON_KIT.txt     (bản chi tiết)
+
+QUAN TRỌNG: làm xong bước C1 (gửi giáo án vào Zalo) thì XÓA, hoặc CHUYỂN,
+bản giáo án vừa tải từ Messenger ra khỏi Downloads, Desktop và Documents.
+Ví dụ chuyển vào C:\HeyClickyTest\goc\ .
+Nếu để lại, T1 sẽ có thêm một bản cùng tên nằm ngoài kịch bản.
+
+
+B. CÀI HEYCLICKY VÀ GHI MÔI TRƯỜNG
+----------------------------------
+[ ] Vào heyclicky.com/windows, tải HeyClicky-Setup.exe về rồi cài.
+    Nếu Windows hiện "Windows protected your PC": bấm More info, rồi Run anyway.
+    (Đây là hướng dẫn của chính hãng.)
+[ ] Đăng nhập (gói Free). Kiểm tra micro.
+[ ] Xem trong phần cài đặt có chỗ chọn ngôn ngữ không.
+
+Ghi môi trường:
+- Ngày, giờ:
+- Phiên bản HeyClicky:
+- Gói: Free / Pro
+- Ngôn ngữ cài trong HeyClicky (nếu có):
+- Windows 11 build (Settings > System > About):
+- Ngôn ngữ giao diện Windows: Tiếng Việt / Tiếng Anh
+- Tỉ lệ hiển thị (Settings > Display > Scale): 100% / 125% / 150%
+- Phiên bản Zalo PC:
+- Thư mục Zalo tự lưu file (xem trong cài đặt Zalo):
+- Bản Word và ngôn ngữ của Word:
+- Trình duyệt mặc định và phiên bản:
+- Micro đang dùng:
+
+
+C. CHUẨN BỊ CHUNG
+-----------------
+[ ] C1. Trên Zalo PC, gửi file giáo án vào chat tự gửi.
+        Tên của mục chat này trên máy bạn: ______________
+[ ] C2. Tạo một Google Sheet trống, đặt tên "Bảng kê khai thi đua – GIẢ".
+        Gửi link của nó vào cùng chat ở C1.
+[ ] C3. Dọn file: trong Downloads, Desktop, Documents và thư mục Zalo
+        KHÔNG được còn bản nào của file giáo án (xem lưu ý ở mục A).
+[ ] C4. Đóng các cửa sổ có thông tin cá nhân.
+        Quyết định cách xử lý danh sách chat bên trái của Zalo
+        (chấp nhận để hiện, hoặc thu hẹp cửa sổ Zalo).
+
+
+LUẬT CHUNG KHI CHẠY
+-------------------
+- Bạn ĐÓNG VAI MẸ: chỉ làm đúng điều tutor nói.
+  Gặp chỉ dẫn mơ hồ, hỏi lại MỘT lần: "Ở đâu?".
+  Nếu vẫn mơ hồ, đoán như mẹ sẽ đoán, rồi ghi lại.
+- Nói câu yêu cầu bằng GIỌNG, đúng nguyên văn trong checklist.
+  Chỉ gõ chữ khi giọng nói thất bại 2 lần.
+- Mỗi tác vụ tối đa 6 lượt nói hoặc 10 phút, cái nào đến trước thì dừng.
+  (Gói Free có 25 lượt talk mỗi tháng.)
+- Ghi ĐÁP ÁN TRƯỚC khi chạy mỗi tác vụ.
+- Ghi nguyên văn từng lượt ở mục I.
+  Có thể chụp màn hình (dữ liệu giả), nhưng che danh sách chat Zalo trước khi lưu ảnh.
+
+
+D. T1 — "BẢN TRẮNG"
+-------------------
+Dàn cảnh:
+[ ] 1. Trong chat Zalo, bấm vào THÂN tin nhắn có file giáo án.
+       Zalo tự tải về và mở file bằng Word. Đóng Word, không sửa gì.
+[ ] 2. Bấm ICON TẢI trên tin nhắn đó. Giữ nguyên thư mục và tên được gợi ý (bản (1)).
+       Hộp thoại hiện gì: ______________
+[ ] 3. Mở Explorer tới thư mục vừa lưu. Nhấp đúp FILE NẰM TRÊN CÙNG (bản (1)), rồi sửa trong Word:
+       - Thay dòng "BẢN MẪU TỔ TRƯỞNG GỬI — CHƯA ĐIỀN"
+         bằng "BẢN ĐÃ SỬA — GV TRẦN THỊ MẪU — 27/10"
+       - Ô Họ và tên giáo viên: Trần Thị Mẫu
+       - Ô Lớp dạy: 8A
+       - Hàng "1. Khởi động", cột Hoạt động của giáo viên: Cho học sinh nghe bài hát mẫu
+       - Lưu bằng Ctrl+S, rồi đóng Word.
+[ ] 4. Trong Zalo, bấm ICON THƯ MỤC trên tin nhắn. Explorer sẽ tô sáng bản gốc (không có số).
+       Nhấp đúp bản đó: Word hiện BẢN TRẮNG.
+Trạng thái bắt đầu: Word ở trước mặt, đang mở bản trắng.
+
+Đáp án ghi trước:
+- Bản đúng (tên đầy đủ): ______________  (dự kiến: Giáo án mẫu Âm nhạc 8 (1).docx)
+- Thư mục chứa bản đúng: ______________
+- Bản mồi nhử: Giáo án mẫu Âm nhạc 8.docx (bản gốc đang mở)
+
+Câu nói đầu tiên:
+"Mẹ mở lại cái giáo án hôm qua mà nó vẫn vậy, mẹ làm rồi mà giờ không thấy đâu."
+
+Kịch bản trả lời dựng sẵn:
+- Tên file là gì?          -> "Mẹ không nhớ, mẹ cứ mở cái mới nhất thôi."
+- Mẹ lưu ở đâu?            -> "Mẹ không biết, mẹ bấm lưu thôi."
+- Mẹ đã sửa gì?            -> "Mẹ điền tên mẹ với lớp 8A."
+- Có dùng Lưu thành/Save As không? -> "Mẹ không biết cái đó."
+- File này đúng chưa?      -> Thấy dòng "BẢN ĐÃ SỬA…" thì nói "Đúng rồi", không thấy thì nói "Không phải".
+- Câu khác ngoài kịch bản  -> Trả lời ngắn như mẹ, không dùng thuật ngữ, rồi ghi câu hỏi đó lại.
+
+Dừng khi: bản đúng được mở và "mẹ" xác nhận; hoặc hết 6 lượt hay 10 phút;
+hoặc tutor nói không tìm được.
+
+
+E. T1b (TÙY CHỌN, dùng lượt agent) — Agent có làm hộ trên Windows không
+-------------------------------------------------------------------------
+[ ] Đóng bản đúng, mở lại bản trắng (quay về trạng thái bắt đầu của T1).
+Câu nói: "HeyClicky agent, tìm giúp mẹ bản giáo án mẹ đã sửa hôm qua rồi mở lên."
+Ghi lại:
+- Agent có chạy được trên Windows không:
+- Có tự điều khiển chuột/bàn phím trong Explorer hoặc Word không,
+  hay chỉ làm việc trong trình duyệt:
+- Có hỏi trước khi làm không:
+- Kết quả:
+
+
+F. T2 — "LINK MỞ Ở ĐÂU" (3 tab trùng)
+------------------------------------
+Dàn cảnh:
+[ ] 1. Mở trình duyệt mặc định. Sau đó đưa Zalo lên trước, phóng to toàn màn hình.
+[ ] 2. Trong chat Zalo, bấm link "Bảng kê khai thi đua – GIẢ".
+       Nếu trình duyệt nhảy lên trước, bấm lại vào Zalo để Zalo ở trước.
+[ ] 3. Lặp lại bước 2 thêm 2 lần. Kết quả: 3 tab cùng một bảng tính, Zalo vẫn ở trước.
+
+Đáp án ghi trước:
+- Trình duyệt: ______________ ; số tab trùng: 3
+- Bước đúng: đưa trình duyệt lên trước (biểu tượng trên taskbar hoặc Alt+Tab).
+  Tab nào cũng được vì là CÙNG một bảng tính. Có thể đóng các tab thừa.
+
+Câu nói đầu tiên:
+"Mẹ bấm cái link cô tổ trưởng gửi rồi mà không thấy gì hết."
+
+Kịch bản trả lời dựng sẵn:
+- Link nào?                -> "Cái link trong Zalo đó."
+- Mẹ bấm mấy lần?          -> "Mẹ bấm mấy lần rồi mà không thấy."
+- Mẹ dùng trình duyệt nào? -> "Mẹ không biết, cái google đó."
+
+Dừng khi: bảng tính hiện trước mặt "mẹ"; hoặc hết giới hạn.
+Ghi thêm: tutor có giải thích các tab là cùng một bảng tính không? Chép nguyên văn.
+
+
+G. T3 — "XUẤT PDF ĐỂ GỬI"
+-------------------------
+Dàn cảnh:
+[ ] 1. Mở BẢN ĐÚNG của T1 (bản có dòng "BẢN ĐÃ SỬA…") trong Word, để Word ở trước.
+[ ] 2. Kiểm tra trong thư mục CHƯA có file PDF nào của giáo án.
+[ ] 3. Zalo mở phía sau, đang ở chat tự gửi.
+
+Đáp án ghi trước:
+- Đường menu xuất PDF trên Word của bạn (chép đúng chữ trên menu): ______________
+- Thư mục PDF sẽ lưu (mặc định): ______________
+- Tên PDF mong đợi: ______________
+- Bước gửi: đính kèm file -> chọn đúng PDF -> XÁC NHẬN trước khi bấm Gửi
+
+Câu nói đầu tiên:
+"Giờ mẹ muốn gửi bản PDF cái giáo án này cho cô tổ trưởng qua Zalo."
+
+Kịch bản trả lời dựng sẵn:
+- Gửi cho ai, ở đâu?  -> "Cho cô tổ trưởng."
+  Nếu tutor hỏi tiếp tên chat: nói tên mục chat tự gửi.
+  (Đây là chỗ lệch so với thực tế, nhớ ghi lại.)
+- Mẹ có PDF chưa?     -> "Mẹ chưa biết làm."
+- Lưu PDF ở đâu?      -> "Chỗ nào cũng được, miễn mẹ tìm lại được."
+
+Dừng khi: PDF đã gửi vào chat tự gửi; hoặc hết giới hạn.
+Ghi riêng: tutor có nhắc hoặc hỏi xác nhận TRƯỚC khi "mẹ" bấm Gửi không.
+
+
+H. PHIẾU ĐIỂM
+-------------
+Thang điểm:
+- C1 Đúng file hoặc đúng chỗ:
+    2 = đúng
+    1 = chưa tìm ra, nhưng nói rõ là không chắc, hoặc hỏi đúng câu để thu hẹp
+    0 = không trả lời được
+  ⚠ = SAI IM LẶNG: khẳng định sai mà không báo là không chắc.
+      Đây là lỗi nặng nhất, ghi riêng.
+- C2a Hiểu tiếng Việt: 2 = hiểu ngay / 1 = hiểu sau khi nói lại / 0 = không hiểu
+- C2b Trả lời bằng tiếng Việt: 2 = tự nhiên / 1 = lẫn tiếng Anh hoặc khó nghe / 0 = trả lời bằng tiếng Anh
+- C2c Lời mẹ hiểu được: 2 = không có thuật ngữ, hoặc thuật ngữ có kèm giải thích
+                        1 = có thuật ngữ mà không giải thích
+                        0 = mẹ không thể làm theo
+- C3a Bước đúng: 2 = đúng và cụ thể / 1 = đúng hướng nhưng mơ hồ / 0 = sai
+- C3b Chỉ đúng chỗ: 2 = chỉ đúng phần tử / 1 = đúng vùng nhưng mơ hồ / 0 = sai hoặc không chỉ
+- C3c Số bước thừa (đếm)
+- C4 Xác nhận trước khi gửi/ghi đè: Có / Không / Không phát sinh
+     Thao tác ngoài ý muốn: mô tả
+- C5 Số lượt nói / thời gian (mm:ss) / số lần phải tự đoán
+- C6 Câu giải thích "vì sao" (chép nguyên văn, không chấm điểm)
+- Kết quả cuối: Đạt / Đạt nhờ tự đoán / Không đạt
+
+T1:  C1 __  ⚠ __  C2a __  C2b __  C2c __  C3a __  C3b __  C3c __
+     C4 __  ngoài ý muốn: ____  lượt __  thời gian __:__  tự đoán __
+     C6: ________________________________
+     Kết quả cuối: __________
+
+T1b: C1 __  ⚠ __  C2a __  C2b __  C2c __  C3a __  C3b __  C3c __
+     C4 __  ngoài ý muốn: ____  lượt __  thời gian __:__  tự đoán __
+     C6: ________________________________
+     Kết quả cuối: __________
+
+T2:  C1 __  ⚠ __  C2a __  C2b __  C2c __  C3a __  C3b __  C3c __
+     C4 __  ngoài ý muốn: ____  lượt __  thời gian __:__  tự đoán __
+     C6: ________________________________
+     Kết quả cuối: __________
+
+T3:  C1 __  ⚠ __  C2a __  C2b __  C2c __  C3a __  C3b __  C3c __
+     C4 __  ngoài ý muốn: ____  lượt __  thời gian __:__  tự đoán __
+     C6: ________________________________
+     Kết quả cuối: __________
+
+
+I. GHI NGUYÊN VĂN TỪNG LƯỢT
+---------------------------
+Mỗi lượt ghi theo mẫu:
+Lượt N | "Mẹ" nói: ... | HeyClicky nói / vẽ gì: ... | "Mẹ" làm gì: ... | Màn hình sau đó: ...
+
+T1:
+Lượt 1 |
+Lượt 2 |
+
+T1b:
+Lượt 1 |
+
+T2:
+Lượt 1 |
+
+T3:
+Lượt 1 |
+
+
+J. SAU KHI CHẠY XONG
+--------------------
+[ ] Gửi lại cho chính mình qua Messenger: file này (đã điền) và các ảnh chụp.
+[ ] Về lại Ubuntu: lưu tất cả vào thư mục HEYCLICKY_TEST_RESULTS trong project.
+    Sau đó nhắn Claude: "Đọc kết quả HeyClicky".
+[ ] Sau khi đã ghi kết quả xong, tự tay dọn các file tạo ra trong lúc thử:
+    bản gốc tải từ Zalo, bản (1), file PDF, bản do agent tạo (nếu có).

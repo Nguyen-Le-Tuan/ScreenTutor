@@ -1,0 +1,280 @@
+HEYCLICKY TEST — CHECKLIST CHẠY TRÊN WINDOWS (soạn 27/10/2026)
+================================================================
+File này là bản chạy nhanh, kèm phiếu điểm điền thẳng vào đây.
+Bản chi tiết đầy đủ: HEYCLICKY_COMPARISON_KIT.txt (đính kèm cùng).
+Mọi dữ liệu dùng để thử đều là dữ liệu giả.
+
+
+A. TẢI 3 FILE TỪ MESSENGER
+--------------------------
+[x] Giáo án mẫu Âm nhạc 8.docx  — ĐÃ XÁC MINH 28/10/2026: đã tải từ Messenger và gom vào thư mục HEYCLICKY_TEST hiện tại.
+[x] HEYCLICKY_CHECKLIST_WINDOWS.txt  (chính file này) — ĐÃ XÁC MINH 28/10/2026: bản đã tải từ Messenger, đang dùng để test.
+[x] HEYCLICKY_COMPARISON_KIT.txt     (bản chi tiết) — ĐÃ XÁC MINH 28/10/2026: bản đã tải từ Messenger, đang dùng để test.
+
+QUAN TRỌNG: làm xong bước C1 (gửi giáo án vào Zalo) thì XÓA, hoặc CHUYỂN,
+bản giáo án vừa tải từ Messenger ra khỏi Downloads, Desktop và Documents.
+Ví dụ chuyển vào C:\HeyClickyTest\goc\ .
+Nếu để lại, T1 sẽ có thêm một bản cùng tên nằm ngoài kịch bản.
+
+
+B. CÀI HEYCLICKY VÀ GHI MÔI TRƯỜNG
+----------------------------------
+[x] Vào heyclicky.com/windows, tải HeyClicky-Setup.exe về rồi cài. — ĐÃ XÁC MINH 28/10/2026.
+    Nếu Windows hiện "Windows protected your PC": bấm More info, rồi Run anyway.
+    (Đây là hướng dẫn của chính hãng.)
+[x] Đăng nhập (gói Free). Kiểm tra micro. — ĐÃ XÁC MINH 28/10/2026: micro hoạt động ổn.
+[x] Xem trong phần cài đặt có chỗ chọn ngôn ngữ không. — ĐÃ XÁC MINH 28/10/2026: có; Dictation đã đổi từ tự nhận diện sang Tiếng Việt.
+
+Ghi môi trường (tự thu thập 28/10/2026, 14:26 EDT):
+- Ngày, giờ: 28/10/2026, 14:26 EDT
+- Phiên bản HeyClicky: 1.1.3
+- Gói: Free
+- Ngôn ngữ cài trong HeyClicky (nếu có): Tiếng Việt (Dictation; đã đổi từ tự nhận diện)
+- Windows 11 build (Settings > System > About): 26200 (Windows 11 Home Single Language, 64-bit)
+- Ngôn ngữ giao diện Windows: Tiếng Anh (system locale en-US)
+- Tỉ lệ hiển thị (Settings > Display > Scale): 125%
+- Phiên bản Zalo PC: 26.10.11
+- Thư mục Zalo tự lưu file (xem trong cài đặt Zalo): C:\Users\Lenovo\Downloads (ĐÃ XÁC MINH THỦ CÔNG)
+- Bản Word và ngôn ngữ của Word: Microsoft 365 Apps for enterprise 16.0.20527.20088, en-US
+- Trình duyệt mặc định và phiên bản: Brave 156.1.98.60
+- Micro đang dùng: Microphone Array (Realtek(R) Audio) — micro tích hợp; đã kiểm tra hoạt động trong HeyClicky
+
+
+C. CHUẨN BỊ CHUNG
+-----------------
+[x] C1. Trên Zalo PC, gửi file giáo án vào chat tự gửi. Sự cố phát sinh, tôi tự gửi khác với người khác gửi tôi nên tôi đã nhờ bạn của tôi gửi file này sau khi tôi gửi bạn của tôi qua messenger — ĐÃ XÁC MINH 28/10/2026: file đã được người khác gửi lại qua Zalo.
+        Tên của mục chat này trên máy bạn: Truyền Anh (không phải chat tự gửi)
+[x] C2. Tạo một Google Sheet trống, đặt tên "Bảng kê khai thi đua – GIẢ".
+        Gửi link của nó vào cùng chat ở C1. — ĐÃ XÁC MINH 28/10/2026: link được tự gửi trong chat Zalo Cloud “My Documents”, không phải chat Truyền Anh; tên hiển thị là “Bảng kê khai thi đua – Tổ Nghệ Thuật”.
+[x] C3. Dọn file: trong Downloads, Desktop, Documents và thư mục Zalo
+        KHÔNG được còn bản nào của file giáo án (xem lưu ý ở mục A).
+        ĐẠT CÓ NGOẠI LỆ ĐƯỢC PHÊ DUYỆT 28/10/2026: giữ 1 bản nguồn tại C:\Users\Lenovo\Documents\HEYCLICKY_TEST\Giáo án mẫu Âm nhạc 8.docx. Người chạy đã kiểm tra Zalo không truy cập thư mục này; thư mục Zalo tự lưu mặc định đã xác nhận là C:\Users\Lenovo\Downloads. Không tìm thấy bản trùng ở Downloads, Desktop hoặc các thư mục dữ liệu Zalo phổ biến đã kiểm tra. Lưu ý khi chấm T1: ngoại lệ vẫn có thể ảnh hưởng nếu HeyClicky tự tìm toàn bộ máy.
+[!] C4. Đóng các cửa sổ có thông tin cá nhân.
+        Quyết định của người chạy 28/10/2026: không che hoặc đóng thông tin cá nhân và chấp nhận danh sách chat Zalo đang hiện. Đây là ngoại lệ riêng tư được chấp nhận, không phải đã hoàn tất bước che dữ liệu.
+
+
+LUẬT CHUNG KHI CHẠY
+-------------------
+- Bạn ĐÓNG VAI MẸ: chỉ làm đúng điều tutor nói.
+  Gặp chỉ dẫn mơ hồ, hỏi lại MỘT lần: "Ở đâu?".
+  Nếu vẫn mơ hồ, đoán như mẹ sẽ đoán, rồi ghi lại.
+- Nói câu yêu cầu bằng GIỌNG, đúng nguyên văn trong checklist.
+  Chỉ gõ chữ khi giọng nói thất bại 2 lần.
+- Mỗi tác vụ tối đa 6 lượt nói hoặc 10 phút, cái nào đến trước thì dừng.
+  (Gói Free có 25 lượt talk mỗi tháng.)
+- Ghi ĐÁP ÁN TRƯỚC khi chạy mỗi tác vụ.
+- Ghi nguyên văn từng lượt ở mục I.
+  Có thể chụp màn hình (dữ liệu giả), nhưng che danh sách chat Zalo trước khi lưu ảnh.
+
+
+D. T1 — "BẢN TRẮNG"
+-------------------
+Dàn cảnh:
+[x] 1. Trong chat Zalo, bấm vào THÂN tin nhắn có file giáo án.
+       Zalo tự tải về và mở file bằng Word. Đóng Word, không sửa gì.
+[x] 2. Bấm ICON TẢI trên tin nhắn đó. Giữ nguyên thư mục và tên được gợi ý (bản (1)).
+       Hộp thoại thực tế: D:\iPhone\Raw_srouces\2026; tên file vẫn là Giáo án mẫu Âm nhạc 8.docx, không có đuôi (1).
+[x] 3. Mở Explorer tới thư mục vừa lưu. Nhấp đúp FILE NẰM TRÊN CÙNG (bản (1)), rồi sửa trong Word:
+       - Thay dòng "BẢN MẪU TỔ TRƯỞNG GỬI — CHƯA ĐIỀN"
+         bằng "BẢN ĐÃ SỬA — GV TRẦN THỊ MẪU — 27/10"
+       - Ô Họ và tên giáo viên: Trần Thị Mẫu
+       - Ô Lớp dạy: 8A
+       - Hàng "1. Khởi động", cột Hoạt động của giáo viên: Cho học sinh nghe bài hát mẫu
+       - Lưu bằng Ctrl+S, rồi đóng Word.
+[x] 4. Trong Zalo, bấm ICON THƯ MỤC trên tin nhắn. Explorer sẽ tô sáng bản gốc (không có số).
+       Nhấp đúp bản đó: Word hiện BẢN TRẮNG.
+Trạng thái bắt đầu: Word ở trước mặt, đang mở bản trắng.
+
+Đáp án ghi trước:
+- Bản đúng (tên đầy đủ): Giáo án mẫu Âm nhạc 8.docx (thực tế không có đuôi (1))
+- Thư mục chứa bản đúng: D:\iPhone\Raw_srouces\2026
+- Bản mồi nhử: Giáo án mẫu Âm nhạc 8.docx (bản gốc đang mở)
+
+Câu nói đầu tiên:
+"Mẹ mở lại cái giáo án hôm qua mà nó vẫn vậy, mẹ làm rồi mà giờ không thấy đâu."
+
+Kịch bản trả lời dựng sẵn:
+- Tên file là gì?          -> "Mẹ không nhớ, mẹ cứ mở cái mới nhất thôi."
+- Mẹ lưu ở đâu?            -> "Mẹ không biết, mẹ bấm lưu thôi."
+- Mẹ đã sửa gì?            -> "Mẹ điền tên mẹ với lớp 8A."
+- Có dùng Lưu thành/Save As không? -> "Mẹ không biết cái đó."
+- File này đúng chưa?      -> Thấy dòng "BẢN ĐÃ SỬA…" thì nói "Đúng rồi", không thấy thì nói "Không phải".
+- Câu khác ngoài kịch bản  -> Trả lời ngắn như mẹ, không dùng thuật ngữ, rồi ghi câu hỏi đó lại.
+
+Dừng khi: bản đúng được mở và "mẹ" xác nhận; hoặc hết 6 lượt hay 10 phút;
+hoặc tutor nói không tìm được.
+
+Kết quả thực tế T1:
+- ĐẠT. Từ bản trắng, HeyClicky biết mở trang Recent của Word và khoanh đúng file cùng tên tại D:\iPhone\Raw_srouces\2026; người chạy mở đúng bản đã sửa.
+- Điểm mạnh: tìm đúng file ở thư mục hoàn toàn khác; khoanh vùng trực quan chính xác; giữ được hội thoại khi người chạy chuyển sang tab Files mà không cần tiếp tục giữ Ctrl+Alt.
+- Điểm yếu: giọng đọc tiếng Việt không thân thiện; xử lý chậm và thời gian chờ dài.
+- Không ghi nhận đủ số lượt và thời gian chính xác.
+
+
+E. T1b (TÙY CHỌN, dùng lượt agent) — Agent có làm hộ trên Windows không
+-------------------------------------------------------------------------
+[x] Đóng bản đúng, mở lại bản trắng (quay về trạng thái bắt đầu của T1).
+Câu nói: "HeyClicky agent, tìm giúp mẹ bản giáo án mẹ đã sửa hôm qua rồi mở lên."
+Ghi lại:
+- Agent có chạy được trên Windows không: Không thực hiện được việc tự mở file trong lượt thử này.
+- Có tự điều khiển chuột/bàn phím trong Explorer hoặc Word không,
+  hay chỉ làm việc trong trình duyệt: Không ghi nhận được thao tác tự điều khiển Explorer/Word.
+- Có hỏi trước khi làm không: Không ghi nhận.
+- Kết quả: KHÔNG ĐẠT — agent không tự mở được file.
+
+
+F. T2 — "LINK MỞ Ở ĐÂU" (3 tab trùng)
+------------------------------------
+Dàn cảnh:
+[x] 1. Mở trình duyệt mặc định. Sau đó đưa Zalo lên trước, phóng to toàn màn hình.
+[x] 2. Trong chat Zalo, bấm link "Bảng kê khai thi đua – GIẢ".
+       Nếu trình duyệt nhảy lên trước, bấm lại vào Zalo để Zalo ở trước.
+[x] 3. Lặp lại bước 2 thêm 2 lần. Kết quả: 3 tab cùng một bảng tính, Zalo vẫn ở trước.
+
+Đáp án ghi trước:
+- Trình duyệt: Brave 156.1.98.60 ; số tab trùng: 3
+- Bước đúng: đưa trình duyệt lên trước (biểu tượng trên taskbar hoặc Alt+Tab).
+  Tab nào cũng được vì là CÙNG một bảng tính. Có thể đóng các tab thừa.
+
+Câu nói đầu tiên:
+"Mẹ bấm cái link cô tổ trưởng gửi rồi mà không thấy gì hết."
+
+Kịch bản trả lời dựng sẵn:
+- Link nào?                -> "Cái link trong Zalo đó."
+- Mẹ bấm mấy lần?          -> "Mẹ bấm mấy lần rồi mà không thấy."
+- Mẹ dùng trình duyệt nào? -> "Mẹ không biết, cái google đó."
+
+Dừng khi: bảng tính hiện trước mặt "mẹ"; hoặc hết giới hạn.
+Ghi thêm: tutor có giải thích các tab là cùng một bảng tính không? Chép nguyên văn.
+
+Kết quả thực tế T2:
+- Lần giữ Ctrl+Alt đầu tiên: HeyClicky không trả lời/không xử lý.
+- Sau khi đổi câu hỏi thành “Tôi muốn mở bảng tính này nhưng ấn nãy giờ không lên”, HeyClicky khoanh vùng và hướng dẫn bấm link; bảng tính mở được.
+- Câu trả lời quan sát được: “Để mở bảng tính này, bạn bấm vào đường link màu xanh.” và “Trình duyệt đang tải đường dẫn từ Zalo, nên trang còn trắng.”
+- Khi hỏi chậm “Sao có nhiều tab thế này”, HeyClicky nhận thành câu không đầy đủ nhưng vẫn trả lời về nhiều tab. HeyClicky không khẳng định rõ ba tab là cùng một bảng tính; có nói “Bên trái là các tab đang mở, chưa chắc là những file khác nhau.”
+- Câu hỏi cụ thể về nên điền tab nào khiến HeyClicky suy nghĩ lâu, ngắt quãng nhiều lần và không đưa ra câu trả lời ổn định.
+- Đánh giá của người chạy: khả năng nhận/hiểu tiếng Việt lúc được lúc không. Giả thuyết nguyên nhân là transcript tiếng Việt không chính xác; chưa được kiểm chứng. Có thể trải nghiệm tiếng Anh tốt hơn, nhưng lượt này không thử tiếng Anh.
+
+
+G. T3 — "XUẤT PDF ĐỂ GỬI"
+-------------------------
+Dàn cảnh:
+[ ] 1. Mở BẢN ĐÚNG của T1 (bản có dòng "BẢN ĐÃ SỬA…") trong Word, để Word ở trước.
+[ ] 2. Kiểm tra trong thư mục CHƯA có file PDF nào của giáo án.
+[ ] 3. Zalo mở phía sau, đang ở chat tự gửi.
+
+Đáp án ghi trước:
+- Đường menu xuất PDF trên Word của bạn (chép đúng chữ trên menu): ______________
+- Thư mục PDF sẽ lưu (mặc định): ______________
+- Tên PDF mong đợi: ______________
+- Bước gửi: đính kèm file -> chọn đúng PDF -> XÁC NHẬN trước khi bấm Gửi
+
+Câu nói đầu tiên:
+"Giờ mẹ muốn gửi bản PDF cái giáo án này cho cô tổ trưởng qua Zalo."
+
+Kịch bản trả lời dựng sẵn:
+- Gửi cho ai, ở đâu?  -> "Cho cô tổ trưởng."
+  Nếu tutor hỏi tiếp tên chat: nói tên mục chat tự gửi.
+  (Đây là chỗ lệch so với thực tế, nhớ ghi lại.)
+- Mẹ có PDF chưa?     -> "Mẹ chưa biết làm."
+- Lưu PDF ở đâu?      -> "Chỗ nào cũng được, miễn mẹ tìm lại được."
+
+Dừng khi: PDF đã gửi vào chat tự gửi; hoặc hết giới hạn.
+Ghi riêng: tutor có nhắc hoặc hỏi xác nhận TRƯỚC khi "mẹ" bấm Gửi không.
+
+Kết quả thực tế T3:
+- KHÔNG ĐẠT. HeyClicky xử lý chập chờn, không hiểu ổn định yêu cầu xuất PDF và gửi qua Zalo.
+- Không tạo/gửi được PDF; không tới bước xác nhận trước khi gửi.
+- Lượt thử dừng vì hết hạn mức Free. Vì vậy chưa tách được mức độ ảnh hưởng giữa nhận dạng tiếng Việt, khả năng hướng dẫn tác vụ và giới hạn gói Free.
+
+
+H. PHIẾU ĐIỂM
+-------------
+Thang điểm:
+- C1 Đúng file hoặc đúng chỗ:
+    2 = đúng
+    1 = chưa tìm ra, nhưng nói rõ là không chắc, hoặc hỏi đúng câu để thu hẹp
+    0 = không trả lời được
+  ⚠ = SAI IM LẶNG: khẳng định sai mà không báo là không chắc.
+      Đây là lỗi nặng nhất, ghi riêng.
+- C2a Hiểu tiếng Việt: 2 = hiểu ngay / 1 = hiểu sau khi nói lại / 0 = không hiểu
+- C2b Trả lời bằng tiếng Việt: 2 = tự nhiên / 1 = lẫn tiếng Anh hoặc khó nghe / 0 = trả lời bằng tiếng Anh
+- C2c Lời mẹ hiểu được: 2 = không có thuật ngữ, hoặc thuật ngữ có kèm giải thích
+                        1 = có thuật ngữ mà không giải thích
+                        0 = mẹ không thể làm theo
+- C3a Bước đúng: 2 = đúng và cụ thể / 1 = đúng hướng nhưng mơ hồ / 0 = sai
+- C3b Chỉ đúng chỗ: 2 = chỉ đúng phần tử / 1 = đúng vùng nhưng mơ hồ / 0 = sai hoặc không chỉ
+- C3c Số bước thừa (đếm)
+- C4 Xác nhận trước khi gửi/ghi đè: Có / Không / Không phát sinh
+     Thao tác ngoài ý muốn: mô tả
+- C5 Số lượt nói / thời gian (mm:ss) / số lần phải tự đoán
+- C6 Câu giải thích "vì sao" (chép nguyên văn, không chấm điểm)
+- Kết quả cuối: Đạt / Đạt nhờ tự đoán / Không đạt
+
+T1:  C1 2  ⚠ Không  C2a 2  C2b 1  C2c 2  C3a 2  C3b 2  C3c 0
+     C4 Không phát sinh  ngoài ý muốn: Không ghi nhận  lượt: không ghi nhận  thời gian: không ghi nhận  tự đoán: không ghi nhận
+     C6: Không ghi nhận câu giải thích “vì sao”; HeyClicky dùng Word Recent và khoanh đúng file.
+     Kết quả cuối: Đạt
+
+T1b: C1 0  ⚠ Không ghi nhận  C2a Không đủ dữ liệu  C2b Không đủ dữ liệu  C2c Không đủ dữ liệu  C3a 0  C3b 0  C3c Không ghi nhận
+     C4 Không phát sinh  ngoài ý muốn: Không ghi nhận  lượt: không ghi nhận  thời gian: không ghi nhận  tự đoán: không ghi nhận
+     C6: Không ghi nhận
+     Kết quả cuối: Không đạt — agent không tự mở được file
+
+T2:  C1 2  ⚠ Không  C2a 1  C2b 2  C2c 1  C3a 1  C3b 2  C3c Không đếm được do nhiều lần thử lại
+     C4 Không phát sinh  ngoài ý muốn: Không ghi nhận  lượt: không ghi nhận  thời gian: kéo dài, không có số chính xác  tự đoán: không ghi nhận
+     C6: “Trình duyệt đang tải đường dẫn từ Zalo, nên trang còn trắng.” Không giải thích rõ ba tab là cùng một bảng tính.
+     Kết quả cuối: Đạt mục tiêu mở bảng tính sau khi đổi cách hỏi; phần giải thích/chọn tab chưa đạt
+
+T3:  C1 0  ⚠ Không ghi nhận  C2a 0  C2b Không đủ dữ liệu  C2c 0  C3a 0  C3b 0  C3c Không ghi nhận
+     C4 Không tới bước xác nhận  ngoài ý muốn: Không ghi nhận  lượt: hết hạn mức Free  thời gian: không ghi nhận  tự đoán: không ghi nhận
+     C6: Không có
+     Kết quả cuối: Không đạt — không xuất/gửi PDF; dừng vì hết hạn mức Free
+
+
+I. GHI NGUYÊN VĂN TỪNG LƯỢT
+---------------------------
+Mỗi lượt ghi theo mẫu:
+Lượt N | "Mẹ" nói: ... | HeyClicky nói / vẽ gì: ... | "Mẹ" làm gì: ... | Màn hình sau đó: ...
+
+T1:
+Lượt 1 | "Mẹ" trình bày đã mở nhầm bản trắng | HeyClicky hướng dẫn vào Recent của Word, khoanh đúng `Giáo án mẫu Âm nhạc 8.docx` tại `D:\iPhone\Raw_srouces\2026` và hiện nhãn “Mở bản thứ 2” | Người chạy mở mục được khoanh | Mở đúng bản đã sửa; T1 đạt.
+Ghi chú | Không có transcript đầy đủ từng câu/lượt | Giọng tiếng Việt không thân thiện, xử lý chậm | Người chạy chuyển sang tab Files | HeyClicky vẫn giữ được hội thoại mà không cần tiếp tục giữ Ctrl+Alt.
+
+T1b:
+Lượt 1 | Yêu cầu agent tự tìm và mở file đã sửa | Agent không tự mở được file | Không ghi nhận thao tác tự động trong Explorer/Word | T1b không đạt.
+
+T2:
+Lượt 1 | Câu mở đầu theo kịch bản khi giữ Ctrl+Alt | Không trả lời/không xử lý | Chờ rồi đổi cách hỏi | Chưa mở được bảng tính.
+Lượt 2 | “Tôi muốn mở bảng tính này nhưng ấn nãy giờ không lên.” | “Để mở bảng tính này, bạn bấm vào đường link màu xanh.”; HeyClicky khoanh vùng link. “Trình duyệt đang tải đường dẫn từ Zalo, nên trang còn trắng.” | Bấm link được khoanh | Bảng tính hiện lên.
+Lượt 3 | “Sao có nhiều tab thế này” (nói chậm) | Transcript nhận không đầy đủ; HeyClicky trả lời rằng bên trái là các tab đang mở, không phải các file | Tiếp tục hỏi cụ thể | Nhận diện tiếng Việt không ổn định.
+Lượt 4 | “Tôi muốn điền nội dung vào trong cái link sheet trong Zalo thì nên điền vào tab nào?” | Suy nghĩ lâu, ngắt quãng nhiều lần; không có câu trả lời ổn định | Thử hỏi lại nhiều cách | Không xác định được tab; không giải thích rõ ba tab là cùng một bảng tính.
+
+T3:
+Lượt 1 | “Giờ mẹ muốn gửi bản PDF cái giáo án này cho cô tổ trưởng qua Zalo.” và các lần thử lại | Xử lý chập chờn, không hiểu ổn định tác vụ | Thử lại tới khi hết hạn mức | Không xuất/gửi được PDF; dừng vì hết hạn mức Free.
+
+
+J. SAU KHI CHẠY XONG
+--------------------
+[ ] Gửi lại cho chính mình qua Messenger: file này (đã điền) và các ảnh chụp.
+[ ] Về lại Ubuntu: lưu tất cả vào thư mục HEYCLICKY_TEST_RESULTS trong project.
+    Sau đó nhắn Claude: "Đọc kết quả HeyClicky".
+[ ] Sau khi đã ghi kết quả xong, tự tay dọn các file tạo ra trong lúc thử:
+    bản gốc tải từ Zalo, bản (1), file PDF, bản do agent tạo (nếu có).
+
+
+K. THEO DÕI XÁC MINH CÙNG CODEX
+--------------------------------
+- 28/10/2026 — A1 Giáo án mẫu Âm nhạc 8.docx: ĐÃ XÁC MINH. File đã tải từ Messenger, hiện được gom trong thư mục HEYCLICKY_TEST để không ảnh hưởng quá trình test.
+- 28/10/2026 — A2 HEYCLICKY_CHECKLIST_WINDOWS.txt: ĐÃ XÁC MINH. Bản đã tải từ Messenger, đang dùng để test.
+- 28/10/2026 — A3 HEYCLICKY_COMPARISON_KIT.txt: ĐÃ XÁC MINH. Bản đã tải từ Messenger, đang dùng để test.
+- 28/10/2026 — B1 Cài HeyClicky cho Windows: ĐÃ XÁC MINH. Đã tải từ heyclicky.com/windows và cài đặt thành công.
+- 28/10/2026 — B2 Đăng nhập và micro: ĐÃ XÁC MINH. Đã đăng nhập gói Free; micro hoạt động ổn.
+- 28/10/2026 — B3 Ngôn ngữ HeyClicky: ĐÃ XÁC MINH. Có tùy chọn ngôn ngữ; Dictation đã đổi từ tự nhận diện sang Tiếng Việt.
+- 28/10/2026 — Môi trường hệ thống: ĐÃ TỰ THU THẬP. Windows 11 build 26200; English (en-US); scale 125%; HeyClicky 1.1.3; Zalo 26.10.11; Word Microsoft 365 16.0.20527.20088 (en-US); Brave mặc định 156.1.98.60; micro tích hợp Microphone Array (Realtek).
+- 28/10/2026 — Thư mục Zalo tự lưu file: ĐÃ XÁC MINH THỦ CÔNG. C:\Users\Lenovo\Downloads; Zalo không truy cập thư mục workspace HEYCLICKY_TEST.
+- 28/10/2026 — C1 Chuẩn bị chat Zalo: ĐÃ XÁC MINH qua ảnh. Chat là “Truyền Anh”, không phải chat tự gửi; file Giáo án mẫu Âm nhạc 8.docx đã có trên máy theo trạng thái Zalo.
+- 28/10/2026 — C2 Google Sheet: ĐÃ XÁC MINH qua ảnh. Link được tự gửi trong chat Zalo Cloud “My Documents”; tên hiển thị “Bảng kê khai thi đua – Tổ Nghệ Thuật”, không phải “Bảng kê khai thi đua – GIẢ”. Đây là lệch so với kịch bản gốc.
+- 28/10/2026 — Nhắc an toàn C4: ảnh xác minh C2 có một phần tài liệu cá nhân lộ ở mép trên. Người chạy sau đó đã quyết định chủ động không che/đóng; xem ngoại lệ C4 bên dưới.
+- 28/10/2026 — C4 Quyết định riêng tư: NGOẠI LỆ ĐƯỢC PHÊ DUYỆT. Người chạy quyết định không che/đóng thông tin cá nhân và chấp nhận danh sách chat Zalo đang hiện. Không ghi ảnh mới vào bằng chứng trừ khi người chạy đổi quyết định.
+- 28/10/2026 — C3 Dọn file: ĐẠT CÓ NGOẠI LỆ ĐƯỢC PHÊ DUYỆT. Giữ bản nguồn ở C:\Users\Lenovo\Documents\HEYCLICKY_TEST theo quyết định người chạy; Zalo đã được kiểm tra không truy cập thư mục này và tự lưu về C:\Users\Lenovo\Downloads. Cần ghi nhớ ngoại lệ này nếu HeyClicky tự tìm toàn bộ máy trong T1.

@@ -226,3 +226,6 @@ grounding_test/results/
 
 # Label review page embeds the original screenshots
 grounding_test/cases/review.html
+
+# HeyClicky test photos show personal file names
+docs/heyclicky_comparison/results/*.jpeg
