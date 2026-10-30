@@ -13,11 +13,15 @@ Luật chấm (ghi trước khi chạy):
 
 A. CHUẨN BỊ (một lần)
 ---------------------
-[ ] A1. Lấy code về Windows (chọn một cách):
+[ ] A1. Lấy code về Windows. Repo đang để RIÊNG TƯ (private), nên phải đăng nhập GitHub.
+        Chọn một cách:
+        - Trình duyệt (dễ nhất): đăng nhập github.com, mở
+              https://github.com/Nguyen-Le-Tuan/ScreenTutor/tree/mvp
+          bấm nút xanh "Code" > "Download ZIP", rồi giải nén.
+          (Chưa đăng nhập thì link này báo 404, không phải lỗi code.)
         - Có git: mở PowerShell ở thư mục bạn muốn rồi chạy
               git clone -b mvp https://github.com/Nguyen-Le-Tuan/ScreenTutor.git
-        - Không có git: tải https://github.com/Nguyen-Le-Tuan/ScreenTutor/archive/refs/heads/mvp.zip
-          rồi giải nén.
+          Git sẽ mở cửa sổ đăng nhập GitHub lần đầu.
 [ ] A2. Mở PowerShell trong thư mục ScreenTutor (chỗ có thư mục "screentutor").
         Kiểm tra Python:   py --version     (cần 3.10 trở lên)
         Phần cảm biến chỉ dùng thư viện có sẵn của Python, KHÔNG cần pip install.
