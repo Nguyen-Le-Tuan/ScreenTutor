@@ -105,3 +105,17 @@ def test_mark_draws_only_when_there_is_a_point():
     assert marked.size == img.size and marked.getpixel((100 + 22, 50)) != (255, 255, 255)
     assert screen.mark(img, None).tobytes() == img.tobytes()
     assert img.getpixel((122, 50)) == (255, 255, 255)  # original untouched
+
+
+def test_answer_without_diacritics_is_asked_again_once():
+    from screentutor.tutor import Tutor
+
+    answers = [_resp({"found": True, "x": 1, "y": 1, "element": "OK", "say": "Ban bam vao nut OK nhe."}),
+               _resp({"found": True, "x": 1, "y": 1, "element": "OK", "say": "Bạn bấm vào nút OK nhé."})]
+    t = Tutor("sk-test")
+    t._post = lambda path, body: (answers.pop(0), 2.0)
+    r = t.ask("Tắt bảng lỗi", "data:")
+    assert r.say == "Bạn bấm vào nút OK nhé." and r.latency_s == 4.0 and answers == []
+    t._post = lambda path, body: (_resp({"found": False, "x": 0, "y": 0, "element": "", "say": "Ban oi"}), 1.0)
+    assert t.ask("x", "data:").say == "Ban oi"  # asked twice, then given up: the session still goes on
+    t.close()

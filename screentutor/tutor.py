@@ -207,12 +207,19 @@ class Tutor:
                                                self.model, self.effort))
 
     def _call(self, body: dict) -> Reply:
-        try:
-            resp, elapsed = self._post("/chat/completions", body)
-        except (httpx.HTTPError, RuntimeError) as e:
-            return Reply(error=str(e))
-        res = parse_reply(resp)
-        res.latency_s = elapsed
+        """One answer. A sentence without Vietnamese diacritics (4 of 104 so far, T4-T8a) would be read
+        as nonsense by the voice, so that answer is asked for once more."""
+        total = 0.0
+        for attempt in range(2):
+            try:
+                resp, elapsed = self._post("/chat/completions", body)
+            except (httpx.HTTPError, RuntimeError) as e:
+                return Reply(error=str(e))
+            total += elapsed
+            res = parse_reply(resp)
+            res.latency_s = total
+            if not (res.say and res.say.isascii()):
+                break
         return res
 
     def _post(self, path: str, body: dict, max_attempts: int = 3) -> tuple[dict, float]:

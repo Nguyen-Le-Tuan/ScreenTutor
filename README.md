@@ -14,6 +14,7 @@ Repo được xây theo từng thành phần. Mỗi thành phần được thử
 | `screentutor/overlay.py` | Lớp phủ chỉ chỗ (PySide6): vòng đỏ rỗng bay từ con trỏ chuột tới đích rồi nhấp nháy, luôn nằm trên cùng, cú bấm và phím gõ đi xuyên qua | Chờ thử trên Windows (`docs/tests/T5_OVERLAY_WINDOWS.txt`) |
 | `screentutor/inputs.py`, `still.py`, `session.py` | Bước 4: nghe click và phím giữ Ctrl+Alt (chỉ quan sát, không cài hook), chờ màn hình đứng yên, lượt kiểm bước (`Tutor.follow_up`), vòng lặp một phiên nhiều bước. `tutor_eval/steps.py` là phép thử T6a | T6a đạt (31/10): bước đúng 24/24, việc xong đúng 22/24, trỏ 16/18, trễ trung vị 3,19 s. Chờ thử trên Windows (`docs/tests/T6_CLICK_STILL_WINDOWS.txt`) |
 | `screentutor/speak.py`, `listen.py`, `ui.py` | Bước 5: giọng đọc VieNeu int8 Hải Đăng (có sửa cách đọc tên file, "OK", giờ), nghe bằng Muse realtime (nút "Hỏi": ENDPOINTING có ghép các đoạn cách nhau dưới 1 s; giữ Ctrl+Alt: PUSH_TO_TALK), nút "Hỏi" và ô dynamic island. `tutor_eval/voice.py` là phép thử T7a | T7a đạt (31/10): 8/8 câu của mẹ còn ý khi ghép trong 1 s (không ghép: 5/8). Chờ thử trên Windows (`docs/tests/T7_VOICE_WINDOWS.txt`) |
+| `screentutor/app.py` | Cả app: nút "Hỏi" hoặc giữ Ctrl+Alt → nghe → nhìn màn hình → vòng chỉ chỗ và giọng nói → chờ bấm → kiểm bước → bước tiếp. `tutor_eval/e2e.py` là phép thử T8a (giọng thật của mẹ qua cả chuỗi) | T8a (31/10): trỏ trúng 4/8, chưa đạt ngưỡng 6/8 (hai chỗ chờ founder xem); ngừng nói → nghe tiếng tutor trung vị 7,2 s. Chờ thử trên Windows (`docs/tests/WINDOWS_TRIP.txt`) |
 
 ```bash
 py -m screentutor.state --delay 6 --out t2_results\S-1         # trên Windows, chỉ cần Python
@@ -25,6 +26,7 @@ py -m screentutor.tutor --live --delay 5 "Mẹ bấm vào đâu?"         # trê
 py -m screentutor.tutor --live --delay 5 --show 15 "Mẹ bấm vào đâu?"  # như trên, và hiện vòng chỉ chỗ 15 giây
 py -m screentutor.overlay --follow-mouse                          # trên Windows: vòng có nằm đúng đầu chuột không
 py -m screentutor.session --delay 6 "Mẹ muốn xuất giáo án ra PDF"  # trên Windows: cả phiên nhiều bước
+py -m screentutor.app                                             # trên Windows: cả app
 ```
 
 ## Thành phần 1: phép thử grounding với model Meta (`grounding_test/`)

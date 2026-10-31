@@ -1,0 +1,60 @@
+T8: THỬ CẢ APP SCREENTUTOR TRÊN WINDOWS, ĐÓNG VAI MẸ (MVP ráp xong), 31/10/2026
+================================================================================
+Làm SAU T5, T6, T7 (chuẩn bị A0-A7 dùng chung).
+Mục đích: lần đầu chạy cả app như mẹ sẽ dùng: hỏi bằng giọng -> tutor nhìn màn hình ->
+vòng đỏ chỉ chỗ + giọng Hải Đăng nói -> bạn bấm -> tutor tự kiểm và nói bước tiếp -> báo xong.
+Mỗi câu hỏi tốn khoảng 1-4 xu (mỗi bước một lần gọi Spark, cộng tiền nghe).
+
+Đã đo trên Ubuntu với giọng thật của mẹ (T8a, 4 đoạn ghi âm khớp 4 ảnh ca thật, 2 lần mỗi đoạn):
+  - Từ lúc mẹ ngừng nói tới lúc nghe tiếng tutor: trung vị 7,2 s
+    (nghe xong câu 1,6 s + Spark 5,2 s + giọng 0,3 s). Giữ Ctrl+Alt nhanh hơn khoảng 1,4 s.
+  - Trỏ trúng 4/8, KHÔNG đạt ngưỡng 6/8 Claude đặt trước. Hai chỗ "trượt":
+    me_05 (gửi PDF cho tiệm in): tutor chỉ nút "Create PDF" trên thanh công cụ Word, không phải chữ File;
+    me_07 (link không mở): tutor bảo bấm lại link trong Zalo, không phải icon Brave.
+    Hai chỗ này cần bạn xem trên máy thật (mục X bên dưới).
+
+Cách chạy:   py -m screentutor.app
+  -> nút "Hỏi" hiện ở góc dưới phải, ô chữ ở giữa mép trên. PowerShell in câu nghe được và từng bước.
+  -> Hỏi bằng nút: bấm "Hỏi", nói, ngừng nói thì máy tự hiểu là xong (bấm "Hỏi" lần nữa để kết thúc sớm).
+  -> Hỏi bằng phím: giữ Ctrl+Alt, nói, thả ra là xong.
+  -> Tắt: bấm Ctrl+C trong PowerShell.
+!! tutor_runs chứa ảnh màn hình thật: KHÔNG nén, KHÔNG commit. Chỉ điền và commit file txt này.
+
+Không có luật đạt/trượt cho phần P: đây là lần chạy cả vòng đầu tiên, để thấy chỗ nào còn vấp.
+Với mỗi tình huống, ghi theo mẫu:
+  Nghe được (ô chữ): ...
+  Từng bước: vòng chỉ đúng không / tutor nói gì / có dễ hiểu không
+  Ngừng nói -> nghe tiếng tutor: khoảng mấy giây (đếm nhẩm)
+  Cuối cùng có nói "xong" đúng lúc không
+
+
+P. CÁC TÌNH HUỐNG (đóng vai mẹ, nói như mẹ nói)
+-----------------------------------------------
+[ ] P-1. Nút "Hỏi". Word đang mở giáo án.
+         Nói: "Mẹ muốn xuất cái giáo án này ra PDF để gửi cho tiệm in thì làm sao"
+         Ghi: ____________________________________________________________
+[ ] P-2. Giữ Ctrl+Alt. Dựng lại case_04 (Brave mở trang Sheet nhưng đang ở tab khác, Zalo ở trước).
+         Nói: "Cái link cô tổ trưởng gửi mẹ ấn hoài mà không chịu mở lên"
+         Ghi: ____________________________________________________________
+[ ] P-3. Chuyện "bản trắng" (me_01): sửa giáo án hôm qua, hôm nay mở lại từ Zalo thấy bản cũ.
+         Dựng như mẹ hay gặp, rồi hỏi: "Cái giáo án mẹ sửa hôm qua nó nằm ở đâu, sao mở lên không thấy"
+         Ghi: ____________________________________________________________
+[ ] P-4. Hỏi câu mới giữa chừng: đang làm P-1, tới bước 2 thì bấm "Hỏi" và hỏi chuyện khác.
+         Mong đợi: vòng cũ biến mất, giọng cũ tắt, tutor trả lời câu mới.  Ghi: ______________
+[ ] P-5. Bấm khi tutor đang nói: giọng có tắt ngay không? ______
+[ ] P-6. Tập quay video demo: bật Win+Alt+R, làm lại P-1 từ đầu tới cuối, tắt quay.
+         Video có thấy vòng đỏ, nút, ô chữ, và nghe được giọng tutor không? ______
+[ ] P-7. Cảm nhận khi đóng vai mẹ: chờ 6-8 giây sau khi hỏi có lâu quá không? Có cần tutor nói
+         ngay một câu ngắn kiểu "Để mình xem nhé" trong lúc chờ không? ______
+
+
+X. HAI CHỖ T8a CẦN XEM TRÊN MÁY THẬT
+------------------------------------
+[ ] X-2. Trong Word, tab Home, góc phải có nút "Create PDF" (hình tờ giấy đỏ). Bấm thử:
+         nó làm gì (hỏi chỗ lưu? bắt đăng nhập? quảng cáo?), có tạo được file PDF dùng được không?
+         Mẹ có nên đi đường này thay cho File > Export không? ______________________________
+[ ] X-3. Dựng case_04 (Brave nằm sau Zalo), bấm lại link Sheet trong Zalo: Brave có tự nhảy lên
+         trước để thấy bảng tính không? ______________________________
+
+
+Xong thì lưu file này, commit và push riêng file này lên nhánh mvp.

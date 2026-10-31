@@ -1,0 +1,22 @@
+CHUYẾN WINDOWS: DANH SÁCH VIỆC LÀM MỘT LẦN, 31/10/2026
+=====================================================
+Làm theo đúng thứ tự. Tổng khoảng 2-2,5 giờ. Mở từng file .txt, điền vào chỗ trống ngay trong file.
+
+  0. ĐỒNG BỘ NHÁNH TRƯỚC TIÊN (5 phút): làm mục A0 trong T5_OVERLAY_WINDOWS.txt.
+     Đừng bấm Pull/Sync trong VS Code trước bước này.
+     Sau A0, "git log --oneline -1" phải ra commit mới nhất Claude báo khi push.
+  1. T5_OVERLAY_WINDOWS.txt       (~20 phút)  vòng đỏ chỉ chỗ; A1-A4 cài thư viện và key
+  2. T6_CLICK_STILL_WINDOWS.txt   (~30 phút)  nghe click, chờ màn hình đứng yên, phiên nhiều bước
+  3. T7_VOICE_WINDOWS.txt         (~30 phút)  giọng đọc, micro, nút "Hỏi", ô chữ; A5-A7 cài thêm
+  4. T8_APP_WINDOWS.txt           (~40 phút)  cả app, đóng vai mẹ, tập quay video demo
+
+Nếu một bước chặn mọi thứ phía sau (ví dụ báo lỗi đỏ khi cài, vòng đỏ không hiện), ghi lại lỗi
+vào file đó, bỏ qua phần phụ thuộc, làm tiếp phần không phụ thuộc, rồi báo Claude.
+
+KHI XONG:
+  - Chỉ commit các file .txt đã điền, KHÔNG dùng "git add ." (để không kéo theo ảnh hay ghi âm):
+        git add docs/tests/T5_OVERLAY_WINDOWS.txt docs/tests/T6_CLICK_STILL_WINDOWS.txt docs/tests/T7_VOICE_WINDOWS.txt docs/tests/T8_APP_WINDOWS.txt
+        git commit -m "Windows trip results T5-T8"
+        git push
+  - Thư mục tutor_runs (ảnh màn hình thật) để nguyên trên Windows, không nén, không gửi.
+  - Quay về Ubuntu, nhắn Claude: "Đã chạy xong chuyến Windows".
