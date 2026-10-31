@@ -20,6 +20,7 @@ import argparse
 import asyncio
 import json
 import os
+import queue
 import subprocess
 import sys
 import threading
@@ -141,22 +142,34 @@ async def file_frames(path: Path, trailing_silence_s: float = TRAILING_SILENCE_S
         await asyncio.sleep(FRAME_MS / 1000)
 
 
-async def mic_frames(stop: threading.Event):
-    """The default microphone, 80 ms frames, until stop is set."""
-    import sounddevice as sd
+class Mic:
+    """The default microphone. Recording starts at once, so the first words are not lost while the
+    connection opens (0.5-1 s); the backlog is then sent faster than real time, well under the 5 s limit."""
 
-    loop = asyncio.get_running_loop()
-    q: asyncio.Queue = asyncio.Queue()
+    def __init__(self):
+        import sounddevice as sd
 
-    def cb(data, frames, t, status):
-        loop.call_soon_threadsafe(q.put_nowait, bytes(data))
+        self._q: queue.Queue = queue.Queue()
+        self._stream = sd.RawInputStream(samplerate=RATE, channels=1, dtype="int16", blocksize=FRAME_BYTES // 2,
+                                         callback=lambda data, frames, t, status: self._q.put(bytes(data)))
+        self._stream.start()
 
-    with sd.RawInputStream(samplerate=RATE, channels=1, dtype="int16", blocksize=FRAME_BYTES // 2, callback=cb):
+    async def frames(self, stop: threading.Event):
         while not stop.is_set():
             try:
-                yield await asyncio.wait_for(q.get(), timeout=0.2), False
-            except asyncio.TimeoutError:
+                chunk = self._q.get_nowait()
+            except queue.Empty:
+                await asyncio.sleep(0.02)
                 continue
+            yield chunk, False
+
+    def close(self) -> None:
+        self._stream.stop()
+        self._stream.close()
+
+
+def mic_frames(stop: threading.Event):
+    return Mic().frames(stop)
 
 
 async def listen(api_key: str, frames, mode: str = "ENDPOINTING", on_partial=None,

@@ -38,6 +38,7 @@ def test_walks_steps_until_the_task_is_done():
     s, log = _session(tutor, [Click(1.0, 29, 80, "left"), Click(2.0, 38, 605, "left")], ["settled", "settled"])
     steps = s.run("Mẹ muốn xuất ra PDF")
     assert [x for x in log if x[0] != "say"] == [("show", 29, 80), ("hide",), ("show", 38, 605), ("hide",)]
+    assert log[:2] == [("show", 29, 80), ("say", "Bạn bấm vào chữ File.")]  # ring first, then the words
     assert [x[1] for x in log if x[0] == "say"] == ["Bạn bấm vào chữ File.", "Bạn bấm vào chữ Export.",
                                                    "Xong rồi bạn nhé."]
     assert tutor.calls[1] == ("follow_up", "Mẹ muốn xuất ra PDF", "Bạn bấm vào chữ File.", True)
@@ -76,3 +77,29 @@ def test_click_box_returns_only_clicks_after_the_ring_appeared():
     box.put(Click(3.0, 7, 7, "left"))
     assert box.wait(since=2.0, timeout_s=0.01) == Click(3.0, 7, 7, "left")
     assert box.wait(since=2.0, timeout_s=0.01) is None
+
+
+def test_a_new_question_cancels_the_session():
+    import threading
+
+    cancel = threading.Event()
+    tutor = FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(15, 74)),
+                       Reply(say="Bạn bấm Export.", found=True, point=(20, 560), step_done=True)])
+    s, log = _session(tutor, [Click(1.0, 29, 80, "left")], ["settled"])
+    s.cancel = cancel
+    s.settle = lambda click: (cancel.set(), "settled")[1]   # she pressed Hỏi while the screen settled
+    s.run("Xuất PDF")
+    assert [x for x in log if x[0] == "show"] == [("show", 29, 80)] and len(tutor.calls) == 1  # no wasted call
+
+
+def test_click_box_skips_clicks_on_our_own_button_and_stops_on_cancel():
+    import threading
+
+    box = ClickBox()
+    box.put(Click(3.0, 1800, 1000, "left"))      # on the Hỏi button
+    box.put(Click(3.5, 40, 80, "left"))
+    on_button = lambda c: c.x > 1700 and c.y > 950  # noqa: E731
+    assert box.wait(since=2.0, timeout_s=0.01, ignore=on_button) == Click(3.5, 40, 80, "left")
+    cancel = threading.Event()
+    cancel.set()
+    assert box.wait(since=2.0, timeout_s=5, cancel=cancel) is None

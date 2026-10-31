@@ -1,6 +1,6 @@
-"""One task, step by step (MVP step 4). Voice comes in step 5; here the tutor's words are printed.
+"""One task, step by step (MVP step 4). The app (app.py) speaks; this command line prints.
 
-  ask -> point -> wait for the user's click -> hide the ring -> wait for a still screen
+  ask -> point and say -> wait for the user's click -> hide the ring -> wait for a still screen
       -> check the step (follow_up) -> point at the next step ... until the task is done.
 
 The tutor never clicks. Each step's screenshot and answer are kept in
@@ -50,13 +50,25 @@ class Session:
     settle: object                 # (click) -> outcome str
     save: object = None            # (n, image, reply) -> None
     pause: object = time.sleep
+    status: object = None          # ("thinking" | "waiting") -> None, for the button and the island
+    cancel: object = None          # threading.Event: the user asked something new
     steps: list[Step] = field(default_factory=list)
 
+    def _cancelled(self) -> bool:
+        return self.cancel is not None and self.cancel.is_set()
+
+    def _status(self, state: str) -> None:
+        if self.status:
+            self.status(state)
+
     def run(self, question: str, max_steps: int = MAX_STEPS) -> list[Step]:
+        self._status("thinking")
         img, state = self.look()
         reply = self.tutor.ask(question, self.encode(img), state)
         outcome = None
         for n in range(1, max_steps + 1):
+            if self._cancelled():
+                break
             px = reply.point_px(img.size)
             self.steps.append(Step(n, reply.say, px, reply.step_done, reply.goal_done, outcome,
                                    reply.latency_s, reply.error))
@@ -65,17 +77,22 @@ class Session:
             if reply.error:
                 self.say("Mình chưa xem được màn hình. Bạn hỏi lại nhé.")
                 break
-            self.say(reply.say)
             if reply.goal_done or px is None:
+                self.say(reply.say)
                 break  # done, or nothing to click: the sentence already says why or asks back
             shown_at = time.monotonic()
-            self.show(*px)
+            self.show(*px)        # the ring first, so her eyes are there while she hears where
+            self.say(reply.say)
+            self._status("waiting")
             click = self.wait_click(shown_at, CLICK_WAIT_S)
             self.hide()
-            if click is None:
-                break  # the user stopped; she can ask again any time
+            if click is None or self._cancelled():
+                break  # she stopped, or asked something new; she can ask again any time
             self.pause(HIDE_PAUSE_S)
             outcome = self.settle(click)
+            if self._cancelled():
+                break
+            self._status("thinking")
             img, state = self.look()
             reply = self.tutor.follow_up(question, reply.say, self.encode(img), state, outcome != "unchanged")
         return self.steps
@@ -96,18 +113,19 @@ class ClickBox:
                 self._clicks.append(event)
                 self._cv.notify_all()
 
-    def wait(self, since: float, timeout_s: float):
+    def wait(self, since: float, timeout_s: float, cancel: threading.Event | None = None, ignore=None):
+        """First click after since, skipping clicks ignore(click) says are not on the app (the Hỏi button)."""
         deadline = time.monotonic() + timeout_s
         with self._cv:
             while True:
-                fresh = [c for c in self._clicks if c.t >= since]
+                fresh = [c for c in self._clicks if c.t >= since and not (ignore and ignore(c))]
                 if fresh:
                     self._clicks.clear()
                     return fresh[0]
                 left = deadline - time.monotonic()
-                if left <= 0:
+                if left <= 0 or (cancel is not None and cancel.is_set()):
                     return None
-                self._cv.wait(left)
+                self._cv.wait(min(left, 0.1))
 
 
 def main(argv=None) -> None:

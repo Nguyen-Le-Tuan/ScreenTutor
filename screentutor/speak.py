@@ -79,11 +79,13 @@ class Speaker:
         self.voice = voice
         self._stop = threading.Event()
         self._lock = threading.Lock()
+        self._load_lock = threading.Lock()
 
     def load(self) -> None:
         """Takes about 2 s; call it once at start-up, off the UI thread."""
-        if self._engine is None:
-            self._engine = _load_engine()
+        with self._load_lock:  # start-up loading and a first sentence may race
+            if self._engine is None:
+                self._engine = _load_engine()
 
     def speak(self, text: str) -> str:
         """Blocks until the sentence is spoken or stop() is called. Returns the text actually read."""
