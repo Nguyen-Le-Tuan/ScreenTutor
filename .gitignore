@@ -249,3 +249,7 @@ stt_eval/audio_synth/
 *.wav
 *.mp3
 *.aac
+
+# Tutor runs hold real screenshots, window titles and raw answers
+tutor_runs/
+tutor_eval/results/

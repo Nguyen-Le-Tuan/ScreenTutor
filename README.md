@@ -10,12 +10,15 @@ Repo được xây theo từng thành phần. Mỗi thành phần được thử
 | `screentutor/state.py`, `winstate.py` | Bản tóm tắt trạng thái Windows gửi kèm ảnh: cửa sổ đang ở trước, các cửa sổ phía sau, app mặc định, thư mục chuẩn, file mới | Chờ thử trên Windows (`docs/tests/T2_STATE_SENSORS_WINDOWS.txt`) |
 | `tts_eval/` | Giọng đọc tiếng Việt VieNeu-TTS v3 Turbo chạy local trên CPU: đo tốc độ, tạo mẫu nghe thử | Chờ founder nghe (`tts_eval/LISTENING_TEST.txt`) |
 | `stt_eval/` | Nhận giọng bằng Muse Voice Transcribe (gửi file) | Chờ giọng thật của mẹ (`docs/tests/T3_MOM_VOICE.txt`) |
+| `screentutor/tutor.py`, `screen.py` | Một lượt tutor: ảnh màn hình + trạng thái + câu mẹ hỏi → câu tutor nói và chỗ cần chỉ (Spark M2, effort low). `tutor_eval/` là phép thử T4 trên 12 ca thật | Đang thử T4 |
 
 ```bash
 py -m screentutor.state --delay 6 --out t2_results\S-1         # trên Windows, chỉ cần Python
 uv venv --python 3.12 tts_eval/.venv && uv pip install --python tts_eval/.venv/bin/python -r tts_eval/requirements.txt
 cd tts_eval && .venv/bin/python bench.py speed                 # đo tốc độ fp32 và int8
 .venv/bin/python -m stt_eval.transcribe --refs refs.tsv audio/*.m4a   # cần ffmpeg
+.venv/bin/python -m tutor_eval.run run --yes                       # T4: 24 lần gọi, khoảng $0.15
+py -m screentutor.tutor --live --delay 5 "Mẹ bấm vào đâu?"         # trên Windows: chụp, hỏi, lưu ảnh có đánh dấu
 ```
 
 ## Thành phần 1: phép thử grounding với model Meta (`grounding_test/`)
