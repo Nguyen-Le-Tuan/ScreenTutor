@@ -10,7 +10,7 @@ Repo được xây theo từng thành phần. Mỗi thành phần được thử
 | `screentutor/state.py`, `winstate.py` | Bản tóm tắt trạng thái Windows gửi kèm ảnh: cửa sổ đang ở trước, các cửa sổ phía sau, app mặc định, thư mục chuẩn, file mới | Chờ thử trên Windows (`docs/tests/T2_STATE_SENSORS_WINDOWS.txt`) |
 | `tts_eval/` | Giọng đọc tiếng Việt VieNeu-TTS v3 Turbo chạy local trên CPU: đo tốc độ, tạo mẫu nghe thử | Chờ founder nghe (`tts_eval/LISTENING_TEST.txt`) |
 | `stt_eval/` | Nhận giọng bằng Muse Voice Transcribe (gửi file) | Chờ giọng thật của mẹ (`docs/tests/T3_MOM_VOICE.txt`) |
-| `screentutor/tutor.py`, `screen.py` | Một lượt tutor: ảnh màn hình + trạng thái + câu mẹ hỏi → câu tutor nói và chỗ cần chỉ (Spark M2, effort low). `tutor_eval/` là phép thử T4 trên 12 ca thật | Đang thử T4 |
+| `screentutor/tutor.py`, `screen.py` | Một lượt tutor: ảnh màn hình + trạng thái + câu mẹ hỏi → câu tutor nói và chỗ cần chỉ (Spark M2, effort low). `tutor_eval/` là phép thử T4 trên 12 ca thật | T4 đạt ở lần chạy lại (31/10): trúng 10/12 và 11/12, trễ trung vị 3,99 s, 24/24 câu qua kiểm tra. Chưa thử chụp màn hình thật trên Windows |
 
 ```bash
 py -m screentutor.state --delay 6 --out t2_results\S-1         # trên Windows, chỉ cần Python
