@@ -11,6 +11,7 @@ appended after them, so the part that was measured stays unchanged.
 
   python -m screentutor.tutor --image case_04.png --state-file state.txt "Mẹ bấm vào đâu?"
   py -m screentutor.tutor --live --delay 5 "Mẹ muốn mở file giáo án thì bấm vào đâu?"   # Windows
+  py -m screentutor.tutor --live --delay 5 --show 15 "Bấm vào đâu để tạo file PDF?"     # + vòng chỉ trên màn hình
 """
 
 from __future__ import annotations
@@ -203,7 +204,11 @@ def main(argv=None) -> None:
     p.add_argument("--state-file", help="file chữ chứa bản tóm tắt trạng thái (dùng với --image)")
     p.add_argument("--delay", type=int, default=0, help="chờ bấy nhiêu giây trước khi chụp (dùng với --live)")
     p.add_argument("--out", help="thư mục lưu ảnh, ảnh có đánh dấu và câu trả lời; mặc định tutor_runs/<giờ>")
+    p.add_argument("--show", type=float, metavar="GIÂY",
+                   help="Windows, cùng --live: hiện vòng chỉ chỗ trên màn hình bấy nhiêu giây")
     args = p.parse_args(argv)
+    if args.show and not args.live:
+        p.error("--show chỉ dùng cùng --live: vòng chỉ chỗ phải khớp với màn hình đang hiện")
 
     if args.live:
         from .state import format_vi, take_snapshot
@@ -240,6 +245,21 @@ def main(argv=None) -> None:
     print(f"Mất {reply.latency_s:.2f} s; token vào {reply.usage['input']}, ra {reply.usage['output']} "
           f"(suy luận {reply.usage['reasoning']})")
     print(f"Đã lưu {out}")
+    if args.show and px:
+        _show(px, args.show)
+
+
+def _show(px: tuple[int, int], seconds: float) -> None:
+    from PySide6.QtCore import QTimer
+    from PySide6.QtWidgets import QApplication
+
+    from .overlay import Overlay
+
+    app = QApplication.instance() or QApplication(sys.argv[:1])
+    overlay = Overlay()
+    overlay.point_at(*px, seconds=seconds)
+    QTimer.singleShot(round(seconds * 1000) + 200, app.quit)
+    app.exec()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,107 @@
+T5: THỬ LỚP PHỦ CHỈ CHỖ VÀ MỘT LƯỢT TUTOR THẬT TRÊN WINDOWS (MVP bước 2 và 3), 31/10/2026
+=========================================================================================
+Mục đích: trên máy giống hệt máy mẹ (1920x1080, scale 125%), xem
+  (1) vòng đỏ có nằm ĐÚNG chỗ trên màn hình thật không,
+  (2) vòng có để cú bấm và phím gõ đi xuyên qua xuống app bên dưới không,
+  (3) vòng có luôn nằm trên cùng (cả thanh taskbar) không,
+  (4) cả lượt: chụp màn hình -> hỏi Spark M2 -> vòng hiện đúng chỗ model chỉ.
+Phần B không tốn tiền. Phần C mỗi lần chạy khoảng $0.01.
+Code KHÔNG bấm hay gõ gì trên máy. Vòng đỏ chỉ để nhìn.
+
+Luật chấm (ghi trước khi chạy):
+  - O-1 đạt: ở cả 5 chỗ thử, tâm vòng trùng đầu con trỏ chuột (lệch dưới khoảng 5 px,
+    nhìn bằng mắt), và dòng in ra ghi "tỉ lệ màn hình 1.25".
+    Nếu lệch càng lúc càng xa về phía dưới bên phải: lỗi đổi toạ độ theo scale 125%.
+  - O-2 đạt: mọi cú bấm vào trong vòng đều tới app bên dưới; gõ phím vẫn vào app đang mở.
+  - O-3 đạt: vòng nằm trên taskbar và trên cửa sổ đang phóng to; không có nút trên taskbar,
+    không hiện trong Alt+Tab.
+  - C đạt: vòng trên màn hình thật nằm đúng chỗ dấu đỏ trong ảnh pointed.png.
+    (Model chỉ đúng hay sai phần tử là chuyện khác, đã đo ở T4; ở đây đo việc vẽ có khớp không.)
+
+
+A. CHUẨN BỊ (một lần)
+---------------------
+[ ] A0. ĐỒNG BỘ NHÁNH TRƯỚC TIÊN. Bản mvp trên Windows còn 2 commit cũ có file zip ghi âm của mẹ.
+        ĐỪNG bấm Pull/Sync trong VS Code trước bước này. Mở PowerShell trong thư mục ScreenTutor:
+          1. Nếu muốn giữ stt_eval\audio.zip hoặc t2_results.zip, chép ra NGOÀI thư mục repo trước.
+          2. git fetch origin
+          3. git status          (xem có file đang sửa dở muốn giữ không)
+          4. git switch mvp
+          5. git reset --hard origin/mvp
+          6. git log --oneline -1   (phải là commit mới nhất Claude báo, không còn ecc9407 / f9a934d)
+[ ] A1. Cài thư viện (khoảng 150 MB, vì có Qt để vẽ lớp phủ):
+              py -m pip install -r requirements.txt
+[ ] A2. Key cho phần C: chép .env.example thành .env rồi tự dán MODEL_API_KEY vào.
+        (Không gửi key cho Claude, không commit file .env; file này đã bị gitignore.)
+[ ] A3. Kiểm tra nhanh:   py -m pytest -q
+        Cần thấy toàn bộ test "passed". Báo lỗi đỏ thì chụp lại, gửi Claude, dừng ở đây.
+[ ] A4. Thu nhỏ cửa sổ PowerShell lại, kéo về góc dưới bên phải màn hình, để nó không che
+        chỗ cần thử (ảnh chụp màn hình ở phần C sẽ thấy cả PowerShell nếu nó nằm giữa).
+
+
+B. LỚP PHỦ (không tốn tiền)
+---------------------------
+[ ] O-1. Vòng có nằm đúng chỗ không:
+              py -m screentutor.overlay --follow-mouse --seconds 40
+         Cứ 2 giây vòng bay tới đầu con trỏ chuột. Lần lượt để chuột đứng yên ở 5 chỗ:
+           a) nút Start (góc dưới, giữa)   b) chữ File của Word   c) icon Zalo trên taskbar
+           d) gần góc trên bên trái         e) gần góc dưới bên phải
+         Ghi dòng "tỉ lệ màn hình ..." in ra: ______
+         Ghi kết quả từng chỗ (trùng / lệch ít / lệch nhiều, lệch về phía nào):
+           a) ______  b) ______  c) ______  d) ______  e) ______
+
+[ ] O-2. Bấm xuyên qua vòng:
+              py -m screentutor.overlay --at 960 540 --seconds 40
+         Vòng đứng giữa màn hình. Mở Word, kéo cửa sổ sao cho chữ trong trang nằm dưới vòng.
+           - Bấm vào chữ nằm trong vòng: con trỏ gõ có nhảy tới đó không? ______
+           - Gõ vài chữ: chữ có hiện trong Word không? ______
+           - Kéo một icon trên taskbar xuống dưới vòng rồi bấm (hoặc chạy lại với
+             --at 960 1050 để vòng nằm trên taskbar): app có mở không? ______
+
+[ ] O-3. Nằm trên cùng (làm trong lúc O-2 đang chạy):
+           - Phóng to Zalo hoặc Word: vòng còn thấy không? ______
+           - Bấm vào taskbar, mở Start menu: vòng nằm trên hay dưới? ______
+           - Taskbar có thêm nút nào của Python/Qt không? Alt+Tab có thấy nó không? ______
+
+[ ] O-4. Cảm nhận (đóng vai mẹ, việc của bạn): vòng có dễ thấy không, màu có dễ chịu không,
+         nhấp nháy nhanh quá hay chậm quá, có làm rối mắt không. Chấm 1-5 và ghi nhận xét:
+           Dễ thấy: __  Dễ chịu: __  Nhịp nháy (chậm/vừa/nhanh): ____
+           Nhận xét: ______________________________________________
+
+[ ] O-5. Quay màn hình cho video demo: trong lúc vòng đang hiện, quay thử 5 giây bằng
+         Win+Alt+R (Xbox Game Bar) hoặc Snipping Tool > Record. Video có thấy vòng không? ______
+
+
+C. MỘT LƯỢT TUTOR THẬT (mỗi lần khoảng $0.01)
+---------------------------------------------
+Cách chạy: trong lúc đếm ngược, bấm sang cửa sổ cần hỏi (đừng bấm lại PowerShell).
+Sau khoảng 3-7 giây vòng hiện lên và đứng 15 giây. PowerShell in ra câu tutor nói,
+chỗ chỉ (pixel), thời gian. Ảnh lưu ở tutor_runs\<giờ>\: screen.png (ảnh gửi đi),
+pointed.png (ảnh có dấu đỏ ở chỗ model chỉ), reply.json.
+!! tutor_runs chứa ảnh màn hình thật: KHÔNG nén, KHÔNG commit. Chỉ điền và commit file txt này.
+
+[ ] L-1. Dựng lại case_10: Word đang mở giáo án, phóng to.
+              py -m screentutor.tutor --live --delay 6 --show 15 "Mẹ muốn xuất ra PDF thì bấm vào đâu trước?"
+         Đáp án: vòng ở chữ File, góc trên bên trái.
+         Ghi: dòng "Chỉ vào ... trên ảnh ...x..." in ra: ______  (cần thấy 1920x1080)
+              Vòng trên màn hình có trùng dấu đỏ trong pointed.png không? ______
+              Câu tutor nói: ______________________   Mất bao nhiêu giây (dòng "Mất"): ____
+
+[ ] L-2. Dựng lại case_04: Brave mở trang Sheet, rồi bấm Zalo để Zalo nằm trước, phóng to.
+              py -m screentutor.tutor --live --delay 6 --show 15 "Mẹ bấm link rồi mà không thấy, giờ bấm vào đâu để xem?"
+         Đáp án: vòng ở icon Brave dưới taskbar (hoặc ở link trong Zalo).
+         Ghi: vòng chỉ vào đâu: ______  Trùng dấu đỏ trong pointed.png? ______  Mất: ____ giây
+
+[ ] L-3. Tự chọn một chuyện mẹ hay hỏi (ví dụ me_01 đến me_08), dựng màn hình, hỏi đúng
+         câu mẹ sẽ nói. Ghi câu hỏi, câu tutor nói, vòng chỉ vào đâu, đúng hay sai, mất bao lâu:
+         ____________________________________________________________________
+
+
+D. CÂU HỎI CÒN TREO TỪ T2b (làm luôn trong lần này)
+---------------------------------------------------
+[ ] X-1. Trong Zalo, bấm THẲNG vào một file .docx (cách mẹ hay làm). Khi Word mở ra, vào
+         File > Info, chép lại đường dẫn của file đang mở: ______________________________
+         (Để biết bấm thẳng có mở bản tạm ở chỗ khác hay không.)
+
+
+Xong thì lưu file này, commit và push riêng file này lên nhánh mvp, rồi nhắn Claude "Đã chạy T5".

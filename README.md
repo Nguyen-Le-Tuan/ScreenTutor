@@ -11,6 +11,7 @@ Repo được xây theo từng thành phần. Mỗi thành phần được thử
 | `tts_eval/` | Giọng đọc tiếng Việt VieNeu-TTS v3 Turbo chạy local trên CPU: đo tốc độ, tạo mẫu nghe thử | Chờ founder nghe (`tts_eval/LISTENING_TEST.txt`) |
 | `stt_eval/` | Nhận giọng bằng Muse Voice Transcribe (gửi file) | Chờ giọng thật của mẹ (`docs/tests/T3_MOM_VOICE.txt`) |
 | `screentutor/tutor.py`, `screen.py` | Một lượt tutor: ảnh màn hình + trạng thái + câu mẹ hỏi → câu tutor nói và chỗ cần chỉ (Spark M2, effort low). `tutor_eval/` là phép thử T4 trên 12 ca thật | T4 đạt (31/10, tutor gọi "bạn", xưng "mình"): trúng 12/12 và 11/12, trễ trung vị 4,24 s (p90 6,83 s), 24/24 câu qua kiểm tra. Chưa thử chụp màn hình thật trên Windows |
+| `screentutor/overlay.py` | Lớp phủ chỉ chỗ (PySide6): vòng đỏ rỗng bay từ con trỏ chuột tới đích rồi nhấp nháy, luôn nằm trên cùng, cú bấm và phím gõ đi xuyên qua | Chờ thử trên Windows (`docs/tests/T5_OVERLAY_WINDOWS.txt`) |
 
 ```bash
 py -m screentutor.state --delay 6 --out t2_results\S-1         # trên Windows, chỉ cần Python
@@ -19,6 +20,8 @@ cd tts_eval && .venv/bin/python bench.py speed                 # đo tốc độ
 .venv/bin/python -m stt_eval.transcribe --refs refs.tsv audio/*.m4a   # cần ffmpeg
 .venv/bin/python -m tutor_eval.run run --yes                       # T4: 24 lần gọi, khoảng $0.15
 py -m screentutor.tutor --live --delay 5 "Mẹ bấm vào đâu?"         # trên Windows: chụp, hỏi, lưu ảnh có đánh dấu
+py -m screentutor.tutor --live --delay 5 --show 15 "Mẹ bấm vào đâu?"  # như trên, và hiện vòng chỉ chỗ 15 giây
+py -m screentutor.overlay --follow-mouse                          # trên Windows: vòng có nằm đúng đầu chuột không
 ```
 
 ## Thành phần 1: phép thử grounding với model Meta (`grounding_test/`)
