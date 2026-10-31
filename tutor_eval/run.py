@@ -31,6 +31,16 @@ no Vietnamese diacritics. Read by eye, it also called mom "con" twice, said
 now ask for full diacritics, forbid those three, and say mom does the clicking.
 The pointing text is unchanged. Four checks are added to (3): no diacritics,
 calls mom "con", "giúp con", promises to act for her. Thresholds unchanged.
+
+Third rule, fixed before the third run (31/10/2026). The rerun 20261031-134317
+passed all three (10/11, 3.99 s, 24/24), but 12/24 sentences had the tutor
+talk about itself as "con", mostly awkwardly. The founder decided the tutor
+calls the user "bạn" and itself "mình". The sentence rules now say so and ask
+for no sentences about itself; the pointing text is unchanged. In (3), "says
+mẹ" becomes "says bạn"; the "con" checks become: calls the user "mẹ" or the
+tutor "con", asks a favour ("giúp mình", "nhờ bạn", "mời bạn"), promises to
+act for her. Thresholds unchanged. Reported but not scored: how many
+sentences say "mình".
 """
 
 from __future__ import annotations
@@ -65,9 +75,11 @@ BASELINE_HITS = {"case_01": 2, "case_02": 2, "case_03": 0, "case_04": 2, "case_0
 
 MARKUP = set("*#`•[]{}<>|_")
 COORDS = re.compile(r"\d+\s*[,;]\s*\d+|t(?:oạ|ọa)\s*độ", re.IGNORECASE)
-CALLS_MOM_CON = re.compile(r"\b(?:nhé|nha|nhá|ạ)\s+con\b", re.IGNORECASE)
-ASKS_FAVOUR = re.compile(r"\bgiúp con\b", re.IGNORECASE)
-ACTS_FOR_HER = re.compile(r"\bcon\s+(?:sẽ\s+)?(?:mở|bấm|làm|gửi|lưu|tắt|tạo)\b", re.IGNORECASE)
+FAMILY_WORDS = re.compile(r"\bmẹ\b|\b(?:nhé|nha|nhá|ạ|cho|giúp|nhờ|mời)\s+con\b|(?:^|[.,!?]\s*)con\b"
+                          r"|\bcon\s+(?:sẽ|mời|nhờ|chỉ|thấy|hướng|dặn)\b", re.IGNORECASE)
+ASKS_FAVOUR = re.compile(r"\bgiúp mình\b|\b(?:nhờ|mời)\s+bạn\b", re.IGNORECASE)
+ACTS_FOR_HER = re.compile(r"\b(?:mình|con)\s+(?:sẽ\s+)?(?:mở|bấm|làm|gửi|lưu|tắt|tạo)\b", re.IGNORECASE)
+SELF = re.compile(r"\bmình\b", re.IGNORECASE)
 
 
 def say_problems(say: str) -> list[str]:
@@ -84,12 +96,12 @@ def say_problems(say: str) -> list[str]:
         problems.append(f"{syllables} âm tiết")
     if say.isascii():
         problems.append("không dấu")
-    elif "mẹ" not in say.lower():
-        problems.append("không gọi mẹ")
-    if CALLS_MOM_CON.search(say):
-        problems.append("gọi mẹ là con")
+    elif not re.search(r"\bbạn\b", say, re.IGNORECASE):
+        problems.append("không gọi bạn")
+    if FAMILY_WORDS.search(say):
+        problems.append("gọi mẹ hoặc xưng con")
     if ASKS_FAVOUR.search(say):
-        problems.append("giúp con")
+        problems.append("nhờ vả")
     if ACTS_FOR_HER.search(say):
         problems.append("hứa làm hộ")
     if "\n" in say or any(c in MARKUP for c in say):
@@ -180,6 +192,7 @@ def summarize(out: Path) -> Path:
         f"(mốc 29/10: 11) | {mark[ok1]} |",
         f"| (2) Trễ trung vị / p90 | {med:.2f} s / {p90:.2f} s | ≤ {LATENCY_LIMIT_S:.0f} s (mốc 2,39 s) | {mark[ok2]} |",
         f"| (3) Câu nói qua kiểm tra tự động | {say_ok}/{len(rows)} | ≥ {MIN_SAY_OK}/24 | {mark[ok3]} |",
+        f"| Câu có chữ \"mình\" (không chấm) | {sum(bool(SELF.search(r['say'])) for r in rows)}/{len(rows)} | | |",
         "", f"**Theo luật đặt trước: {'đạt cả ba' if ok1 and ok2 and ok3 else 'chưa đạt'}.**", "",
         "| Ca | Trạng thái | Mốc 29/10 | " + " | ".join(f"Lần {k}" for k in runs) + " | Trễ | Chỉ vào |",
         "|---|---|---|" + "---|" * len(runs) + "---|---|",
@@ -200,7 +213,7 @@ def summarize(out: Path) -> Path:
                   for r in bad]
     (out / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    review = ["CÂU TUTOR SẼ NÓI (việc của founder: đọc to từng câu, đóng vai mẹ)", "",
+    review = ["CÂU TUTOR SẼ NÓI (việc của founder: đọc to từng câu, đóng vai mẹ nghe)", "",
               "Với mỗi câu ghi: dễ hiểu / hơi khó / khó, và câu nào nghe sai giọng (trêu, ra lệnh, dài).", ""]
     for cid, rs in sorted(by_item.items()):
         review.append(f"{cid}. Mẹ hỏi: {rs[0]['question']}")

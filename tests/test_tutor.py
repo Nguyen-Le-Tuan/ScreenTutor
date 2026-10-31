@@ -57,19 +57,22 @@ def test_point_px_maps_grid_to_screenshot_pixels():
 
 
 def test_say_checks():
-    assert say_problems("Mẹ bấm vào chữ File ở góc trên bên trái nhé. Chỗ này mở các lệnh lưu và xuất file.") == []
-    assert say_problems("Mẹ mở file Giáo án mẫu Âm nhạc 8 (1).docx trong Downloads nhé.") == []
+    assert say_problems("Bạn bấm vào chữ File ở góc trên bên trái nhé. Chỗ này mở các lệnh lưu và xuất file.") == []
+    assert say_problems("Bạn mở file Giáo án mẫu Âm nhạc 8 (1).docx trong Downloads nhé.") == []
+    assert say_problems("Bạn bấm vào hình con sư tử màu cam ở thanh dưới cùng nhé.") == []
     assert say_problems("") == ["trống"]
-    assert "3 câu" in say_problems("Mẹ bấm đây. Rồi bấm kia. Xong rồi.")
-    assert "không gọi mẹ" in say_problems("Bấm vào nút OK.")
-    assert "có ký hiệu" in say_problems("Mẹ bấm **File** nhé.")
-    assert "nhắc toạ độ" in say_problems("Mẹ bấm vào chỗ 512, 380 nhé.")
-    assert any(p.endswith("âm tiết") for p in say_problems("Mẹ " + "bấm " * 45))
-    assert say_problems("Me bam vao chu File nhe.") == ["không dấu"]
-    assert "gọi mẹ là con" in say_problems("Mẹ bấm vào chữ Cô Mẫu nha con.")
-    assert "giúp con" in say_problems("Mẹ bấm vào nút OK giúp con nhé.")
-    assert "hứa làm hộ" in say_problems("Mẹ chờ chút, con sẽ mở bảng tính cho mẹ xem.")
-    assert say_problems("Mẹ bấm vào hình con sư tử màu cam ở thanh dưới cùng nhé.") == []
+    assert "3 câu" in say_problems("Bạn bấm đây. Rồi bấm kia. Xong rồi.")
+    assert "không gọi bạn" in say_problems("Bấm vào nút OK.")
+    assert "có ký hiệu" in say_problems("Bạn bấm **File** nhé.")
+    assert "nhắc toạ độ" in say_problems("Bạn bấm vào chỗ 512, 380 nhé.")
+    assert any(p.endswith("âm tiết") for p in say_problems("Bạn " + "bấm " * 45))
+    assert say_problems("Ban bam vao chu File nhe.") == ["không dấu"]
+    for family in ("Mẹ bấm vào chữ File nhé, bạn nhé.", "Bạn bấm vào chữ Cô Mẫu nha con.",
+                   "Con chỉ bạn nè. Bạn bấm vào chữ Downloads.", "Bạn bấm nút OK cho con nhé."):
+        assert "gọi mẹ hoặc xưng con" in say_problems(family), family
+    assert "nhờ vả" in say_problems("Bạn bấm vào nút OK giúp mình nhé.")
+    assert "nhờ vả" in say_problems("Mình nhờ bạn bấm vào nút OK nhé.")
+    assert "hứa làm hộ" in say_problems("Bạn chờ chút, mình sẽ mở bảng tính cho bạn xem.")
 
 
 def test_mark_draws_only_when_there_is_a_point():

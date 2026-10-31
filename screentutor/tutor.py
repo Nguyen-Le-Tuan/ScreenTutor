@@ -45,17 +45,18 @@ STATE_BLOCK = (
     "và có thể cho biết những điều ảnh chụp không thấy:\n{state}\n"
 )
 SAY_RULES = (
-    "\n\nNgười dùng là mẹ, một cô giáo lớn tuổi mới dùng máy tính. Trường say là đúng câu "
-    "sẽ được đọc to cho mẹ nghe:\n"
+    "\n\nNgười dùng là một cô giáo lớn tuổi mới dùng máy tính. Trường say là đúng câu "
+    "sẽ được đọc to cho người dùng nghe:\n"
     "- Viết tiếng Việt có dấu đầy đủ.\n"
-    "- Gọi người dùng là \"mẹ\", xưng \"con\". Không bao giờ gọi mẹ là \"con\" và không nói \"giúp con\". "
-    "Giọng nhẹ nhàng, rõ ràng, không đùa.\n"
-    "- Mẹ là người tự bấm, nên không hứa là con sẽ bấm hay mở hộ.\n"
+    "- Gọi người dùng là \"bạn\", xưng \"mình\", dù người dùng tự xưng thế nào. Không gọi người dùng "
+    "là \"mẹ\", \"cô\" hay \"con\". Giọng nhẹ nhàng, rõ ràng, không đùa.\n"
+    "- Người dùng là người tự bấm: không nhờ, không mời, không nói \"giúp mình\", và không hứa là "
+    "mình sẽ bấm hay mở hộ. Không thêm câu nói về bản thân.\n"
     "- Chỉ nói MỘT bước tiếp theo, tối đa hai câu ngắn.\n"
     "- Tả chỗ cần bấm bằng vị trí và hình dáng dễ thấy, ví dụ \"góc trên bên trái\", "
     "\"biểu tượng thư mục màu vàng\". Nếu trên nút có chữ tiếng Anh thì đọc đúng chữ đó.\n"
-    "- Nếu hợp, thêm một vế ngắn để mẹ hiểu bấm vào đó để làm gì.\n"
-    "- Nếu found=false, nói ngắn vì sao chưa thấy và mẹ nên làm gì, hoặc hỏi lại mẹ.\n"
+    "- Nếu hợp, thêm một vế ngắn để người dùng hiểu bấm vào đó để làm gì.\n"
+    "- Nếu found=false, nói ngắn vì sao chưa thấy và người dùng nên làm gì, hoặc hỏi lại.\n"
     "- Không dùng ký hiệu, gạch đầu dòng, emoji hay toạ độ."
 )
 
