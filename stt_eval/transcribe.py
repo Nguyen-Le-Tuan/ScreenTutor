@@ -31,9 +31,12 @@ USD_PER_HOUR = 0.18
 # Words mom says about her computer work; a bias, not a guarantee of spelling.
 KEYWORDS = ["Zalo", "Word", "Excel", "PDF", "file", "giáo án", "tổ trưởng", "Google Sheet",
             "Brave", "Chrome", "Downloads", "thư mục", "bảng tính", "Save As"]
+# Everyday words of a mother asking her child; added after T3 showed "mẹ" heard as "mày".
+FAMILY_WORDS = ["mẹ", "con", "ấn", "bấm", "mở", "gửi", "lưu", "tab", "link"]
 CONFIGS = {
     "auto": {},
     "vi+kw": {"languageBias": ["Vietnamese"], "keywords": KEYWORDS},
+    "vi+kw+me": {"languageBias": ["Vietnamese"], "keywords": KEYWORDS + FAMILY_WORDS},
 }
 
 
@@ -58,14 +61,14 @@ def transcribe(client: httpx.Client, wav: Path, extra: dict) -> dict:
 
 
 def load_refs(path: Path | None) -> dict[str, str]:
-    """Optional TSV: file name <tab> what was actually said."""
+    """Optional file: file name, then a tab or spaces, then what was actually said."""
     if not path:
         return {}
     refs = {}
     for line in path.read_text(encoding="utf-8").splitlines():
-        if "\t" in line:
-            name, text = line.split("\t", 1)
-            refs[name.strip()] = text.strip()
+        parts = line.strip().split(None, 1)
+        if len(parts) == 2:
+            refs[parts[0]] = parts[1].strip()
     return refs
 
 

@@ -59,6 +59,7 @@ class WindowInfo:
     maximized: bool = False
     owners: list[str] = field(default_factory=list)  # dialogs: owning windows' titles, nearest first
     kind: str = ""               # "shell" for the desktop or the taskbar, which are not apps
+    debug: dict = field(default_factory=dict)        # raw flags for diagnosis; JSON only, not sent to the model
 
     @property
     def app(self) -> str:
@@ -232,21 +233,28 @@ def main(argv=None) -> None:
     p.add_argument("--out", help="lưu thêm <out>.txt và <out>.json, ví dụ t2_results/S-1")
     p.add_argument("--delay", type=int, default=0,
                    help="chờ bấy nhiêu giây trước khi đọc, để kịp chuyển sang cửa sổ cần thử")
+    p.add_argument("--dump", help="chẩn đoán: ghi mọi cửa sổ có tiêu đề chứa chữ này vào file .json")
     args = p.parse_args(argv)
 
     for left in range(args.delay, 0, -1):
         print(f"Đọc trạng thái sau {left} giây... chuyển sang cửa sổ cần thử.", flush=True)
         time.sleep(1)
     snap = take_snapshot(args.hours)
+    data = asdict(snap)
+    if args.dump:
+        from . import winstate
+        data["dump"] = winstate.dump_windows(args.dump)
     text = format_vi(snap)
     timing = ", ".join(f"{k} {v} ms" for k, v in snap.timings_ms.items())
     report = f"{text}\n\n(Thời gian đọc: {timing})"
+    if args.dump:
+        report += f"\n(Chẩn đoán: {len(data['dump'])} cửa sổ có tiêu đề chứa \"{args.dump}\", xem file .json)"
     print(report)
     if args.out:
         out = Path(args.out)
         out.parent.mkdir(parents=True, exist_ok=True)
         out.with_suffix(".txt").write_text(report + "\n", encoding="utf-8")
-        out.with_suffix(".json").write_text(json.dumps(asdict(snap), ensure_ascii=False, indent=2), encoding="utf-8")
+        out.with_suffix(".json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"\nĐã lưu {out.with_suffix('.txt')} và {out.with_suffix('.json')}")
 
 

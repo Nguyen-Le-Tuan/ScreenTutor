@@ -117,6 +117,39 @@ B. KỊCH BẢN (ghi "Đáp án" TRƯỚC khi chạy, rồi mới chạy và so)
                        (CalculatorApp.exe), tiêu đề "Calculator", đang thu nhỏ.
 
 
+D. THỬ LẠI SAU KHI SỬA (T2b, 30/10/2026)
+----------------------------------------
+Lấy code mới: trong thư mục ScreenTutor chạy   git pull   (hoặc tải lại ZIP nhánh mvp).
+Đã sửa:
+  - Trạng thái thu nhỏ/phóng to: đọc thêm GetWindowPlacement; file .json có thêm mục "debug"
+    (class, iconic, zoomed, show_cmd) cho từng cửa sổ.
+  - App mặc định: đọc lựa chọn của người dùng trong registry (UserChoice) và tên app Store.
+    Không bao giờ ghi "chưa đặt app nào" nữa; đọc không được thì ghi "không xác định được (...)".
+
+[ ] S-5b. Như S-5: thu nhỏ Word (đang mở giáo án) BẰNG NÚT "_" ở góc trên phải cửa sổ Word,
+          TRƯỚC khi chạy lệnh. Để Zalo ở trước.
+          py -m screentutor.state --delay 6 --dump Word --out t2_results\S-5b
+          Đáp án: Word ghi "đang thu nhỏ".
+          Lần trước (S-5) bạn thu nhỏ Word bằng cách nào? (nút "_" / bấm icon Word trên taskbar /
+          Win+D / khác) và thu nhỏ trước hay trong lúc đếm ngược? ______________________
+          Mở t2_results\S-5b.json, chép vào đây:
+            - mục "debug" của cửa sổ Word trong danh sách: ______________________________
+            - mục "dump" ở cuối file (mọi cửa sổ có chữ "Word"; có mấy cái?): ______________
+          Ghi kết quả: ____________________________________________
+
+[ ] S-6b. Đọc dòng "App mặc định" của S-5b.
+          Đáp án (đã tra ở S-6): link Brave, .docx Word, .pdf Foxit PDF Reader, .xlsx Excel, .jpg Photos
+          (hoặc "Microsoft Photos").
+          Ghi kết quả: ____________________________________________
+
+[ ] S-7a. Tải một file .docx MỚI từ Zalo về (cách mẹ hay làm). Chạy NGAY:
+          py -m screentutor.state --out t2_results\S-7a
+          Đáp án: file vừa tải đứng ĐẦU dòng "File mới hoặc vừa sửa", trong Downloads.
+          Ghi kết quả: ____________________________________________
+
+Xong thì commit file này lên nhánh mvp như lần trước (KHÔNG commit thư mục t2_results).
+
+
 C. GỬI LẠI
 ----------
 [ ] Nén thư mục t2_results thành zip, gửi qua Messenger như lần trước, kèm file này đã điền.

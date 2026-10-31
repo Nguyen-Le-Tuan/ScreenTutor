@@ -16,7 +16,7 @@ Mỗi giọng có 2 câu:
     S3: câu dài, có chữ tiếng Anh (Brave, Zalo, taskbar).
     S5: tên file có "(1).docx", giờ "chín giờ tối qua", chữ "Downloads".
 Gạch ngay giọng nào: nghe đùa cợt, nghe như quảng cáo hay TikTok, quá nhanh, khó nghe.
-Ghi số thứ tự các giọng CÒN LẠI: ________________________________
+Ghi số thứ tự các giọng CÒN LẠI: 5, 25,8. Bỏ ngay các giọng miền Trung hoặc giọng quảng cáo, Tiktok. 
 
 
 BƯỚC 2. Chấm kỹ 3–5 giọng tốt nhất (khoảng 8 phút)
@@ -32,14 +32,12 @@ Thang 1–5 (5 là tốt nhất).
 
   Số | Tên giọng      | Ấm | Rõ | Đáng tin | Tốc độ | Tiếng Anh | Tên file | Miền
   ---+----------------+----+----+----------+--------+-----------+----------+-----
-     |                |    |    |          |        |           |          |
-     |                |    |    |          |        |           |          |
-     |                |    |    |          |        |           |          |
-     |                |    |    |          |        |           |          |
-     |                |    |    |          |        |           |          |
+   5 |Hải Đăng — Nam · Bắc · Phong cách tự nhiên|  4.5 |  4.5  | 4    | 4   | Hải Đăng — Nam · Bắc · Phong cách tự nhiên   | Bắc |
+   25|Quốc Tuấn — Nam · Bắc · Phong cách tự nhiên| 3.5   | 3.5   | 3.5   |   3.5    |    Quốc Tuấn — Nam · Bắc · Phong cách tự nhiên       |      Bắc    |
+   8 |Ngọc Huyền — Nữ · Bắc · Giọng đọc tự nhiên |  4  |  3.5 | 3.5   |      3.5  |    Ngọc Huyền — Nữ · Bắc · Giọng đọc tự nhiên       |   Bắc   |
 
-Giọng chọn số 1: ______________   Số 2 (dự phòng): ______________
-Mẹ quen nghe giọng miền nào nhất? ______________
+Giọng chọn số 1: Hải Đăng — Nam · Bắc · Phong cách tự nhiên (05)  Số 2 (dự phòng): 25
+Mẹ quen nghe giọng miền nào nhất? Bắc
 
 
 BƯỚC 3. Nghe mù A và B (khoảng 2 phút)
@@ -47,11 +45,10 @@ BƯỚC 3. Nghe mù A và B (khoảng 2 phút)
 Mở:  /home/nguyenletuan/Desktop/ScreenTutor/tts_eval/out/so_sanh_A_B.html
 Mỗi giọng có bản A và bản B, cùng một câu. ĐỪNG xem đáp án ở cuối file này trước.
 Với mỗi cặp ghi: "không nghe khác", "A hay hơn" hoặc "B hay hơn", và vì sao (méo, rè, ngắt...).
-  1. Ngọc Huyền : ______________________
-  2. Trúc Ly    : ______________________
-  3. Thùy Dung  : ______________________
-  4. Hải Đăng   : ______________________
-
+  1. Ngọc Huyền : Khác nhẹ, bản A hay hơn vì đọc từ Brave chuẩn hơn.
+  2. Trúc Ly    : Giống
+  3. Thùy Dung  : Giống
+  4. Hải Đăng   : Khác, Giọng B hay hơn vì có thêm nhấn nhá và giọng A mở đầu hơi nhanh nên có thể hơi gấp và sợ.
 
 BƯỚC 4. Gửi lại
 ---------------

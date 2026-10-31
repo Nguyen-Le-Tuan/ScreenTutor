@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import ctypes
 import uuid
+import winreg
 from ctypes import wintypes
 from pathlib import Path
 
@@ -48,9 +49,24 @@ dwmapi.DwmGetWindowAttribute.restype = HRESULT
 shlwapi.AssocQueryStringW.argtypes = [ctypes.c_uint, ctypes.c_int, wintypes.LPCWSTR, wintypes.LPCWSTR,
                                       wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)]
 shlwapi.AssocQueryStringW.restype = HRESULT
+shlwapi.SHLoadIndirectString.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.UINT, ctypes.c_void_p]
+shlwapi.SHLoadIndirectString.restype = HRESULT
 ole32.CoTaskMemFree.argtypes = [ctypes.c_void_p]
 ole32.CoInitializeEx.argtypes = [ctypes.c_void_p, wintypes.DWORD]
 ole32.CoInitializeEx.restype = HRESULT
+
+
+class WINDOWPLACEMENT(ctypes.Structure):
+    _fields_ = [("length", wintypes.UINT), ("flags", wintypes.UINT), ("showCmd", wintypes.UINT),
+                ("ptMinPosition", wintypes.POINT), ("ptMaxPosition", wintypes.POINT),
+                ("rcNormalPosition", wintypes.RECT)]
+
+
+user32.GetWindowPlacement.argtypes = [wintypes.HWND, ctypes.POINTER(WINDOWPLACEMENT)]
+user32.GetWindowPlacement.restype = wintypes.BOOL
+user32.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
+user32.GetWindowRect.restype = wintypes.BOOL
+ole32.CoUninitialize.restype = None
 
 
 class GUID(ctypes.Structure):
@@ -74,7 +90,17 @@ ASSOCF_INIT_IGNOREUNKNOWN = 0x400   # do not fall back to the "Open with" handle
 ASSOCF_IS_PROTOCOL = 0x1000
 ASSOCSTR_EXECUTABLE = 2
 ASSOCSTR_FRIENDLYAPPNAME = 4
-HR_NO_ASSOCIATION = 0x80070483
+SW_SHOWMINIMIZED = 2
+SW_SHOWMAXIMIZED = 3
+MINIMIZED_POS = -32000  # Windows parks minimized windows at (-32000, -32000)
+
+# Where Windows keeps the person's own choice (what Settings > Default apps shows).
+# Newer Windows 11 builds may write UserChoiceLatest and leave UserChoice stale.
+USER_CHOICE_KEYS = {
+    "link": r"Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\{}",
+    "ext": r"Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\{ext}\{}",
+}
+USER_CHOICE_NAMES = ("UserChoiceLatest", "UserChoice")
 
 # Shell windows that are not apps: report them by what the person sees.
 SHELL_CLASSES = {"Progman": "màn hình nền (Desktop)", "WorkerW": "màn hình nền (Desktop)",
@@ -202,17 +228,56 @@ def _owners(hwnd) -> list[str]:
     return titles
 
 
+def _show_cmd(hwnd) -> int | None:
+    wp = WINDOWPLACEMENT()
+    wp.length = ctypes.sizeof(WINDOWPLACEMENT)
+    return wp.showCmd if user32.GetWindowPlacement(hwnd, ctypes.byref(wp)) else None
+
+
+def _rect(hwnd) -> tuple[int, int, int, int] | None:
+    r = wintypes.RECT()
+    return (r.left, r.top, r.right, r.bottom) if user32.GetWindowRect(hwnd, ctypes.byref(r)) else None
+
+
+def _flags(hwnd) -> dict:
+    return {"class": _class(hwnd), "hwnd": hwnd, "pid": _pid(hwnd),
+            "visible": bool(user32.IsWindowVisible(hwnd)), "cloaked": _cloaked(hwnd),
+            "iconic": bool(user32.IsIconic(hwnd)), "zoomed": bool(user32.IsZoomed(hwnd)),
+            "show_cmd": _show_cmd(hwnd), "rect": _rect(hwnd)}
+
+
 def describe(hwnd) -> WindowInfo:
     cls = _class(hwnd)
     if cls in SHELL_CLASSES:
-        return WindowInfo(title=SHELL_CLASSES[cls], exe="", kind="shell")
+        return WindowInfo(title=SHELL_CLASSES[cls], exe="", kind="shell", debug={"class": cls})
+    # T2 S-5 saw a minimized Word reported as maximized. Style flags (IsIconic, showCmd) share
+    # one source; the parked position of a minimized window is an independent second one.
+    f = _flags(hwnd)
+    parked = f["rect"] is not None and f["rect"][0] <= MINIMIZED_POS and f["rect"][1] <= MINIMIZED_POS
+    minimized = f["iconic"] or f["show_cmd"] == SW_SHOWMINIMIZED or parked
     return WindowInfo(
         title=_text(hwnd),
         exe=_app_exe(hwnd),
-        minimized=bool(user32.IsIconic(hwnd)),
-        maximized=bool(user32.IsZoomed(hwnd)),
+        minimized=minimized,
+        maximized=not minimized and (f["zoomed"] or f["show_cmd"] == SW_SHOWMAXIMIZED),
         owners=_owners(hwnd),
+        debug=f,
     )
+
+
+def dump_windows(title_part: str) -> list[dict]:
+    """Every top-level window whose title contains `title_part`, unfiltered, for diagnosis."""
+    rows = []
+
+    def keep(hwnd):
+        title = _text(hwnd)
+        if title_part.lower() in title.lower():
+            rows.append({"title": title, "exe": _exe(_pid(hwnd)), **_flags(hwnd),
+                         "task_window": _is_task_window(hwnd)})
+        return True
+
+    _enum(keep)
+    return rows
 
 
 def _is_task_window(hwnd) -> bool:
@@ -249,31 +314,78 @@ def _assoc(name: str, flags: int, what: int) -> str:
     buf = ctypes.create_unicode_buffer(size.value)
     hr = shlwapi.AssocQueryStringW(flags, what, name, None, buf, ctypes.byref(size))
     if hr != 0:
-        code = hr & 0xFFFFFFFF
-        if code == HR_NO_ASSOCIATION:
-            raise LookupError("chưa đặt app nào")
-        raise OSError(f"AssocQueryString({name}) HRESULT 0x{code:08X}")
+        raise OSError(f"AssocQueryString({name}) HRESULT 0x{hr & 0xFFFFFFFF:08X}")
     return buf.value
 
 
+def _user_choice(key: str) -> str | None:
+    """ProgId the person chose for a link or a file type, or None if there is no choice on record.
+
+    The ProgId is a value on the key, or (UserChoiceLatest) may sit in a "ProgId" subkey.
+    """
+    for name in USER_CHOICE_NAMES:
+        path = (USER_CHOICE_KEYS["link"].format(name) if key == "link"
+                else USER_CHOICE_KEYS["ext"].format(name, ext=key))
+        try:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, path) as k:
+                try:
+                    return winreg.QueryValueEx(k, "ProgId")[0]
+                except OSError:
+                    with winreg.OpenKey(k, "ProgId") as sub:
+                        for value_name in ("ProgId", ""):
+                            try:
+                                return winreg.QueryValueEx(sub, value_name)[0]
+                            except OSError:
+                                continue
+        except OSError:
+            continue
+    return None
+
+
+def _progid_app_name(progid: str) -> str | None:
+    """Display name stored under a ProgId (Store apps keep it as an indirect "@{...}" string)."""
+    try:
+        with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, progid + r"\Application") as k:
+            raw = winreg.QueryValueEx(k, "ApplicationName")[0]
+    except OSError:
+        return None
+    if not raw.startswith("@"):
+        return raw or None
+    buf = ctypes.create_unicode_buffer(512)
+    if shlwapi.SHLoadIndirectString(raw, buf, 512, None) != 0:
+        return None
+    return buf.value or None
+
+
 def default_apps() -> dict[str, str]:
-    ole32.CoInitializeEx(None, COINIT_APARTMENTTHREADED)  # S_FALSE if already done; harmless
+    """Never claims "no app set": T2 S-6 showed a failed lookup is not proof of that (Photos, a Store app)."""
+    hr = ole32.CoInitializeEx(None, COINIT_APARTMENTTHREADED)
+    try:
+        return _default_apps()
+    finally:
+        if hr in (0, 1):  # S_OK or S_FALSE must be balanced, so later code can pick its own COM mode
+            ole32.CoUninitialize()
+
+
+def _default_apps() -> dict[str, str]:
     out = {}
     for key, (name, flags) in DEFAULT_TARGETS.items():
+        tried = []
         try:
             exe = Path(_assoc(name, flags, ASSOCSTR_EXECUTABLE)).name
             if exe.lower() in APP_NAMES:
                 out[key] = app_name(exe)
                 continue
-        except LookupError as e:
-            out[key] = str(e)
-            continue
-        except OSError:
-            pass  # Store apps (e.g. Photos) may have no plain executable; try the display name
-        try:
-            out[key] = _assoc(name, flags, ASSOCSTR_FRIENDLYAPPNAME)
-        except (LookupError, OSError) as e:
-            out[key] = f"không đọc được ({e})"
+        except OSError as e:
+            tried.append(str(e))  # Store apps have no plain executable
+        progid = _user_choice(key)
+        found = _progid_app_name(progid) if progid else None
+        if not found:
+            try:
+                found = _assoc(name, flags, ASSOCSTR_FRIENDLYAPPNAME)
+            except OSError as e:
+                tried.append(str(e))
+        out[key] = found or f"không xác định được (ProgId {progid or 'không có'}; {'; '.join(tried)})"
     return out
 
 
