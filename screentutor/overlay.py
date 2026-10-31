@@ -153,8 +153,8 @@ class Overlay:
         self._w.update()
 
 
-def _win_harden(widget) -> None:
-    """Belt and braces on Windows: never take focus, never take clicks, no taskbar button."""
+def _win_harden(widget, click_through: bool = True) -> None:
+    """Belt and braces on Windows: never take focus, no taskbar button, and (by default) never take clicks."""
     if sys.platform != "win32":
         return
     import ctypes
@@ -164,9 +164,8 @@ def _win_harden(widget) -> None:
     user32 = ctypes.windll.user32
     user32.GetWindowLongW.restype = ctypes.c_long
     hwnd = ctypes.c_void_p(int(widget.winId()))
-    style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
-    user32.SetWindowLongW(hwnd, GWL_EXSTYLE,
-                          style | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_NOACTIVATE)
+    style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE) | WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_NOACTIVATE
+    user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style | WS_EX_TRANSPARENT if click_through else style)
     _win_topmost(widget)
 
 

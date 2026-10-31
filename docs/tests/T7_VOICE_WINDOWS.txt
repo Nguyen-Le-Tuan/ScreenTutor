@@ -1,0 +1,79 @@
+T7: THỬ GIỌNG ĐỌC, NGHE TỪ MICRO, NÚT "HỎI" VÀ Ô CHỮ TRÊN WINDOWS (MVP bước 5), 31/10/2026
+========================================================================================
+Làm SAU T5 và T6. Phần chuẩn bị A0-A4 của T5 dùng chung.
+Mục đích: trên máy thật (loa và micro của laptop, giống máy mẹ), xem
+  (1) giọng Hải Đăng có ra tiếng nhanh và rõ không, cách đọc tên file và "OK" đã ổn chưa,
+  (2) micro có nghe trọn câu hỏi không, nhất là khi ngừng giữa hai câu như mẹ,
+  (3) nút "Hỏi" có bấm được mà KHÔNG làm mất chỗ đang gõ trong Word không,
+  (4) ô chữ ở giữa mép trên có che mất thứ gì quan trọng không.
+Phần V không tốn tiền. Phần M mỗi lần vài xu (Muse $0.18 mỗi giờ nói).
+
+Đã đo trên Ubuntu (cùng máy): giọng int8 ra tiếng sau 0,2-0,6 s. Nghe 8 đoạn ghi âm của mẹ qua
+realtime: không ghép thì 3/8 câu bị cắt đôi; chờ ghép 1 giây thì 8/8 còn ý; giữ phím
+(PUSH_TO_TALK) 8/8, chỉ chờ 0,15 s. Ubuntu chưa có thư viện âm thanh nên CHƯA nghe qua loa
+và CHƯA thu từ micro thật: đó là việc của T7.
+
+Luật chấm (ghi trước khi chạy):
+  - V-2 đạt: bản int8 "Âm thanh đầu tiên" trung vị ≤ 0,5 s và RTF trung vị ≤ 0,8
+    (trên Ubuntu: 0,19 s và 0,48).
+  - M-1 đạt: cả 3 câu đọc có ngừng giữa chừng đều được nghe TRỌN (không mất nửa sau).
+  - U-1 đạt: bấm nút "Hỏi" trong lúc đang gõ Word thì chữ gõ tiếp vẫn vào Word;
+    bấm xuyên qua ô chữ được.
+
+
+A. CHUẨN BỊ THÊM (một lần)
+--------------------------
+[ ] A5. Cài thêm thư viện giọng nói (vieneu, sounddevice, websockets):
+              py -m pip install -r requirements.txt
+[ ] A6. Lần đầu chạy giọng đọc sẽ tải model khoảng 250 MB vào tts_eval\models. Làm khi mạng ổn.
+[ ] A7. Cho phép micro: Settings > Privacy & security > Microphone > bật "Let desktop apps
+        access your microphone". Bật loa vừa nghe (như mẹ hay để).
+
+
+B. GIỌNG ĐỌC (không tốn tiền)
+-----------------------------
+[ ] V-1.     py -m screentutor.speak "Bạn bấm đúp vào file Giáo án mẫu Âm nhạc 8 (1).docx rồi bấm nút OK nhé."
+       (Lần đầu chờ tải model.) Dòng "Đọc:" cho thấy câu sau khi sửa cách đọc. Nghe qua loa laptop:
+         - Có nghe ra "số một, bản Word" và "ô kê" không? ______
+         - Giọng có bị rè, vấp, ngắt quãng không? ______
+         - Từ lúc Enter tới lúc có tiếng (lần chạy thứ 2, model đã tải): nhanh / hơi chậm / chậm ______
+[ ] V-2. Đo tốc độ trên Windows (khoảng 3 phút, đo cả fp32 và int8):
+              py tts_eval\bench.py speed
+         Mở file tts_eval\results\speed_<giờ>.md, chép dòng int8 của bảng đầu:
+         int8: nạp model ____ s, âm thanh đầu tiên (trung vị / lớn nhất) ____ / ____ s, RTF ____
+
+
+C. NGHE TỪ MICRO (mỗi lần vài xu)
+---------------------------------
+[ ] M-1. Nút "Hỏi" (máy tự biết khi nói xong):
+              py -m screentutor.listen --mic
+         Đóng vai mẹ, đọc to từng câu dưới đây, ngừng thật ở chỗ "//" khoảng nửa giây đến một giây,
+         như mẹ ngập ngừng. Mỗi câu chạy lệnh một lần.
+           a) "Ủa cái giáo án mẹ sửa hôm qua nó nằm ở đâu vậy // sao mở lên không thấy gì hết"
+           b) "Bây giờ mẹ muốn gửi file PDF cho tiệm in // thì ấn vào đâu vậy"
+           c) "Sao mẹ đặt cái tên kiểu này không được vậy con"
+         Ghi dòng "Nghe được" và "số đoạn nói":
+           a) ________________________________________________ đoạn: __
+           b) ________________________________________________ đoạn: __
+           c) ________________________________________________ đoạn: __
+         Thử thêm một câu ngừng LÂU (khoảng 2 giây) ở giữa: nghe trọn hay mất nửa sau? ______
+[ ] M-2. Giữ phím (thay cho Ctrl+Alt, ở đây bấm Enter khi nói xong):
+              py -m screentutor.listen --mic --mode PUSH_TO_TALK
+         Đọc câu a) ở trên, nói xong bấm Enter. Ghi: ______________________________________
+
+
+D. NÚT "HỎI" VÀ Ô CHỮ (không tốn tiền)
+--------------------------------------
+[ ] U-1.     py -m screentutor.ui --demo
+         Nút ở góc dưới bên phải (trên taskbar), ô chữ ở giữa mép trên. Cứ 2,5 giây chúng đổi
+         trạng thái: Đang nghe -> Đang xem -> Đang nói -> Hỏi.
+           - Mở Word, gõ vài chữ, bấm nút "Hỏi" (PowerShell in "Đã bấm nút Hỏi"), rồi gõ tiếp
+             KHÔNG bấm lại vào Word: chữ có vào Word không? ______
+           - Rê chuột lên ô chữ: ô có mở rộng ra cả câu không? ______
+           - Mở Brave có nhiều tab, kéo cho một tab nằm dưới ô chữ, bấm vào chỗ ô chữ:
+             tab có chuyển không? ______  Ô chữ có che mất thứ gì quan trọng không? ______
+           - Đóng vai mẹ: nút có dễ thấy, chữ có dễ đọc, màu trạng thái có dễ hiểu không? Ghi chú:
+             ______________________________________________________________
+
+
+Xong thì lưu file này, commit và push riêng file này lên nhánh mvp.

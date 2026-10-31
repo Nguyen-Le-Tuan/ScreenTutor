@@ -1,17 +1,13 @@
-import os
-
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-
 import pytest
-from PySide6.QtGui import QColor, QGuiApplication, QImage, QPainter
+from PySide6.QtGui import QColor, QImage, QPainter
 
 from screentutor.overlay import (COLOR, MARK_R, PULSE_MAX, PULSE_S, TRAVEL_R, TRAVEL_S, ease_out, frame_at,
                                  paint_frame, to_logical)
 
 
-@pytest.fixture(scope="module", autouse=True)
-def app():
-    yield QGuiApplication.instance() or QGuiApplication([])
+@pytest.fixture(autouse=True)
+def app(qt_app):
+    return qt_app
 
 
 def test_physical_pixels_map_to_logical_at_125_percent():
