@@ -23,6 +23,14 @@ Rule, fixed before the run (31/10/2026):
   the sentence rules and rerun.
 - Not scored by code: whether the sentences sound right for mom. The founder
   reads say_review.txt.
+
+Rerun rule, fixed before the second run (31/10/2026). Run 20261031-134029 passed
+(1) with 11/11 and (2) with 4.05 s, and failed (3) with 21/24: three answers had
+no Vietnamese diacritics. Read by eye, it also called mom "con" twice, said
+"giúp con" 7 times and promised to open things for her twice. The sentence rules
+now ask for full diacritics, forbid those three, and say mom does the clicking.
+The pointing text is unchanged. Four checks are added to (3): no diacritics,
+calls mom "con", "giúp con", promises to act for her. Thresholds unchanged.
 """
 
 from __future__ import annotations
@@ -57,6 +65,9 @@ BASELINE_HITS = {"case_01": 2, "case_02": 2, "case_03": 0, "case_04": 2, "case_0
 
 MARKUP = set("*#`•[]{}<>|_")
 COORDS = re.compile(r"\d+\s*[,;]\s*\d+|t(?:oạ|ọa)\s*độ", re.IGNORECASE)
+CALLS_MOM_CON = re.compile(r"\b(?:nhé|nha|nhá|ạ)\s+con\b", re.IGNORECASE)
+ASKS_FAVOUR = re.compile(r"\bgiúp con\b", re.IGNORECASE)
+ACTS_FOR_HER = re.compile(r"\bcon\s+(?:sẽ\s+)?(?:mở|bấm|làm|gửi|lưu|tắt|tạo)\b", re.IGNORECASE)
 
 
 def say_problems(say: str) -> list[str]:
@@ -71,8 +82,16 @@ def say_problems(say: str) -> list[str]:
     syllables = len(say.split())
     if syllables > MAX_SYLLABLES:
         problems.append(f"{syllables} âm tiết")
-    if "mẹ" not in say.lower():
+    if say.isascii():
+        problems.append("không dấu")
+    elif "mẹ" not in say.lower():
         problems.append("không gọi mẹ")
+    if CALLS_MOM_CON.search(say):
+        problems.append("gọi mẹ là con")
+    if ASKS_FAVOUR.search(say):
+        problems.append("giúp con")
+    if ACTS_FOR_HER.search(say):
+        problems.append("hứa làm hộ")
     if "\n" in say or any(c in MARKUP for c in say):
         problems.append("có ký hiệu")
     if any(ord(c) > 0xFFFF for c in say):

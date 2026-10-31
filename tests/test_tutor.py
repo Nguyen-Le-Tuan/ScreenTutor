@@ -65,6 +65,11 @@ def test_say_checks():
     assert "có ký hiệu" in say_problems("Mẹ bấm **File** nhé.")
     assert "nhắc toạ độ" in say_problems("Mẹ bấm vào chỗ 512, 380 nhé.")
     assert any(p.endswith("âm tiết") for p in say_problems("Mẹ " + "bấm " * 45))
+    assert say_problems("Me bam vao chu File nhe.") == ["không dấu"]
+    assert "gọi mẹ là con" in say_problems("Mẹ bấm vào chữ Cô Mẫu nha con.")
+    assert "giúp con" in say_problems("Mẹ bấm vào nút OK giúp con nhé.")
+    assert "hứa làm hộ" in say_problems("Mẹ chờ chút, con sẽ mở bảng tính cho mẹ xem.")
+    assert say_problems("Mẹ bấm vào hình con sư tử màu cam ở thanh dưới cùng nhé.") == []
 
 
 def test_mark_draws_only_when_there_is_a_point():
