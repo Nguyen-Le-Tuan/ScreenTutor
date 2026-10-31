@@ -41,8 +41,9 @@ MAX_TURN_S = 45.0
 TRAILING_SILENCE_S = 2.5
 # ENDPOINTING ends a turn at every pause between sentences; on 31/10 it cut mom's me_01 after its first
 # sentence and lost the half that said what was wrong. So after a turn ends, wait this long for more speech
-# and join it to the same question. Set from T7a (tutor_eval/voice.py).
-JOIN_WITHIN_S = 1.5
+# and join it to the same question. T7a (31/10, rule fixed before the run): without joining 5/8 of her real
+# questions kept their meaning, with 1.0 s all 8; her pauses inside a question were 0.40-0.72 s.
+JOIN_WITHIN_S = 1.0
 
 
 def handshake(api_key: str, mode: str) -> dict:
