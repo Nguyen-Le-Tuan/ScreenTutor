@@ -1,0 +1,92 @@
+T6: THỬ NGHE CLICK, CHỜ MÀN HÌNH ĐỨNG YÊN VÀ PHIÊN NHIỀU BƯỚC TRÊN WINDOWS (MVP bước 4), 31/10/2026
+==================================================================================================
+Làm SAU T5 (phần chuẩn bị A0-A4 của T5 dùng chung, không làm lại).
+Mục đích: trên máy thật, xem
+  (1) tutor có nghe đúng mọi cú bấm, bấm đúp, và phím giữ Ctrl+Alt không,
+  (2) tutor có biết lúc màn hình đã đứng yên sau cú bấm không, nhất là KHÔNG báo
+      "đứng yên" khi app còn đang mở dở,
+  (3) cả phiên: chỉ chỗ -> bạn bấm -> tutor tự kiểm bước -> chỉ bước tiếp -> báo xong.
+Phần B, C không tốn tiền. Phần D mỗi bước khoảng $0.007.
+Code chỉ NHÌN: không bấm, không gõ gì thay bạn. Câu tutor nói hiện trong PowerShell
+(giọng nói là bước 5, chưa có).
+
+Luật chấm (ghi trước khi chạy):
+  - I đạt: mọi cú bấm đều in ra đúng một dòng; bấm đúp in thêm dòng "BẤM ĐÚP";
+    bấm sát góc trên trái ra số gần (0, 0), sát góc dưới phải ra số gần (1919, 1079);
+    giữ Ctrl+Alt khoảng 1 giây thì in "bắt đầu" rồi "thả ra"; bấm nhanh Ctrl+Alt không in gì.
+  - C đạt: ít nhất 5/6 tình huống ra đúng kết quả mong đợi, VÀ ở C-2, C-3 không có lần
+    nào báo "ĐỨNG YÊN" trong lúc app vẫn đang hiện dần lên (lỗi này nguy hiểm nhất:
+    tutor sẽ nhìn một màn hình chưa xong và nói sai).
+  - D: ghi lại từng bước; không có ngưỡng, để xem cả vòng chạy thật ra sao.
+
+
+B. NGHE CLICK (không tốn tiền)
+------------------------------
+[ ] I-1.     py -m screentutor.inputs --seconds 60
+       Lần lượt làm, mỗi việc cách nhau vài giây:
+         a) bấm trái một lần gần góc trên bên trái màn hình
+         b) bấm trái một lần gần góc dưới bên phải
+         c) bấm đúp vào một file trên Desktop hoặc trong Explorer
+         d) bấm phải một lần
+         e) giữ Ctrl+Alt khoảng 1 giây rồi thả
+         f) bấm nhanh Ctrl+Alt rồi thả ngay (dưới nửa giây)
+       Ghi dòng in ra cho từng việc:
+         a) ______  b) ______  c) ______  d) ______  e) ______  f) ______
+[ ] I-2. Bật Unikey (gõ tiếng Việt như mẹ). Giữ Ctrl+Alt 1 giây trong Word đang mở:
+         có gõ ra ký tự lạ, đổi kiểu gõ, hay mở menu gì không? ______
+
+
+C. CHỜ MÀN HÌNH ĐỨNG YÊN (không tốn tiền)
+-----------------------------------------
+[ ] Chạy:    py -m screentutor.still --seconds 180
+    Sau mỗi cú bấm, PowerShell in: ĐỨNG YÊN / KHÔNG ĐỔI / QUÁ GIỜ và sau bao nhiêu giây.
+    Với mỗi tình huống, ghi dòng in ra, và nói rõ lúc nó in thì app đã hiện xong hẳn chưa.
+
+  C-1. Word đang mở giáo án: bấm chữ File.
+       Mong đợi: ĐỨNG YÊN, dưới 2 giây.                  Ghi: ______
+  C-2. Explorer ở Downloads: bấm đúp một file .docx (Word chưa mở sẵn, để Word mở chậm).
+       Mong đợi: ĐỨNG YÊN sau khi Word đã hiện xong hẳn. Ghi: ______  Lúc in, Word đã xong chưa? ______
+  C-3. Zalo: bấm vào link Google Sheet trong tin nhắn (Brave mở trang).
+       Mong đợi: ĐỨNG YÊN sau khi trang Sheet hiện xong. Ghi: ______  Lúc in, trang đã xong chưa? ______
+  C-4. Bấm vào một chỗ trống trên Desktop.
+       Mong đợi: KHÔNG ĐỔI, khoảng 2,5 giây.             Ghi: ______
+  C-5. Word đang mở, bấm vào giữa một dòng chữ (con trỏ gõ nhảy tới đó và nhấp nháy).
+       Mong đợi: KHÔNG ĐỔI, hoặc ĐỨNG YÊN rất nhanh.     Ghi: ______
+  C-6. Mở một video YouTube đang chạy, bấm vào chỗ trống trên trang (video vẫn chạy).
+       Mong đợi: QUÁ GIỜ sau khoảng 12 giây.             Ghi: ______
+
+
+D. PHIÊN NHIỀU BƯỚC (mỗi bước khoảng $0.007)
+--------------------------------------------
+Cách chạy:  py -m screentutor.session --delay 6 "câu hỏi"
+  -> trong 6 giây đếm ngược, bấm sang cửa sổ cần hỏi.
+  -> mỗi bước: đọc câu "Tutor: ..." trong PowerShell, bấm vào đúng chỗ vòng đỏ chỉ (đóng vai mẹ).
+  -> sau khi bấm, vòng biến mất; khi màn hình đứng yên tutor tự kiểm và chỉ bước tiếp.
+  -> phiên dừng khi tutor nói đã xong, hoặc sau 8 bước, hoặc 3 phút không bấm.
+!! tutor_runs chứa ảnh màn hình thật: KHÔNG nén, KHÔNG commit. Chỉ điền và commit file txt này.
+
+[ ] L-1. Word đang mở giáo án, phóng to.
+              py -m screentutor.session --delay 6 "Mẹ muốn xuất giáo án này ra PDF"
+         Đường đúng dự kiến: File -> Export -> Create PDF/XPS -> hộp lưu -> Publish -> xong.
+         Ghi từng bước (vòng chỉ đúng không / tutor nói gì / sau khi bấm bao lâu thì có câu mới):
+           1. ______________________________________________
+           2. ______________________________________________
+           3. ______________________________________________
+           4. ______________________________________________
+           5. ______________________________________________
+         Cuối cùng tutor có nói "xong" đúng lúc không (không sớm, không muộn)? ______
+
+[ ] L-2. Dựng lại case_04: Brave đang mở trang Sheet nhưng chuyển sang tab khác, rồi bấm Zalo
+         cho Zalo nằm trước, phóng to.
+              py -m screentutor.session --delay 6 "Mẹ bấm link rồi mà không thấy bảng tính cô gửi, giờ bấm vào đâu để xem?"
+         Chú ý: ở phép thử trên ảnh, tutor từng nói "xong rồi" ngay khi Brave hiện lên dù
+         trang đang mở chưa phải bảng tính. Xem nó có lặp lại không.
+         Ghi từng bước: ________________________________________________
+         Tutor có nói "xong" quá sớm không? ______
+
+[ ] L-3. Bấm sai một lần: chạy lại L-1, đến bước 2 cố ý bấm vào chỗ trống thay vì chỗ vòng chỉ.
+         Mong đợi: tutor nói bấm lại, vòng hiện lại đúng chỗ cũ.
+         Ghi: ______________________________________________
+
+
+Xong thì lưu file này, commit và push riêng file này lên nhánh mvp.
