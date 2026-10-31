@@ -13,7 +13,7 @@ Luật chấm (ghi trước khi chạy):
 
 A. CHUẨN BỊ (một lần)
 ---------------------
-[ ] A1. Lấy code về Windows. Repo đang để RIÊNG TƯ (private), nên phải đăng nhập GitHub.
+[x] A1. Lấy code về Windows. Repo đang để RIÊNG TƯ (private), nên phải đăng nhập GitHub.
         Chọn một cách:
         - Trình duyệt (dễ nhất): đăng nhập github.com, mở
               https://github.com/Nguyen-Le-Tuan/ScreenTutor/tree/mvp
@@ -22,10 +22,10 @@ A. CHUẨN BỊ (một lần)
         - Có git: mở PowerShell ở thư mục bạn muốn rồi chạy
               git clone -b mvp https://github.com/Nguyen-Le-Tuan/ScreenTutor.git
           Git sẽ mở cửa sổ đăng nhập GitHub lần đầu.
-[ ] A2. Mở PowerShell trong thư mục ScreenTutor (chỗ có thư mục "screentutor").
+[x] A2. Mở PowerShell trong thư mục ScreenTutor (chỗ có thư mục "screentutor").
         Kiểm tra Python:   py --version     (cần 3.10 trở lên)
         Phần cảm biến chỉ dùng thư viện có sẵn của Python, KHÔNG cần pip install.
-[ ] A3. Chạy thử một lần:
+[x] A3. Chạy thử một lần:
               py -m screentutor.state
         Lần này cửa sổ trước mặt sẽ là PowerShell. Bình thường, chỉ để chắc lệnh chạy được.
         Nếu báo lỗi đỏ: chụp màn hình lỗi, gửi Claude, dừng ở đây.
@@ -39,62 +39,82 @@ Cách chạy cho mỗi kịch bản bên dưới:
 
 B. KỊCH BẢN (ghi "Đáp án" TRƯỚC khi chạy, rồi mới chạy và so)
 ------------------------------------------------------------
-[ ] S-1. Dựng lại case_04: Brave đang mở trang Sheet "Bảng kê khai thi đua...",
+[x] S-1. Dựng lại case_04: Brave đang mở trang Sheet "Bảng kê khai thi đua...",
          rồi bấm Zalo để Zalo nằm trước, phóng to. Chạy lệnh, trong 6 giây bấm vào Zalo.
          Đáp án: cửa sổ trước mặt = Zalo; trong danh sách có Brave với tiêu đề trang Sheet.
-         Ghi kết quả: ____________________________________________
+         Ghi kết quả: ĐẠT. S-1.txt ghi Zalo ở trước, đang phóng to; danh sách có Brave
+                      với tiêu đề "Bảng kê khai thi đua - Tổ Nghệ Thuật - Google Sheets - Brave".
 
-[ ] S-2. Dựng lại case_12: Word, File > Save As, gõ tên có dấu ? hoặc ", bấm Save để hiện
+[x] S-2. Dựng lại case_12: Word, File > Save As, gõ tên có dấu ? hoặc ", bấm Save để hiện
          hộp báo lỗi "The file name is not valid". Chạy lệnh, trong 6 giây bấm vào hộp báo lỗi.
          Đáp án: cửa sổ trước mặt = Word, là hộp thoại của "Save As", nằm trên cửa sổ Word
                  đang mở giáo án (tức là chuỗi: hộp lỗi -> Save As -> Word).
-         Ghi kết quả: ____________________________________________
+         Ghi kết quả: ĐẠT phần nhận diện cửa sổ. S-2.txt ghi cửa sổ trước mặt là Word,
+                      tiêu đề "Save As", chủ sở hữu lần lượt là "Save As" rồi
+                      "Giáo án mẫu Âm nhạc 8 (1).docx - Word". Cảm biến không đọc
+                      nội dung thông báo "The file name is not valid".
 
-[ ] S-3. File Explorer đang mở Downloads. Chạy lệnh, trong 6 giây bấm vào Explorer.
+[x] S-3. File Explorer đang mở Downloads. Chạy lệnh, trong 6 giây bấm vào Explorer.
          Đáp án: cửa sổ trước mặt = File Explorer, tiêu đề có "Downloads".
-         Ghi kết quả: ____________________________________________
+         Ghi kết quả: ĐẠT. S-3.txt ghi File Explorer ở trước, tiêu đề
+                      "Downloads - File Explorer".
 
-[ ] S-4. BẪY APP STORE: mở một ảnh .jpg bằng app Photos (bấm đúp ảnh trong Explorer).
+[x] S-4. BẪY APP STORE: mở một ảnh .jpg bằng app Photos (bấm đúp ảnh trong Explorer).
          Chạy lệnh, trong 6 giây bấm vào cửa sổ Photos.
          Đáp án: cửa sổ trước mặt = Photos (KHÔNG phải "ApplicationFrameHost").
-         Ghi kết quả: ____________________________________________
+         Ghi kết quả: ĐẠT phần nhận diện cửa sổ. S-4.txt ghi Photos (Photos.exe)
+                      ở trước, tiêu đề "DSC09997.jpg".
 
-[ ] S-5. Thu nhỏ Word xuống taskbar, để Zalo ở trước. Chạy lệnh, bấm vào Zalo.
+[x] S-5. Thu nhỏ Word xuống taskbar, để Zalo ở trước. Chạy lệnh, bấm vào Zalo.
          Đáp án: Word có trong danh sách và ghi "đang thu nhỏ".
-         Ghi kết quả: ____________________________________________
+         Ghi kết quả: TRƯỢT NẶNG. Bạn xác nhận đã thu nhỏ cửa sổ Word mở
+                      "Giáo án mẫu Âm nhạc 8 (1).docx"; S-5.txt lại ghi cửa sổ đó
+                      "đang phóng to", không báo lỗi. Zalo ở trước đúng như đáp án.
 
-[ ] S-6. App mặc định và thư mục chuẩn (đọc từ kết quả của bất kỳ lần chạy nào ở trên).
+[x] S-6. App mặc định và thư mục chuẩn (đọc từ kết quả của bất kỳ lần chạy nào ở trên).
          Trước khi xem kết quả, tự tra đáp án:
-           - Settings > Apps > Default apps: trình duyệt mặc định là ________
-             file .docx mở bằng ________   file .pdf mở bằng ________
-             file .xlsx mở bằng ________   file .jpg mở bằng ________
-           - Trong Explorer, chuột phải Downloads > Properties > tab Location: ________
-             Làm tương tự với Desktop: ________  Documents: ________
+           - Settings > Apps > Default apps: trình duyệt mặc định là Brave (HTTP)
+             file .docx mở bằng Word   file .pdf mở bằng Foxit PDF Reader
+             file .xlsx mở bằng Excel   file .jpg mở bằng Photos
+           - Trong Explorer, chuột phải Downloads > Properties > tab Location:
+             C:\Users\Lenovo\Downloads
+             Làm tương tự với Desktop: C:\Users\Lenovo\Desktop
+             Documents: C:\Users\Lenovo\Documents
              (Chú ý: Desktop/Documents có thể nằm trong OneDrive.)
          Đáp án = những gì bạn vừa tra. So với dòng "App mở mặc định" và "Thư mục chuẩn".
-         Ghi kết quả: ____________________________________________
+         Ghi kết quả: TRƯỢT NẶNG ở .jpg: Settings ghi Photos, cả tám báo cáo lại ghi
+                      "chưa đặt app nào" và không báo lỗi. HTTP, .docx, .pdf, .xlsx
+                      và ba thư mục chuẩn khớp. Các đáp án Settings/Location được
+                      đối chiếu sau khi đã xem báo cáo, không ghi trước lần chạy.
 
-[ ] S-7. File mới:
+[x] S-7. File mới:
          (a) Tải một file .docx từ Zalo về (cách mẹ hay làm). Chạy lệnh ngay sau đó.
              Đáp án: file đó đứng ĐẦU dòng "File mới hoặc vừa sửa", đúng thư mục.
          (b) Mở file đó, sửa một chữ, Ctrl+S, đóng Word. Chạy lệnh.
              Đáp án: file vẫn đứng đầu, ghi "sửa hôm nay HH:MM" đúng giờ vừa lưu.
          (c) Nếu có thư mục "Zalo Received Files" trong Documents: xem file Zalo tải về
-             nằm ở đó hay ở Downloads. Ghi lại: ________
-         Ghi kết quả: ____________________________________________
+             nằm ở đó hay ở Downloads. Ghi lại: Downloads
+         Ghi kết quả: (a) CHƯA XÁC MINH: không có báo cáo riêng ngay sau khi tải.
+                      (b) ĐẠT phần file vừa sửa: S-7.txt ghi "Giáo án mẫu Âm nhạc 8.docx"
+                      ở đầu danh sách, trong Downloads, "sửa hôm nay 21:25"; dấu giờ
+                      sửa trên file khớp. Tuy nhiên, Word đang mở file này ở trước
+                      lúc đọc, nên bước đóng Word chưa được xác nhận.
+                      (c) File được báo cáo nằm trong Downloads, dù có thư mục
+                      "Zalo Received Files" trong Documents.
 
-[ ] S-8. Ghi thời gian: dòng "(Thời gian đọc: ...)" ở S-1: tổng = ______ ms
+[x] S-8. Ghi thời gian: dòng "(Thời gian đọc: ...)" ở S-1: tổng = 56,2 ms
 
-[ ] S-9. BẪY MÀN HÌNH NỀN: chạy lệnh, trong 6 giây bấm Win+D (hiện màn hình nền),
+[x] S-9. BẪY MÀN HÌNH NỀN: chạy lệnh, trong 6 giây bấm Win+D (hiện màn hình nền),
          rồi bấm một lần vào chỗ trống trên màn hình nền.
          Đáp án: cửa sổ trước mặt = "màn hình nền (Desktop)", KHÔNG phải File Explorer.
-         Ghi kết quả: ____________________________________________
+         Ghi kết quả: ĐẠT. S-9.txt ghi "màn hình nền (Desktop), không phải cửa sổ app nào".
 
-[ ] S-10. BẪY APP STORE THU NHỎ: mở Calculator, thu nhỏ nó xuống taskbar, để Zalo ở trước.
+[x] S-10. BẪY APP STORE THU NHỎ: mở Calculator, thu nhỏ nó xuống taskbar, để Zalo ở trước.
           Chạy lệnh, bấm vào Zalo.
           Đáp án: trong danh sách có Calculator (tên exe có thể là CalculatorApp.exe),
                   KHÔNG phải "ApplicationFrameHost".
-          Ghi kết quả: ____________________________________________
+          Ghi kết quả: ĐẠT. S-10.txt ghi Zalo ở trước và CalculatorApp
+                       (CalculatorApp.exe), tiêu đề "Calculator", đang thu nhỏ.
 
 
 C. GỬI LẠI
