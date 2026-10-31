@@ -193,8 +193,7 @@ def render_preview(on: str, out: str, scale: float = 1.25) -> None:
     p = QPainter(img)
     p.scale(scale, scale)
     w, h = img.width() / scale, img.height() / scale
-    sample = "ủa cái giáo án mà mẹ gửi hôm mẹ ấn hôm nay nó nằm ở đâu vậy sao mà hôm qua mẹ sửa xong rồi " \
-             "giờ mẹ mở lên không thấy nó nằm ở đâu hết"
+    sample = "cái file báo cáo tuần trước tôi lưu ở đâu rồi sao bây giờ mở ra không thấy chữ nào hết vậy"  # made up, not mom's words
     iw, ih = island_size(sample, False)
     paint_island(p, QRectF((w - iw) / 2, 6, iw, ih), "thinking", sample, False)
     ow, oh = island_size(sample, True)
@@ -227,7 +226,7 @@ def main(argv=None) -> None:
     button, island = AskButton(), Island()
     button.show()
     island.show()
-    script = [("listening", "ủa cái giáo án"), ("listening", "ủa cái giáo án mà mẹ gửi hôm nay nó nằm ở đâu vậy"),
+    script = [("listening", "cái file báo cáo"), ("listening", "cái file báo cáo tuần trước tôi lưu ở đâu rồi"),
               ("thinking", None), ("speaking", None), ("idle", None)]
     step = [0]
 

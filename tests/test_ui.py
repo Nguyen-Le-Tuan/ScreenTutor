@@ -5,7 +5,7 @@ from PySide6.QtGui import QColor, QImage, QPainter
 from screentutor.ui import ISLAND_H, ISLAND_W_MAX, ISLAND_W_MIN, ISLAND_W_OPEN, STATES, AskButton, Island, \
     island_size, paint_button, paint_island
 
-LONG = "ủa cái giáo án mà mẹ gửi hôm mẹ ấn hôm nay nó nằm ở đâu vậy sao mà hôm qua mẹ sửa xong rồi giờ mẹ mở lên"
+LONG = "cái file báo cáo tuần trước tôi lưu ở đâu rồi sao bây giờ mở ra không thấy chữ nào hết vậy"
 
 
 @pytest.fixture(autouse=True)
@@ -44,7 +44,7 @@ def test_button_emits_clicked_and_island_follows_the_state():
                                          Qt.NoButton, Qt.NoModifier))
     assert seen == [1]
     button.set_state("listening")
-    island.set_state("listening", "ủa cái giáo án")
-    assert button.state == island.state == "listening" and island.text == "ủa cái giáo án"
+    island.set_state("listening", "cái file báo cáo")
+    assert button.state == island.state == "listening" and island.text == "cái file báo cáo"
     island.set_state("thinking")  # no new text: keeps what was heard
-    assert island.text == "ủa cái giáo án"
+    assert island.text == "cái file báo cáo"
