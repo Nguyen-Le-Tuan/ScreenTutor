@@ -77,7 +77,9 @@ def main(argv=None) -> None:
     p.add_argument("files", nargs="+", type=Path)
     p.add_argument("--refs", type=Path, help="TSV: tên file <tab> câu nói thật")
     p.add_argument("--label", default="", help="gắn vào tên thư mục kết quả, ví dụ 'me' hoặc 'tts'")
+    p.add_argument("--config", choices=list(CONFIGS), help="chỉ chạy một cấu hình")
     args = p.parse_args(argv)
+    configs = {args.config: CONFIGS[args.config]} if args.config else CONFIGS
 
     load_dotenv(REPO_ROOT / ".env")
     key = os.environ.get("MODEL_API_KEY", "").strip()
@@ -95,7 +97,7 @@ def main(argv=None) -> None:
             wav = Path(tmp) / (src.stem + ".wav")
             to_wav(src, wav)
             row = {"file": src.name, "ref": refs.get(src.name, "")}
-            for name, extra in CONFIGS.items():
+            for name, extra in configs.items():
                 res = transcribe(client, wav, extra)
                 row[name] = res
                 total_ms += res.get("audio_ms") or 0
@@ -111,7 +113,7 @@ def main(argv=None) -> None:
     for i, row in enumerate(rows, 1):
         lines += [f"## {i}. {row['file']}", "",
                   f"- Câu nói thật: {row['ref'] or '__________ (founder ghi theo trí nhớ khi nghe)'}"]
-        for name in CONFIGS:
+        for name in configs:
             r = row[name]
             lines.append(f"- {name} ({r.get('latency_s')} s): {r.get('transcript', r.get('error'))}")
             lines.append(f"  - Chấm: ______")
