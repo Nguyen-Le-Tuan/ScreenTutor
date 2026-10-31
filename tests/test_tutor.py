@@ -4,7 +4,8 @@ from PIL import Image
 
 from grounding_test.meta_api import vision_prompt
 from screentutor import screen
-from screentutor.tutor import EFFORT, MODEL, SAY_RULES, Reply, build_body, build_prompt, parse_reply
+from screentutor.tutor import (EFFORT, MODEL, SAY_RULES, Reply, build_body, build_follow_up_body,
+                               build_follow_up_prompt, build_prompt, parse_reply)
 from tutor_eval.run import say_problems
 
 STATE = "- Cửa sổ đang ở trước mặt: Zalo (Zalo.exe), tiêu đề \"Zalo\", đang phóng to toàn màn hình."
@@ -48,6 +49,29 @@ def test_parse_reply_without_target_has_no_point():
 
 def test_parse_reply_bad_json_is_an_error():
     assert parse_reply(_resp("not json")).error == "answer is not valid JSON"
+
+
+def test_follow_up_keeps_the_pointing_text_and_adds_the_last_step():
+    last = "Bạn bấm vào chữ File ở góc trên bên trái."
+    text = build_follow_up_prompt("Mẹ muốn xuất ra PDF", last, STATE, screen_changed=False)
+    assert text.startswith(vision_prompt("Mẹ muốn xuất ra PDF", STATE))
+    assert last in text and "màn hình không thay đổi" in text and text.endswith(SAY_RULES)
+    assert "Chương trình đo được" not in build_follow_up_prompt("x", last)  # no measurement claimed when unknown
+
+
+def test_follow_up_body_asks_for_step_and_goal():
+    body = build_follow_up_body("Mẹ muốn xuất ra PDF", "Bạn bấm File.", "data:image/png;base64,AAAA")
+    schema = body["response_format"]["json_schema"]["schema"]
+    assert {"step_done", "goal_done", "say", "x", "y"} <= set(schema["required"])
+    assert body["reasoning_effort"] == "low"
+
+
+def test_parse_reply_reads_step_and_goal_only_when_present():
+    r = parse_reply(_resp({"step_done": True, "goal_done": False, "found": True, "x": 10, "y": 20,
+                           "element": "Export", "say": "Bạn bấm vào chữ Export nhé."}))
+    assert (r.step_done, r.goal_done, r.point) == (True, False, (10.0, 20.0))
+    first = parse_reply(_resp({"found": False, "x": 0, "y": 0, "element": "", "say": "Bạn mở Zalo trước nhé."}))
+    assert first.step_done is None and first.goal_done is None
 
 
 def test_point_px_maps_grid_to_screenshot_pixels():

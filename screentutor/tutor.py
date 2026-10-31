@@ -74,6 +74,27 @@ REPLY_SCHEMA = {
     "additionalProperties": False,
 }
 
+# Later turns of the same task (step 4): the screenshot is taken after the user clicked and the screen settled.
+FOLLOW_BLOCK = (
+    "\n\nĐây là lượt tiếp theo của cùng việc đó. Lượt trước, tutor đã nói: \"{last_say}\" "
+    "Sau đó người dùng đã bấm chuột; ảnh trên được chụp khi màn hình đã đứng yên.{changed}\n"
+    "- step_done: true nếu màn hình cho thấy bước vừa hướng dẫn đã làm xong.\n"
+    "- goal_done: true nếu điều người dùng hỏi đã làm xong hẳn. Khi đó đặt found=false và trong say "
+    "chỉ báo ngắn là đã xong (thay cho quy tắc found=false bên dưới).\n"
+    "- Nếu bước vừa rồi chưa xong, chỉ lại chỗ cần bấm và nói nhẹ nhàng để người dùng thử lại.\n"
+    "- Nếu bước đã xong mà việc chưa xong, chỉ bước tiếp theo."
+)
+SCREEN_CHANGED = {True: " Chương trình đo được: sau cú bấm, màn hình đã thay đổi.",
+                  False: " Chương trình đo được: sau cú bấm, màn hình không thay đổi.",
+                  None: ""}
+FOLLOW_SCHEMA = {
+    "type": "object",
+    "properties": {"step_done": {"type": "boolean"}, "goal_done": {"type": "boolean"},
+                   **REPLY_SCHEMA["properties"]},
+    "required": ["step_done", "goal_done", *REPLY_SCHEMA["required"]],
+    "additionalProperties": False,
+}
+
 
 def point_prompt(question: str, state: str | None = None) -> str:
     """Identical to the measured grounding prompt."""
@@ -84,18 +105,32 @@ def build_prompt(question: str, state: str | None = None) -> str:
     return point_prompt(question, state) + SAY_RULES
 
 
+def build_follow_up_prompt(goal: str, last_say: str, state: str | None = None,
+                           screen_changed: bool | None = None) -> str:
+    return (point_prompt(goal, state)
+            + FOLLOW_BLOCK.format(last_say=last_say, changed=SCREEN_CHANGED[screen_changed]) + SAY_RULES)
+
+
 def build_body(question: str, image_data_url: str, state: str | None = None,
                model: str = MODEL, effort: str | None = EFFORT) -> dict:
+    return _body(build_prompt(question, state), image_data_url, "tutor_reply", REPLY_SCHEMA, model, effort)
+
+
+def build_follow_up_body(goal: str, last_say: str, image_data_url: str, state: str | None = None,
+                         screen_changed: bool | None = None, model: str = MODEL,
+                         effort: str | None = EFFORT) -> dict:
+    text = build_follow_up_prompt(goal, last_say, state, screen_changed)
+    return _body(text, image_data_url, "tutor_follow_up", FOLLOW_SCHEMA, model, effort)
+
+
+def _body(text: str, image_data_url: str, name: str, schema: dict, model: str, effort: str | None) -> dict:
     body = {
         "model": model,
         "messages": [{"role": "user", "content": [
-            {"type": "text", "text": build_prompt(question, state)},
+            {"type": "text", "text": text},
             {"type": "image_url", "image_url": {"url": image_data_url}},
         ]}],
-        "response_format": {
-            "type": "json_schema",
-            "json_schema": {"name": "tutor_reply", "schema": REPLY_SCHEMA},
-        },
+        "response_format": {"type": "json_schema", "json_schema": {"name": name, "schema": schema}},
     }
     if effort:
         body["reasoning_effort"] = effort
@@ -108,6 +143,8 @@ class Reply:
     found: bool = False
     point: tuple[float, float] | None = None  # 0-1000 grid, clamped
     element: str = ""
+    step_done: bool | None = None  # later turns only
+    goal_done: bool | None = None
     latency_s: float = 0.0
     usage: dict = field(default_factory=lambda: {"input": 0, "output": 0, "cached": 0, "reasoning": 0})
     raw: dict | None = None
@@ -139,6 +176,9 @@ def parse_reply(resp: dict) -> Reply:
     res.say = str(answer.get("say") or "").strip()
     res.element = str(answer.get("element") or "").strip()
     res.found = bool(answer.get("found"))
+    for key in ("step_done", "goal_done"):
+        if key in answer:
+            setattr(res, key, bool(answer[key]))
     x, y = answer.get("x"), answer.get("y")
     if res.found and isinstance(x, (int, float)) and isinstance(y, (int, float)):
         res.point = (min(max(float(x), 0.0), 1000.0), min(max(float(y), 0.0), 1000.0))
@@ -158,7 +198,15 @@ class Tutor:
         self._http.close()
 
     def ask(self, question: str, image_data_url: str, state: str | None = None) -> Reply:
-        body = build_body(question, image_data_url, state, self.model, self.effort)
+        return self._call(build_body(question, image_data_url, state, self.model, self.effort))
+
+    def follow_up(self, goal: str, last_say: str, image_data_url: str, state: str | None = None,
+                  screen_changed: bool | None = None) -> Reply:
+        """After the user clicked and the screen settled: was the step done, is the task done, what next."""
+        return self._call(build_follow_up_body(goal, last_say, image_data_url, state, screen_changed,
+                                               self.model, self.effort))
+
+    def _call(self, body: dict) -> Reply:
         try:
             resp, elapsed = self._post("/chat/completions", body)
         except (httpx.HTTPError, RuntimeError) as e:
