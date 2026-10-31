@@ -126,26 +126,26 @@ Lấy code mới: trong thư mục ScreenTutor chạy   git pull   (hoặc tải
   - App mặc định: đọc lựa chọn của người dùng trong registry (UserChoice) và tên app Store.
     Không bao giờ ghi "chưa đặt app nào" nữa; đọc không được thì ghi "không xác định được (...)".
 
-[ ] S-5b. Như S-5: thu nhỏ Word (đang mở giáo án) BẰNG NÚT "_" ở góc trên phải cửa sổ Word,
+[x] S-5b. Như S-5: thu nhỏ Word (đang mở giáo án) BẰNG NÚT "_" ở góc trên phải cửa sổ Word,
           TRƯỚC khi chạy lệnh. Để Zalo ở trước.
           py -m screentutor.state --delay 6 --dump Word --out t2_results\S-5b
           Đáp án: Word ghi "đang thu nhỏ".
           Lần trước (S-5) bạn thu nhỏ Word bằng cách nào? (nút "_" / bấm icon Word trên taskbar /
           Win+D / khác) và thu nhỏ trước hay trong lúc đếm ngược? ______________________
           Mở t2_results\S-5b.json, chép vào đây:
-            - mục "debug" của cửa sổ Word trong danh sách: ______________________________
-            - mục "dump" ở cuối file (mọi cửa sổ có chữ "Word"; có mấy cái?): ______________
-          Ghi kết quả: ____________________________________________
+            - mục "debug" của cửa sổ Word trong danh sách: {"class":"OpusApp","hwnd":132216,"pid":5400,"visible":true,"cloaked":false,"iconic":true,"zoomed":false,"show_cmd":2}
+            - mục "dump" ở cuối file (mọi cửa sổ có chữ "Word"; có mấy cái?): 1 cửa sổ, cùng debug như trên, "task_window":true
+          Ghi kết quả: ĐẠT. Word được ghi "đang thu nhỏ"; Zalo ở trước. Cách thu nhỏ ở lần S-5 trước không có trong log results.
 
-[ ] S-6b. Đọc dòng "App mặc định" của S-5b.
+[x] S-6b. Đọc dòng "App mặc định" của S-5b.
           Đáp án (đã tra ở S-6): link Brave, .docx Word, .pdf Foxit PDF Reader, .xlsx Excel, .jpg Photos
           (hoặc "Microsoft Photos").
-          Ghi kết quả: ____________________________________________
+          Ghi kết quả: ĐẠT. S-5b.txt ghi đúng: link: Brave; file .docx: Word; file .pdf: Foxit PDF Reader; file .xlsx: Excel; file .jpg: Photos.
 
-[ ] S-7a. Tải một file .docx MỚI từ Zalo về (cách mẹ hay làm). Chạy NGAY:
+[x] S-7a. Tải một file .docx MỚI từ Zalo về (cách mẹ hay làm). Chạy NGAY:
           py -m screentutor.state --out t2_results\S-7a
           Đáp án: file vừa tải đứng ĐẦU dòng "File mới hoặc vừa sửa", trong Downloads.
-          Ghi kết quả: ____________________________________________
+          Ghi kết quả: Tôi đã tải file GSE.... như bạn thấy trong kết quả, tuy nhiên có vấn đề như sau: cách mẹ tôi hay làm là ấn thẳng vào file, và khi tôi chạy lệnh trên lần 1 thì không thấy file này mới nhất trong downloads, nhưng sau đó tôi quay về zalo ấn vào icon thư mục để mở lại file và chạy lại lệnh trên thì nó mới chạy lại cập nhật mới nhất là file GSE....của tôi.
 
 Xong thì commit file này lên nhánh mvp như lần trước (KHÔNG commit thư mục t2_results).
 

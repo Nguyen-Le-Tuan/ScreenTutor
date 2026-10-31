@@ -15,7 +15,7 @@ nó chỉ cho mẹ bấm vào đâu, khỏi phải chờ ba. Con cần thử xem
 Mẹ gửi con khoảng 8 tin nhắn thoại trên Zalo nha, mỗi tin là một câu mẹ hay hỏi ba khi
 dùng máy tính. Mẹ cứ nói tự nhiên như đang hỏi ba, không cần nói chậm hay nói to.
 Mấy kiểu câu như:
-  - cái file giáo án mẹ sửa hôm qua nằm đâu
+  - cái file giáo án mẹ sửa hôm qua nằm đâu 
   - sao mở file ra lại thấy trắng trơn
   - gửi file cho cô tổ trưởng thì làm sao
   - lưu file mà máy báo lỗi tên file

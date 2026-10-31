@@ -242,3 +242,10 @@ t2_results/
 stt_eval/audio/
 stt_eval/results/
 stt_eval/audio_synth/
+
+# Archives and recordings never go to the public repo (a zip slipped past the folder rules on 31/10)
+*.zip
+*.m4a
+*.wav
+*.mp3
+*.aac
