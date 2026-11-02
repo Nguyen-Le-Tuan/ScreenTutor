@@ -1,4 +1,4 @@
-from screentutor.segment import Found, build_body, build_prompt, choose, parse_boxes
+from tutor_eval.segment import Found, build_body, build_prompt, choose, parse_boxes
 
 SIZE = (1920, 1080)
 

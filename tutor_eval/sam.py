@@ -5,7 +5,7 @@
 
 Rule, fixed before the run (02/11/2026); the thresholds are Claude's, not the founder's:
 - Setup: Spark's 24 answers from the T4 run 20261102-090950 (12 real cases x 2), so no
-  new Spark call. Each point goes to SAM 3.1 once, through screentutor.segment: boxes
+  new Spark call. Each point goes to SAM 3.1 once, through tutor_eval.segment: boxes
   of four sizes around the point in one request, full-size PNG, as the app would send.
   The sizes, MIN_CONFIDENCE, MAX_AREA and choose() were set on the synthetic calibration
   image only; no real case was sent to SAM before this rule.
@@ -21,6 +21,11 @@ Rule, fixed before the run (02/11/2026); the thresholds are Claude's, not the fo
 - All three pass: the app draws the outline, and the plain ring remains the fallback.
   Any fails: the ring stays as it is and SAM is left out.
 - Not scored by code: how the outlines look. Claude reads sheet.png and reports.
+
+Result (20261102-135415-sam): (1) failed with 15/21 right (71%); (2) 21/23 and (3) 0.85 s
+median, 1.38 s p90 passed. By eye it is worse than 71%: case_08 outlined three rows of
+the sidebar while the voice says Downloads, and case_11 scored right while its outline
+is twice as wide as the button. So the ring stays and SAM is left out of the app.
 """
 
 from __future__ import annotations
@@ -36,7 +41,7 @@ from PIL import Image, ImageDraw
 
 from grounding_test.datasets import CASES_DIR, load_cases, prepare_image
 from screentutor.listen import _api_key
-from screentutor.segment import Found, Segmenter, choose
+from tutor_eval.segment import Found, Segmenter, choose
 
 HERE = Path(__file__).parent
 T4_RUN = HERE / "results" / "20261102-090950"

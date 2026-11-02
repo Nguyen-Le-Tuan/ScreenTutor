@@ -1,10 +1,10 @@
-"""A tight outline for the thing to click: SAM 3.1 around Spark's point.
+"""T11 only, not part of the app: a tight outline around Spark's point with SAM 3.1.
 
 Spark gives one point. On the calibration image (02/11) a bare point prompt made
 SAM pick the smallest thing under it, one letter on the button. So each call
 sends boxes of four sizes around the point, as four objects of one image (one
 price; the API takes up to 16), and keeps the answer SAM is surest of. choose()
-refuses what it cannot trust, and the app then keeps the plain ring.
+refuses what it cannot trust.
 
 Protocol (dev.meta.ai docs, read 02/11): POST /responses with the prompt as tokens
 in input_text; the answer is text with one <|box;...|> per object.
@@ -18,7 +18,7 @@ from dataclasses import dataclass
 
 import httpx
 
-from .tutor import BASE_URL
+from screentutor.tutor import BASE_URL
 
 MODEL = "sam-3.1"
 REACH = ((30, 16), (80, 30), (160, 50), (320, 60))   # half width, half height of the boxes sent, physical px
