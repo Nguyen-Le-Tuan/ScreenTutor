@@ -22,7 +22,7 @@ Luật chấm (ghi trước khi chạy):
 
 B. NGHE CLICK (không tốn tiền)
 ------------------------------
-[ ] I-1.     py -m screentutor.inputs --seconds 60
+[x] I-1.     py -m screentutor.inputs --seconds 60
        Lần lượt làm, mỗi việc cách nhau vài giây:
          a) bấm trái một lần gần góc trên bên trái màn hình
          b) bấm trái một lần gần góc dưới bên phải
@@ -31,29 +31,46 @@ B. NGHE CLICK (không tốn tiền)
          e) giữ Ctrl+Alt khoảng 1 giây rồi thả
          f) bấm nhanh Ctrl+Alt rồi thả ngay (dưới nửa giây)
        Ghi dòng in ra cho từng việc:
-         a) ______  b) ______  c) ______  d) ______  e) ______  f) ______
-[ ] I-2. Bật Unikey (gõ tiếng Việt như mẹ). Giữ Ctrl+Alt 1 giây trong Word đang mở:
-         có gõ ra ký tự lạ, đổi kiểu gõ, hay mở menu gì không? ______
+         a) bấm trái tại (1, 0) — đạt
+         b) bấm trái tại (1919, 1079) — đạt (lượt thử lại)
+         c) bấm trái tại (713, 407); BẤM ĐÚP tại (713, 407) — đạt, trên file trong Explorer
+         d) bấm phải tại (1511, 512); bấm phải tại (449, 224) — đạt
+         e) GIỮ Ctrl+Alt: bắt đầu; GIỮ Ctrl+Alt: thả ra — đạt
+         f) không thấy thêm dòng GIỮ khi bấm nhanh — đạt theo log
+[x] I-2. Bật Unikey (gõ tiếng Việt như mẹ). Giữ Ctrl+Alt 1 giây trong Word đang mở:
+         có gõ ra ký tự lạ, đổi kiểu gõ, hay mở menu gì không? Không; mọi thứ bình thường.
 
 
 C. CHỜ MÀN HÌNH ĐỨNG YÊN (không tốn tiền)
 -----------------------------------------
-[ ] Chạy:    py -m screentutor.still --seconds 180
+[x] Chạy:    py -m screentutor.still --seconds 180
     Sau mỗi cú bấm, PowerShell in: ĐỨNG YÊN / KHÔNG ĐỔI / QUÁ GIỜ và sau bao nhiêu giây.
     Với mỗi tình huống, ghi dòng in ra, và nói rõ lúc nó in thì app đã hiện xong hẳn chưa.
 
   C-1. Word đang mở giáo án: bấm chữ File.
-       Mong đợi: ĐỨNG YÊN, dưới 2 giây.                  Ghi: ______
+       Mong đợi: ĐỨNG YÊN, dưới 2 giây.
+       Ghi: Bấm tại (52, 87) -> ĐỨNG YÊN sau 2.7 s; vượt ngưỡng dưới 2 giây.
   C-2. Explorer ở Downloads: bấm đúp một file .docx (Word chưa mở sẵn, để Word mở chậm).
-       Mong đợi: ĐỨNG YÊN sau khi Word đã hiện xong hẳn. Ghi: ______  Lúc in, Word đã xong chưa? ______
+       Mong đợi: ĐỨNG YÊN sau khi Word đã hiện xong hẳn.
+       Ghi: Bấm tại (524, 340) -> ĐỨNG YÊN sau 2.2 s (thêm 1 cú bấm trong lúc chờ).
+       Lúc in, Word đã xong chưa? Có, Word đã mở xong — đạt.
   C-3. Zalo: bấm vào link Google Sheet trong tin nhắn (Brave mở trang).
-       Mong đợi: ĐỨNG YÊN sau khi trang Sheet hiện xong. Ghi: ______  Lúc in, trang đã xong chưa? ______
+       Mong đợi: ĐỨNG YÊN sau khi trang Sheet hiện xong.
+       Ghi: Bấm tại (794, 514) -> ĐỨNG YÊN sau 1.9 s (thêm 1 cú bấm trong lúc chờ).
+       Lúc in, trang đã xong chưa? Có, Sheet đã hiện xong — đạt.
   C-4. Bấm vào một chỗ trống trên Desktop.
-       Mong đợi: KHÔNG ĐỔI, khoảng 2,5 giây.             Ghi: ______
+       Mong đợi: KHÔNG ĐỔI, khoảng 2,5 giây.
+       Ghi: Bấm tại (1068, 275) -> ĐỨNG YÊN sau 2.7 s; xác nhận đúng là cú bấm Desktop
+             — không đạt vì mong đợi KHÔNG ĐỔI.
   C-5. Word đang mở, bấm vào giữa một dòng chữ (con trỏ gõ nhảy tới đó và nhấp nháy).
-       Mong đợi: KHÔNG ĐỔI, hoặc ĐỨNG YÊN rất nhanh.     Ghi: ______
+       Mong đợi: KHÔNG ĐỔI, hoặc ĐỨNG YÊN rất nhanh.
+       Ghi: Bấm tại (788, 758) -> KHÔNG ĐỔI sau 2.7 s — đạt theo kết quả mong đợi.
   C-6. Mở một video YouTube đang chạy, bấm vào chỗ trống trên trang (video vẫn chạy).
-       Mong đợi: QUÁ GIỜ sau khoảng 12 giây.             Ghi: ______
+       Mong đợi: QUÁ GIỜ sau khoảng 12 giây.
+       Ghi: Bấm tại (517, 473) -> QUÁ GIỜ sau 12.1 s; người thử xác nhận video đang chạy — đạt.
+
+    Kết luận phần C: đạt 4/6 tình huống (C-2, C-3, C-5, C-6); không đạt ngưỡng 5/6.
+    C-2 và C-3 đều chỉ báo ĐỨNG YÊN sau khi Word/Sheet đã hiện xong, không có lỗi báo quá sớm.
 
 
 D. PHIÊN NHIỀU BƯỚC (mỗi bước khoảng $0.007)
@@ -65,28 +82,49 @@ Cách chạy:  py -m screentutor.session --delay 6 "câu hỏi"
   -> phiên dừng khi tutor nói đã xong, hoặc sau 8 bước, hoặc 3 phút không bấm.
 !! tutor_runs chứa ảnh màn hình thật: KHÔNG nén, KHÔNG commit. Chỉ điền và commit file txt này.
 
-[ ] L-1. Word đang mở giáo án, phóng to.
+[x] L-1. Word đang mở giáo án, phóng to.
               py -m screentutor.session --delay 6 "Mẹ muốn xuất giáo án này ra PDF"
          Đường đúng dự kiến: File -> Export -> Create PDF/XPS -> hộp lưu -> Publish -> xong.
          Ghi từng bước (vòng chỉ đúng không / tutor nói gì / sau khi bấm bao lâu thì có câu mới):
-           1. ______________________________________________
-           2. ______________________________________________
-           3. ______________________________________________
-           4. ______________________________________________
-           5. ______________________________________________
-         Cuối cùng tutor có nói "xong" đúng lúc không (không sớm, không muộn)? ______
+           Lượt thử 20261102-004445-session chưa hợp lệ vì cửa sổ ban đầu là
+           GSE_IT_Interview_Preparation_Checklist_Le_Tuan_Nguyen.docx, không phải giáo án.
+           1. Vòng chỉ nút Create PDF của WPS tại (1380, 147); tutor nói bấm nút này để lưu PDF;
+              phản hồi đầu mất 4.9 s. Bấm vào đã mở hộp "Download complete" với Install Now/Cancel,
+              không mở luồng Export PDF dự kiến.
+           2. Sau khi màn hình settled, 4.1 s sau tutor nói chờ thanh xanh chạy xong vì đang lưu PDF;
+              đánh dấu bước xong=True, việc xong=False, không trỏ chỗ tiếp theo. Phiên tự dừng.
+           Lượt chạy lại hợp lệ: 20261102-004715-session, đúng file Giáo án mẫu Âm nhạc 8 (1).docx.
+           1. Chỉ Create PDF của WPS tại (1380, 147), đúng vị trí nhưng mở hộp cài WPS; 4.3 s.
+           2. Chỉ Cancel tại (1119, 573) để đóng hộp tím; 3.9 s.
+           3. Cú bấm trước không đổi màn hình nên chỉ lại Cancel cùng vị trí; 4.6 s; lần này đóng được.
+           4. Chỉ icon Word trên taskbar tại (1261, 1052) để trở lại giáo án; 5.8 s.
+           5. Chỉ File tại (38, 80); 3.2 s.
+           6. Chỉ Export tại (81, 611); 3.7 s.
+           7. Chỉ Create PDF/XPS tại (728, 328); 2.9 s.
+           8. Chỉ Publish tại (989, 723); 3.0 s. Người thử bấm Publish và file
+              C:\Users\Lenovo\Downloads\Giáo án mẫu Âm nhạc 8 (1).pdf được tạo lúc 00:48:32.
+         Cuối cùng tutor có nói "xong" đúng lúc không (không sớm, không muộn)? Không;
+              tác vụ đã hoàn thành nhưng phiên chạm giới hạn 8 bước nên không kiểm tra và báo xong.
 
-[ ] L-2. Dựng lại case_04: Brave đang mở trang Sheet nhưng chuyển sang tab khác, rồi bấm Zalo
+[x] L-2. Dựng lại case_04: Brave đang mở trang Sheet nhưng chuyển sang tab khác, rồi bấm Zalo
          cho Zalo nằm trước, phóng to.
               py -m screentutor.session --delay 6 "Mẹ bấm link rồi mà không thấy bảng tính cô gửi, giờ bấm vào đâu để xem?"
          Chú ý: ở phép thử trên ảnh, tutor từng nói "xong rồi" ngay khi Brave hiện lên dù
          trang đang mở chưa phải bảng tính. Xem nó có lặp lại không.
-         Ghi từng bước: ________________________________________________
-         Tutor có nói "xong" quá sớm không? ______
+         Ghi từng bước (20261102-005059-session):
+           1. Tutor chỉ đúng dòng link màu xanh trong Zalo tại (1169, 525), 5.3 s; người thử bấm.
+           2. Bộ chờ báo settled nhưng ảnh step_02 vẫn là trang Brave trắng, tab ghi "Loading...".
+              Tutor nhận ra trang còn tải và nói chờ một chút; bước xong=True, việc xong=False,
+              không trỏ chỗ nào. Phiên tự dừng sau phản hồi 3.9 s. Sau đó Sheet tải xong đúng trang.
+         Tutor có nói "xong" quá sớm không? Không; tutor không nói xong. Tuy nhiên bộ chờ báo
+              đứng yên quá sớm và phiên dừng khi trang còn tải, không tự kiểm tra lại lúc Sheet hiện xong.
 
-[ ] L-3. Bấm sai một lần: chạy lại L-1, đến bước 2 cố ý bấm vào chỗ trống thay vì chỗ vòng chỉ.
+[x] L-3. Bấm sai một lần: chạy lại L-1, đến bước 2 cố ý bấm vào chỗ trống thay vì chỗ vòng chỉ.
          Mong đợi: tutor nói bấm lại, vòng hiện lại đúng chỗ cũ.
-         Ghi: ______________________________________________
+         Ghi (20261102-005408-session): đạt. Lần đầu chỉ Create PDF khoảng (1380, 147).
+              Sau cú bấm sai, tutor đặt step_done=False, goal_done=False, nói bấm lại và chỉ
+              cùng nút khoảng (1382, 147). Sau thêm một cú bấm sai, tutor tiếp tục chỉ lại
+              cùng vị trí khoảng (1380, 148); không chuyển sang bước khác hay báo xong.
 
 
 Xong thì lưu file này, commit và push riêng file này lên nhánh mvp.
