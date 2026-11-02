@@ -1,0 +1,31 @@
+HỎI MÁY TÍNH — CÁCH DÙNG (in ra để cạnh máy)
+=============================================
+
+1. MỞ
+   Bấm đúp vào biểu tượng "Hỏi máy tính" trên màn hình Desktop.
+   Chờ thấy nút xanh chữ "Hỏi" ở góc dưới bên phải.
+
+2. HỎI
+   Cách 1: bấm nút "Hỏi" rồi nói. Mẹ nói xong, ngừng lại là máy tự hiểu.
+   Cách 2: giữ hai phím Ctrl và Alt, vừa giữ vừa nói, nói xong thì thả tay.
+   Nói như nói với con, ví dụ:
+     "Cái giáo án mẹ sửa hôm qua nằm ở đâu?"
+     "Mẹ muốn xuất file này ra PDF để gửi tiệm in."
+
+3. LÀM THEO
+   Máy khoanh một vòng ĐỎ ở chỗ cần bấm và đọc to hướng dẫn.
+   Mẹ tự bấm vào chỗ có vòng. Máy sẽ chờ màn hình đổi xong rồi chỉ bước tiếp theo,
+   cho tới khi nói là đã xong.
+
+4. VÒNG MÀU VÀNG = CẨN THẬN
+   Nếu vòng có màu VÀNG CAM, bấm vào đó sẽ GỬI đi cho người khác hoặc THAY file cũ.
+   Nghe hết câu máy nói rồi mới bấm. Không chắc thì đừng bấm, gọi cho con.
+
+5. MUỐN HỎI CHUYỆN KHÁC
+   Cứ bấm "Hỏi" (hoặc giữ Ctrl+Alt) và nói câu mới; máy bỏ việc cũ, làm việc mới.
+
+Ô chữ đen nhỏ ở giữa mép trên màn hình là câu máy nghe được từ mẹ.
+Rê chuột vào để xem cả câu. Nếu máy nghe sai, mẹ hỏi lại chậm và rõ hơn.
+
+Máy chỉ khoanh chỗ và nói, KHÔNG tự bấm hay gõ gì thay mẹ.
+Muốn tắt: đóng cửa sổ đen "ScreenTutor" ở thanh taskbar phía dưới.

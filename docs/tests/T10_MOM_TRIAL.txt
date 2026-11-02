@@ -1,0 +1,63 @@
+T10: BUỔI MẸ DÙNG THỬ SCREENTUTOR (ba ghi, Tuấn có thể xem qua video call), 02/11/2026
+===================================================================================
+Mục đích: lần đầu NGƯỜI DÙNG THẬT dùng app trên máy thật, với việc thật của mẹ.
+Không chấm đạt/trượt: ghi lại thật đúng điều đã xảy ra, nhất là chỗ mẹ vấp và LỜI MẸ NÓI.
+Khoảng 45-60 phút. Mỗi câu hỏi tốn vài xu.
+
+Trước khi bắt đầu:
+[ ] App đã cài và chạy được (docs\INSTALL_FOR_DAD.txt, mục 6).
+[ ] Mẹ đã được nói: máy gửi ảnh màn hình và giọng mẹ tới Meta khi mẹ hỏi; ảnh từng bước lưu
+    trên máy mẹ (mục 7 của hướng dẫn cài). Mẹ đồng ý dùng thử: ______
+[ ] Mẹ có tờ docs\HUONG_DAN_CHO_ME.txt. Ba giải thích 2 phút: nút Hỏi, giữ Ctrl+Alt, vòng đỏ,
+    vòng vàng = cẩn thận. Sau đó để mẹ tự làm.
+
+Luật cho người ngồi cạnh:
+  - KHÔNG chỉ giúp, trừ khi mẹ kẹt 2 lần liền ở cùng một chỗ, hoặc sắp gửi/xoá/ghi đè nhầm.
+    Mỗi lần giúp thì ghi lại: giúp ở bước nào, vì sao.
+  - Ghi nguyên văn lời mẹ, kể cả câu than, câu khen, câu hỏi lại máy.
+  - Việc có GỬI đi: chỉ gửi vào chat "Cloud của tôi"/"My Documents" của mẹ trong Zalo,
+    KHÔNG gửi thật cho đồng nghiệp trong buổi thử.
+
+Mẫu ghi cho mỗi việc:
+  Mẹ hỏi (nguyên văn):
+  Ô chữ ghi máy nghe được:
+  Các bước: vòng chỉ đúng không / mẹ có bấm theo không / chỗ nào mẹ dừng lại, lúng túng
+  Máy có nói "xong" đúng lúc không:
+  Thời gian từ lúc hỏi tới lúc xong (ước chừng):
+  Ba có phải giúp không, ở đâu:
+  Lời mẹ nói / vẻ mặt:
+
+
+VIỆC THẬT CỦA MẸ (làm theo thứ tự nào cũng được; bỏ việc nào không có sẵn)
+-------------------------------------------------------------------------
+[ ] M-1. Bản trắng (me_01): mở giáo án mẹ đã sửa gần đây, như mẹ hay mở (từ Zalo hay từ Word).
+         Mẹ hỏi máy: bản mẹ sửa nằm ở đâu.
+         Ghi: ______________________________________________________________
+[ ] M-2. Xuất PDF (me_05): xuất một giáo án ra PDF như để gửi tiệm in.
+         Ghi: ______________________________________________________________
+[ ] M-3. Link bảng tính (me_06/me_07): mở một link Google Sheet trong nhóm Zalo và tìm phần của mẹ.
+         Ghi: ______________________________________________________________
+[ ] M-4. Đặt tên file (me_04): lưu một file với tên có dấu "?" để hiện lỗi, rồi hỏi máy.
+         Ghi: ______________________________________________________________
+[ ] M-5. Thêm hàng vào bảng trong Word (me_08).
+         Ghi: ______________________________________________________________
+[ ] M-6. Gửi file qua Zalo (me_03): gửi file PDF vừa xuất vào chat "Cloud của tôi" của mẹ.
+         Chú ý: ở bước bấm gửi, vòng có chuyển màu VÀNG và máy có nói rõ là sẽ gửi đi không?
+         Ghi: ______________________________________________________________
+[ ] M-7. Tự do: một việc bất kỳ mẹ muốn hỏi.
+         Ghi: ______________________________________________________________
+
+
+SAU BUỔI THỬ (hỏi mẹ, ghi nguyên văn)
+------------------------------------
+[ ] Dễ dùng không? Nút "Hỏi" hay giữ Ctrl+Alt, mẹ thích cách nào hơn? ______________________
+[ ] Giọng đọc nghe có dễ chịu, dễ hiểu không? Nói nhanh hay chậm? ______________________
+[ ] Chờ máy trả lời có lâu không? ______________________
+[ ] Vòng đỏ có dễ thấy không? Ô chữ đen ở trên có làm vướng không? ______________________
+[ ] Lần sau gặp khó, mẹ có muốn dùng nó thay vì gọi con không? Vì sao? ______________________
+[ ] Điều gì làm mẹ sợ hay khó chịu nhất? ______________________
+[ ] Mẹ có đồng ý cho Tuấn dùng giọng nói / lời kể / hình ảnh của mẹ trong video dự thi công khai
+    không? (Có / Không / Chỉ giọng / Chỉ lời kể, không hình) ______________________
+
+
+Xong: lưu file này, gửi riêng file .txt cho Tuấn (KHÔNG gửi thư mục tutor_runs hay ảnh màn hình).

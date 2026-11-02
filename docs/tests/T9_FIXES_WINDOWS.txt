@@ -1,0 +1,69 @@
+T9: KIỂM CÁC CHỖ ĐÃ SỬA SAU CHUYẾN WINDOWS LẦN 1, VÀ QUAY DEMO (khoảng 45-60 phút), 02/11/2026
+=============================================================================================
+Đây là file DUY NHẤT của chuyến Windows lần 2. Làm theo thứ tự.
+
+Đã đo trên Ubuntu sau khi sửa (luật ghi trước khi chạy):
+  - T4 chạy lại: trỏ trúng 11/12 và 12/12; câu nói 24/24; trễ trung vị 4,91 s.
+  - T6a chạy lại: bước 24/24, việc 22/24, trỏ 16/18 (như cũ).
+  - T8b (giọng thật của mẹ): trỏ 8/8 (trước 4/8); ca PDF giờ chỉ "File" thay vì nút WPS.
+  - Vòng VÀNG (cẩn thận) chưa bật nhầm lần nào trong 56 lần, NHƯNG chưa từng được thử ở một
+    bước thật sự gửi đi hoặc ghi đè: đó là việc quan trọng nhất của T9 (F-2).
+
+Luật chấm (ghi trước khi chạy):
+  - F-1 đạt: khi trang đang tải, tutor KHÔNG dừng phiên; nó chờ rồi nói bước tiếp hoặc báo xong.
+  - F-2 đạt: ở bước ghi đè (Yes thay file cũ) VÀ ở bước bấm Gửi trong Zalo, vòng màu VÀNG
+    và câu nói nói rõ là sẽ ghi đè / sẽ gửi đi. Một trong hai không có là chưa đạt.
+  - F-3 đạt: không lần nào chỉ vào nút "Create PDF" của WPS.
+  - F-4 đạt: bấm vào chỗ ô chữ thì tab Brave bên dưới chuyển được.
+  Các mục khác chỉ ghi lại.
+
+
+A. CHUẨN BỊ
+-----------
+[ ] A1. Lấy bản mới (bản trên Windows đã sạch, Pull bình thường được):
+              git switch mvp
+              git pull --ff-only
+              git log --oneline -1      (phải là commit mới nhất Claude báo)
+[ ] A2.      py -m pytest -q            (toàn bộ passed)
+[ ] A3. Bấm đúp ScreenTutor.bat ở thư mục repo (thay cho lệnh py -m screentutor.app).
+        Cửa sổ đen có thu nhỏ xuống taskbar không? Nút "Hỏi" có hiện không? ______
+        Bấm "Hỏi" hỏi câu đầu tiên ngay sau khi mở: ngừng nói -> nghe tiếng tutor mất khoảng
+        mấy giây (lần trước câu đầu mất khoảng 10 s)? ______
+
+
+B. CÁC CHỖ ĐÃ SỬA (đóng vai mẹ)
+------------------------------
+[ ] F-1. Trang đang tải. Dựng case_04 (Brave đang ở tab khác, Zalo ở trước). Giữ Ctrl+Alt:
+         "Cái link cô tổ trưởng gửi mẹ ấn hoài mà không chịu mở lên". Bấm theo vòng.
+         Khi Brave hiện trang trắng "Loading", tutor có chờ rồi nói tiếp / báo xong không? ______
+[ ] F-2a. Ghi đè. Word mở giáo án, trong Downloads ĐÃ CÓ file PDF cùng tên (từ lần trước).
+         Bấm "Hỏi": "Mẹ muốn xuất giáo án này ra PDF để gửi tiệm in". Làm theo tới hộp hỏi thay file.
+         Ở bước đó: vòng màu gì? ______ Câu tutor nói: ________________________________
+[ ] F-2b. Gửi đi. Trong Zalo mở chat "Cloud của tôi" (KHÔNG mở chat người khác). Hỏi: "Mẹ muốn gửi
+         file PDF giáo án vào đây". Làm theo tới nút gửi.
+         Ở bước bấm gửi: vòng màu gì? ______ Câu tutor nói: ________________________________
+[ ] F-3. Trong F-2a, có lần nào tutor chỉ nút "Create PDF" của WPS không? ______
+[ ] F-4. Ô chữ: mở Brave nhiều tab, để một tab nằm dưới ô chữ, bấm vào chỗ ô chữ: tab có chuyển
+         không? ______ Rê chuột lên ô chữ: còn mở rộng ra cả câu không? ______
+[ ] F-5. Trong lúc vòng đang hiện, bấm Alt+Tab: còn thấy cửa sổ của vòng không? ______
+[ ] F-6. Nút khi tutor đang nghĩ ghi "Đang xem màn hình…": chữ có vừa nút, dễ hiểu không? ______
+[ ] F-7. Bản tạm của Zalo. Trong Zalo bấm THẲNG vào một file .docx (Word mở bản Read-Only).
+         Hỏi: "Mẹ sửa file này xong rồi mà sao không lưu được". Tutor nói gì? ______________________
+[ ] F-8. Bước phải làm trước. Word mở giáo án, KHÔNG bôi đen gì. Hỏi: "Mẹ muốn làm chữ to hơn".
+         Tutor có bảo bôi đen chữ trước không? ______
+
+
+C. QUAY DEMO (Win+Alt+R để bắt đầu và dừng; nói chậm, rõ như mẹ)
+-----------------------------------------------------------------
+Quay vài bản thô, chưa cần đẹp; Claude sẽ cùng bạn chọn và viết kịch bản dựng sau.
+[ ] D-1. Chuyện bản trắng: mở giáo án từ Zalo, hỏi "Cái giáo án mẹ sửa hôm qua nằm ở đâu, sao mở
+         lên không thấy", làm theo tới khi mở đúng bản.
+[ ] D-2. Xuất PDF để gửi tiệm in, có bước ghi đè (vòng vàng).
+[ ] D-3. Giữa chừng hỏi câu khác bằng Ctrl+Alt.
+         Ghi tên các file video đã quay (để trên máy, KHÔNG commit): ___________________________
+
+
+Xong: chỉ commit file này:
+    git add docs/tests/T9_FIXES_WINDOWS.txt
+    git commit -m "Windows T9 results"
+    git push
