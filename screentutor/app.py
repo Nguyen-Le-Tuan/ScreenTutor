@@ -100,6 +100,7 @@ class Feed:
         self.voice_meter = voice_meter
         self.mic_meter = None
         self.dpr = dpr
+        self.glow = None               # (on) -> None: the light around the screen while the tutor looks
         self.task: conv.Task | None = None
         self.base = "idle"
         self.speaking = 0              # the token of the sentence being spoken, 0 when quiet
@@ -144,6 +145,12 @@ class Feed:
 
         self.island.set_avoid(QPointF(x / self.dpr, y / self.dpr))
 
+    def frame(self, x1: int, y1: int, x2: int, y2: int) -> None:
+        from PySide6.QtCore import QPointF, QRectF
+
+        d = self.dpr
+        self.island.set_avoid(QPointF((x1 + x2) / 2 / d, (y1 + y2) / 2 / d), QRectF(x1 / d, y1 / d, (x2 - x1) / d, (y2 - y1) / d))
+
     def unring(self) -> None:
         self.island.set_avoid(None)
 
@@ -162,6 +169,8 @@ class Feed:
 
     def _show(self) -> None:
         state = self.shown()
+        if self.glow and state != "thinking":
+            self.glow(False)  # it never outlasts the looking; look() turns it on after the screenshot
         source = None
         if state == "speaking" and self.voice_meter is not None:
             source = lambda m=self.voice_meter: m.value  # noqa: E731
@@ -190,7 +199,7 @@ def main(argv=None) -> None:
     from .inputs import Click, Hold, Trail, watch
     from .island import Island
     from .listen import Mic, _api_key, listen
-    from .overlay import Overlay
+    from .overlay import Overlay, _win_topmost
     from .session import ClickBox, Session
     from .speak import Speaker
     from .state import format_vi, take_snapshot
@@ -210,6 +219,7 @@ def main(argv=None) -> None:
         return c if c.isValid() else QColor(0, 0, 0)
 
     prefs = settings_mod.load()
+    overlay.glow_enabled = prefs.edge_glow
     island.base = colour(prefs.island_color)
     island.color, island.show_button = prefs.island_color, prefs.show_button
     button.setVisible(prefs.show_button)
@@ -223,6 +233,14 @@ def main(argv=None) -> None:
     out = Path("tutor_runs") / (datetime.now().strftime("%Y%m%d-%H%M%S") + "-app")
     out.mkdir(parents=True, exist_ok=True)
     feed = Feed(island, button, speaker.meter, dpr)
+    feed.glow = overlay.glow
+
+    def keep_ours_on_top() -> None:  # the darkened screen must not cover the button and the island
+        for widget in (island, button):
+            if widget.isVisible():
+                _win_topmost(widget)
+
+    overlay.after_topmost = keep_ours_on_top
     history = History()  # A8: C:\ScreenTutor\history, one file per task, no pictures or sound
 
     def recent_items() -> list[tuple[str, str]]:
@@ -233,6 +251,10 @@ def main(argv=None) -> None:
 
     class Bridge(QObject):  # worker threads talk to the widgets only through these
         point = Signal(int, int, bool)
+        frame = Signal(int, int, int, int, bool)
+        hint = Signal(int, int)
+        tick = Signal(int, int)
+        glow = Signal(bool)
         clear = Signal()
         call = Signal(str, object)
 
@@ -246,7 +268,19 @@ def main(argv=None) -> None:
         overlay.clear()
         feed.unring()
 
+    def on_frame(x1, y1, x2, y2, caution):
+        overlay.focus_on(x1, y1, x2, y2, caution=caution)
+        feed.frame(x1, y1, x2, y2)
+
+    def on_hint(x, y):
+        overlay.scroll_hint(x, y)
+        feed.ring(x, y, False)
+
     bridge.point.connect(on_point)
+    bridge.frame.connect(on_frame)
+    bridge.hint.connect(on_hint)
+    bridge.tick.connect(overlay.tick_at)
+    bridge.glow.connect(overlay.glow)
     bridge.clear.connect(on_clear)
     bridge.call.connect(lambda name, args: getattr(feed, name)(*args))
     post = lambda name, *args: bridge.call.emit(name, args)  # noqa: E731
@@ -260,6 +294,7 @@ def main(argv=None) -> None:
             button_box[0] = physical(button)
             island.base = colour(new.island_color)
             island.color, island.show_button = new.island_color, new.show_button
+            overlay.glow_enabled = new.edge_glow
             island.update()
 
     def save_prefs(**change) -> None:
@@ -295,7 +330,8 @@ def main(argv=None) -> None:
     button_box = [physical(button)]  # refreshed on the Qt thread; read by the worker threads
 
     def own_rects() -> list[tuple[int, int, int, int]]:
-        return [r for r in (button_box[0], to_physical(island.cover, dpr)) if r is not None]
+        return [r for r in (button_box[0], to_physical(island.cover, dpr), to_physical(overlay.cover, dpr))
+                if r is not None]
 
     def grab_own_masked():
         return masked(screen.grab(), own_rects())
@@ -305,7 +341,9 @@ def main(argv=None) -> None:
         return inside(button_box[0], click.x, click.y) or inside(to_physical(island.takes_clicks, dpr), click.x, click.y)
 
     def look():
-        return screen.grab(), format_vi(take_snapshot()) + "\n" + MACHINE_NOTES
+        img = screen.grab()
+        bridge.glow.emit(True)  # only now: it must not be in the picture
+        return img, format_vi(take_snapshot()) + "\n" + MACHINE_NOTES
 
     said = [0]
 
@@ -387,6 +425,9 @@ def main(argv=None) -> None:
             settle=lambda c: wait_until_settled(c.t, grab_own_masked)[0],
             wait_screen=lambda: wait_until_settled(time.monotonic(), grab_own_masked, grace_s=WAIT_GRACE_S)[0],
             wait_change=lambda timeout_s, min_change, stop: wait_change(grab_own_masked, timeout_s, min_change, stop),
+            show_box=lambda box, caution: bridge.frame.emit(*box, caution),
+            show_scroll=lambda px: bridge.hint.emit(*px),
+            confirm=bridge.tick.emit,
             save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer, on_plan=on_plan)
         steps = session.run(heard.text)
         history.finish(rec, outcome_of(steps, cancel.is_set()))

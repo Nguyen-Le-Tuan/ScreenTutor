@@ -11,12 +11,13 @@ class FakeTutor:
     def __init__(self, replies):
         self.replies, self.calls, self.turns = list(replies), [], []
 
-    def ask(self, question, data_url, state, pointer=None):
+    def ask(self, question, data_url, state, pointer=None, on_mark=None, on_say=None):
         self.pointer = pointer
         self.calls.append(("ask", question, None, None))
         return self.replies.pop(0)
 
-    def follow_up(self, goal, last_say, data_url, state, changed, plan=None, part=None, notes="", acted="click"):
+    def follow_up(self, goal, last_say, data_url, state, changed, plan=None, part=None, notes="", acted="click",
+                  on_mark=None, on_say=None):
         self.calls.append(("follow_up", goal, last_say, changed))
         self.turns.append({"plan": plan, "part": part, "notes": notes, "acted": acted})
         return self.replies.pop(0)
@@ -393,7 +394,7 @@ def test_the_states_sent_to_the_island():
     s, _ = _session(tutor, [CLICK, CLICK], ["settled", "settled"], waits=["settled"], changes=["settled"])
     s.status = seen.append
     s.run("x")
-    assert seen == ["thinking", "turn", "thinking", "turn", "thinking", "caution", "thinking", "loading", "thinking",
+    assert seen == ["thinking", "turn", "thinking", "reading", "thinking", "caution", "thinking", "loading", "thinking",
                     "done"]
 
 
@@ -411,3 +412,98 @@ def test_without_a_screen_watcher_a_read_or_scroll_step_falls_back_to_the_ring()
     s.wait_change = None
     s.run("x")
     assert log[0] == ("show", 960, 540) and log[-1] == ("hide",)
+
+
+def test_the_tick_appears_where_she_clicked_once_the_step_is_checked():
+    ticks = []
+    tutor = FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(15, 74), target="click"),
+                       Reply(say="Bạn bấm lại nhé.", found=True, point=(15, 74), target="click", step_done=False),
+                       _go("Bạn bấm Export."),
+                       Reply(say="Xong rồi.", target="none", step_done=True, goal_done=True)])
+    s, _ = _session(tutor, [Click(1.0, 30, 80, "left"), Click(2.0, 31, 81, "left"), Click(3.0, 500, 600, "left")],
+                    ["settled"] * 3)
+    s.confirm = lambda x, y: ticks.append((x, y))
+    s.run("x")
+    assert ticks == [(31, 81), (500, 600)]    # not after the click the tutor found wrong
+
+
+def test_a_read_or_a_scroll_gets_no_tick():
+    ticks = []
+    tutor = FakeTutor([Reply(say="Bạn đọc.", found=True, point=(500, 500), target="read", box=(250, 250, 750, 750)),
+                       Reply(say="Xong.", target="none", step_done=True, goal_done=True)])
+    s, _ = _session(tutor, [CLICK], ["settled"])
+    s.confirm = lambda x, y: ticks.append((x, y))
+    s.run("x")
+    assert ticks == []
+
+
+# The answer streams: the step goes on the screen before the turn is over
+
+class StreamingTutor(FakeTutor):
+    """Calls the early hooks as the real one does, then returns the whole reply."""
+
+    def _early(self, on_mark, on_say):
+        reply = self.replies[0]
+        if on_mark and reply.point and not reply.error:
+            on_mark(reply)
+        if on_say and reply.say:
+            on_say(reply.say)
+        self.log.append(("reply",))
+
+    def ask(self, question, data_url, state, pointer=None, on_mark=None, on_say=None):
+        self._early(on_mark, on_say)
+        return super().ask(question, data_url, state, pointer)
+
+    def follow_up(self, goal, last_say, data_url, state, changed, plan=None, part=None, notes="", acted="click",
+                  on_mark=None, on_say=None):
+        self._early(on_mark, on_say)
+        return super().follow_up(goal, last_say, data_url, state, changed, plan, part, notes, acted)
+
+
+def _streaming(replies, clicks, outcomes, changes=()):
+    tutor = StreamingTutor(replies)
+    s, log = _session(tutor, clicks, outcomes, changes=changes)
+    tutor.log = log
+    return tutor, s, log
+
+
+def test_the_ring_and_the_voice_come_before_the_answer_has_finished_and_only_once():
+    _, s, log = _streaming([Reply(say="Bạn bấm File.", found=True, point=(15, 74), target="click"),
+                            Reply(say="Xong rồi.", target="none", step_done=True, goal_done=True)], [CLICK], ["settled"])
+    s.run("x")
+    assert log == [("show", 29, 80), ("say", "Bạn bấm File."), ("reply",), ("hide",), ("say", "Xong rồi."), ("reply",)]
+
+
+def test_a_read_step_shown_early_keeps_its_box_and_its_extra_sentence():
+    boxes = []
+    _, s, log = _streaming([Reply(say="Bạn đọc tin này.", found=True, point=(500, 500), target="read",
+                                  box=(250, 250, 750, 750))], [], [], changes=["unchanged"])
+    s.show_box = lambda box, caution: boxes.append(box)
+    s.run("x")
+    assert boxes == [(480, 270, 1440, 810)] and ("say", f"Bạn đọc tin này. {READ_DONE}") in log
+
+
+def test_a_sentence_without_diacritics_waits_for_the_second_try():
+    _, s, log = _streaming([Reply(say="Ban bam File.", found=True, point=(15, 74), target="click")], [], [])
+    s._early_say("Ban bam File.")
+    assert not s.spoken and not [x for x in log if x[0] == "say"]
+
+
+def test_an_error_after_the_ring_went_up_takes_it_down():
+    tutor = FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(15, 74), target="click"), Reply(error="stream broke")])
+    s, log = _session(tutor, [CLICK], ["settled"])
+    real = tutor.follow_up
+
+    def broken(*a, on_mark=None, on_say=None, **kw):
+        on_mark(Reply(found=True, point=(20, 20), target="click"))
+        return real(*a, **kw)
+
+    tutor.follow_up = broken
+    s.run("x")
+    assert log[-2:] == [("hide",), ("say", "Mình chưa xem được màn hình. Bạn hỏi lại nhé.")]
+
+
+def test_a_finished_task_shows_no_early_ring():
+    _, s, log = _streaming([Reply(say="Xong rồi.", found=True, point=(10, 10), target="click", goal_done=True)], [], [])
+    s.run("x")
+    assert not [x for x in log if x[0] == "show"] and log[0] == ("say", "Xong rồi.")

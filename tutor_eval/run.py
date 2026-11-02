@@ -61,6 +61,15 @@ states; MACHINE_NOTES stay out, as in every earlier T4.
 Reported, not scored: mode, target, plan, box, output and reasoning tokens.
 If R5a fails the B1 block is shortened or taken out. If only R5c fails the block is
 shortened and the run repeated as a new attempt, reported as such. Thresholds stay.
+
+Sixth rule, fixed before the second attempt of the same evening. The first attempt
+(20261102-183850) got R5a 12/10, R5b 23/24 (failed), R5c 11.12 s (failed), R6 0 flags.
+Changed since: the B1 block cut to about 40%, effort "minimal", and the answer streamed
+with the keys that show the step first. Same 12 cases, 2 runs, thresholds of the fifth
+rule unchanged, the failed attempt stays on record. Added before this run and scored
+on its own, not instead of R5c:
+- R5d: median time until X and Y are in, when the ring can show, at most 5.0 s, the
+  founder's limit in the first rule above. Reported, not scored: until say is complete.
 """
 
 from __future__ import annotations
@@ -71,6 +80,7 @@ import json
 import re
 import statistics
 import sys
+import time
 import unicodedata
 from datetime import datetime
 from pathlib import Path
@@ -90,6 +100,7 @@ MAX_SENTENCES = 2
 MAX_SYLLABLES = 40
 EST_COST_PER_CALL = 0.008
 T12_SAY_OK, T12_LATENCY_S = 24, 6.4   # R5b, R5c of the plan's T12
+T12_RING_S = 5.0                      # R5d
 
 # Hits out of 2 for the pointing-only prompt, effort low, 29/10 (with state where state_t1.json has it).
 BASELINE_HITS = {"case_01": 2, "case_02": 2, "case_03": 0, "case_04": 2, "case_05": 2, "case_06": 2,
@@ -171,7 +182,10 @@ def cmd_run(args) -> None:
                 state = states.get(it.item_id)
                 for run in range(1, RUNS + 1):
                     n += 1
-                    reply = tutor.ask(it.question_vi, data_url, state)
+                    started, seen = time.perf_counter(), {}
+                    reply = tutor.ask(it.question_vi, data_url, state,
+                                      on_mark=lambda _r: seen.setdefault("ring", time.perf_counter() - started),
+                                      on_say=lambda _t: seen.setdefault("say", time.perf_counter() - started))
                     scores = score_point(reply.point, sent_size, orig_size, it.boxes, gconfig.NEAR_PX)
                     raw_file = f"raw/{n:03d}.json"
                     (out / raw_file).write_text(json.dumps(reply.raw, ensure_ascii=False, indent=2),
@@ -182,7 +196,8 @@ def cmd_run(args) -> None:
                         "say": reply.say, "say_problems": say_problems(reply.say), "caution": reply.caution,
                         "result": scores["norm1000"]["result"], "distance_px": scores["norm1000"].get("distance_px"),
                         "mode": reply.mode, "target": reply.target, "plan": reply.plan, "box": reply.box,
-                        "notes": reply.notes,
+                        "notes": reply.notes, "ring_s": round(seen.get("ring", 99), 3),
+                        "say_s": round(seen.get("say", 99), 3),
                         "latency_s": round(reply.latency_s, 3), "usage": reply.usage, "error": reply.error,
                         "raw_file": raw_file,
                     }
@@ -227,6 +242,9 @@ def summarize(out: Path) -> Path:
         f"R5c {med:.2f} s (≤ {T12_LATENCY_S}) {mark[med <= T12_LATENCY_S]}; "
         f"R6 {sum(bool(r.get('caution')) for r in rows)} cờ (cần 0) "
         f"{mark[not any(r.get('caution') for r in rows)]}.",
+        f"R5d vòng hiện: trung vị {statistics.median(r.get('ring_s', 99) for r in rows):.2f} s (≤ {T12_RING_S}) "
+        f"{mark[statistics.median(r.get('ring_s', 99) for r in rows) <= T12_RING_S]}; "
+        f"câu nói xong: trung vị {statistics.median(r.get('say_s', 99) for r in rows):.2f} s.",
         f"Không chấm: mode {sorted(collections.Counter(r.get('mode') or '?' for r in rows).items())}, "
         f"target {sorted(collections.Counter(r.get('target') or '?' for r in rows).items())}, "
         f"có plan {sum(bool(r.get('plan')) for r in rows)}, có box {sum(bool(r.get('box')) for r in rows)}, "

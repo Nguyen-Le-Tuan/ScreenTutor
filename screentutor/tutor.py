@@ -15,6 +15,11 @@ school's message is the task), what the next step is (click, read a region, scro
 a box around what to read, and notes that carry a long message across screens. With
 task_rules=False the prompt is exactly the one T4 measured, for comparison.
 
+The answer streams (T12 R5, 02/11). The API writes JSON keys in sorted order whatever the
+schema says, and capitals sort first, so the fields that show the step are capitalised and
+the ones that can wait are named task_*: the ring appears as soon as X and Y are in, the
+voice as soon as say is in, while the plan and the notes finish arriving.
+
 B2 (02/11): a later turn says what she did. After a click the sentence is the measured
 one; after a read step or a scroll it must not claim she clicked (founder's decision).
 
@@ -28,6 +33,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from dataclasses import asdict, dataclass, field
@@ -38,7 +44,7 @@ import httpx
 
 BASE_URL = "https://api.meta.ai/v1"
 MODEL = "muse-spark-1.3"  # Standard tier; never a Contributor variant
-EFFORT = "low"
+EFFORT = "minimal"  # T12 R5 (02/11): "low" thought 650 tokens on the task prompt; the 12 cases stayed on target at this
 TIMEOUT_S = 30
 RETRY_STATUSES = (429, 500, 502, 503, 504)
 
@@ -74,36 +80,24 @@ SAY_RULES = (
     "- Không dùng ký hiệu, gạch đầu dòng, emoji hay toạ độ."
 )
 
-# B1 (02/11): founder's ideas of 02/11, after the measured text and the speech rules.
-TASK_HEAD = "\n\nNgoài chỗ cần bấm, trả lời thêm:\n"
+# B1 (02/11): founder's ideas of 02/11, after the measured text and the speech rules. Kept this short on
+# purpose: T12 R5 (02/11), the first long version took the median from 4.9 s to 11.1 s, nearly all of it thinking.
+TASK_HEAD = "\n\nTrả lời thêm:\n"
 POINTER_LINE = ("- Lúc hỏi, chuột của người dùng {pointer}; nếu người dùng nói \"cái này\", \"chỗ này\", đó là chỗ "
                 "đang được chỉ.\n")
-MODE_RULE = ("- mode: \"answer\" nếu người dùng chỉ muốn biết một điều (ở đâu, là gì, vì sao) và một lần chỉ hay một "
-             "câu trả lời là đủ; \"guide\" nếu đó là một việc phải làm qua nhiều bước.\n")
-PLAN_RULE = ("- plan: với \"guide\", chia việc thành 2 đến 6 phần lớn theo đúng thứ tự, mỗi phần tối đa 8 chữ, ví dụ "
-             "[\"Xuất giáo án ra PDF\", \"Mở chat tiệm in trong Zalo\", \"Gửi file PDF\"]. Nếu việc được giao trong một "
-             "tin nhắn hay tài liệu đang hiện trên màn hình, lấy các phần từ chính nội dung đó, không tự thêm; nếu nội "
-             "dung đó còn tiếp ở dưới chưa đọc hết, để plan rỗng và cho người dùng kéo xuống trước. Với \"answer\" hoặc "
-             "việc chỉ có một bước, để plan rỗng. Khi có từ 2 phần trở lên, câu đầu của say nói ngắn việc có mấy phần, "
-             "ví dụ \"Việc này có ba phần.\", câu sau là bước đầu tiên.\n")
-PLAN_FOLLOW = ("- plan: để rỗng nếu kế hoạch không đổi. Chỉ điền khi vừa đọc hết nội dung giao việc và cần lập hoặc sửa "
-               "kế hoạch, theo cùng cách: 2 đến 6 phần, mỗi phần tối đa 8 chữ, lấy từ chính nội dung đó.\n")
-TARGET_RULES = (
-    "- target: \"click\" nếu bước tiếp theo là bấm vào một chỗ, x và y là tâm chỗ đó. \"read\" nếu bước tiếp theo "
-    "là đọc một vùng nội dung (một tin nhắn, một đoạn văn, một danh sách file): box là khung bao vùng đó trên cùng "
-    "thang 0-1000, x và y là tâm khung. \"scroll\" nếu nội dung cần đọc còn tiếp ở dưới mép màn hình hay mép khung "
-    "chat: x và y là giữa vùng cần kéo, và say bảo người dùng kéo xuống. \"none\" nếu không có gì để chỉ, khi đó "
-    "found=false.\n"
-    "- box: chỉ dùng khi target là \"read\"; các trường hợp khác đặt cả bốn số bằng 0.\n"
-)
-NOTES_RULE = ("- notes: khi đang đọc một nội dung dài qua nhiều màn hình, ghi ngắn (tối đa 80 chữ) những gì đã đọc được "
-              "và cần nhớ, ví dụ các bước nhà trường yêu cầu và hạn nộp; các trường hợp khác để rỗng.\n")
-NOTES_FOLLOW = ("- notes: nếu vừa đọc thêm nội dung, viết lại đủ ghi chú cũ cộng phần mới (tối đa 80 chữ); nếu không "
-                "đọc thêm thì để rỗng.\n")
-PART_RULE = ("- part: số thứ tự (từ 1) của phần mà bước tiếp theo thuộc về; nếu đã xong hết thì bằng số phần; nếu "
-             "chưa có phần nào thì bằng 0.\n")
-LOGIN_RULE = ("- Nếu màn hình là chỗ đăng nhập, chỉ ô cần gõ để người dùng tự gõ. Không bao giờ đọc to, nhắc lại hay "
-              "đoán mật khẩu.")
+MODE_RULE = "- mode: \"answer\" nếu chỉ hỏi một điều; \"guide\" nếu là việc nhiều bước.\n"
+PLAN_RULE = ("- task_plan: với guide, 2-6 phần theo thứ tự, mỗi phần tối đa 8 chữ; việc ghi trong tin nhắn đang hiện thì "
+             "lấy từ chính tin đó; tin còn tiếp ở dưới thì để rỗng. Với answer để rỗng. Có task_plan thì say mở đầu "
+             "\"Việc này có N phần.\"\n")
+PLAN_FOLLOW = ("- task_plan: rỗng nếu kế hoạch không đổi. Chỉ điền khi vừa đọc hết nội dung giao việc: 2-6 phần, mỗi phần "
+               "tối đa 8 chữ, lấy từ chính nội dung đó.\n")
+TARGET_RULES = ("- Target: \"click\" (X, Y là tâm chỗ bấm); \"read\" (đọc một vùng; Box là khung vùng đó, X, Y là tâm); "
+                "\"scroll\" (nội dung còn tiếp ở dưới; say bảo kéo xuống, X, Y là giữa vùng cần kéo); \"none\" "
+                "(found=false). Không phải read thì Box bốn số 0.\n")
+NOTES_RULE = "- task_notes: khi đọc nội dung dài, ghi tối đa 80 chữ điều cần nhớ; còn lại để rỗng.\n"
+NOTES_FOLLOW = "- task_notes: nếu vừa đọc thêm, viết lại đủ ghi chú cũ cộng phần mới (tối đa 80 chữ); nếu không thì rỗng.\n"
+PART_RULE = "- task_part: số thứ tự (từ 1) của phần chứa bước tiếp theo; xong hết thì bằng số phần; chưa có phần nào thì 0.\n"
+LOGIN_RULE = "- Ô đăng nhập: chỉ ô để người dùng tự gõ; không đọc, nhắc hay đoán mật khẩu."
 FOLLOW_PLAN = "\n\nViệc này đã được chia thành các phần: {parts}. Bước vừa rồi thuộc phần {part}."
 FOLLOW_NOTES = "\n\nNhững gì đã đọc được ở các lượt trước: \"{notes}\""
 MODES = ("answer", "guide")
@@ -156,24 +150,19 @@ FOLLOW_SCHEMA = {
     "required": ["step_done", "goal_done", *REPLY_SCHEMA["required"]],
     "additionalProperties": False,
 }
-_TASK_PROPS = {
-    "target": {"type": "string", "enum": list(TARGETS)},
-    "box": BOX_SCHEMA,
-    "plan": {"type": "array", "items": {"type": "string"}},
-    "notes": {"type": "string"},
+_REPLY_PROPS = {
+    "Box": BOX_SCHEMA, "Caution": {"type": "boolean"}, "Target": {"type": "string", "enum": list(TARGETS)},
+    "X": {"type": "number"}, "Y": {"type": "number"},   # the keys up to here show the step
+    "element": {"type": "string"}, "found": {"type": "boolean"}, "mode": {"type": "string", "enum": list(MODES)},
+    "say": {"type": "string"},                          # then the voice; the rest can come last
+    "task_notes": {"type": "string"}, "task_plan": {"type": "array", "items": {"type": "string"}},
 }
-REPLY_SCHEMA_V2 = {
-    "type": "object",
-    "properties": {**REPLY_SCHEMA["properties"], "mode": {"type": "string", "enum": list(MODES)}, **_TASK_PROPS},
-    "required": [*REPLY_SCHEMA["required"], "mode", *_TASK_PROPS],
-    "additionalProperties": False,
-}
-FOLLOW_SCHEMA_V2 = {
-    "type": "object",
-    "properties": {**FOLLOW_SCHEMA["properties"], "part": {"type": "integer"}, **_TASK_PROPS},
-    "required": [*FOLLOW_SCHEMA["required"], "part", *_TASK_PROPS],
-    "additionalProperties": False,
-}
+REPLY_SCHEMA_V2 = {"type": "object", "properties": _REPLY_PROPS, "required": list(_REPLY_PROPS),
+                   "additionalProperties": False}
+_FOLLOW_PROPS = {**{k: v for k, v in _REPLY_PROPS.items() if k != "mode"}, "Goal_done": {"type": "boolean"},
+                 "Step_done": {"type": "boolean"}, "task_part": {"type": "integer"}}
+FOLLOW_SCHEMA_V2 = {"type": "object", "properties": _FOLLOW_PROPS, "required": list(_FOLLOW_PROPS),
+                    "additionalProperties": False}
 
 
 def point_prompt(question: str, state: str | None = None) -> str:
@@ -291,6 +280,11 @@ def parse_reply(resp: dict) -> Reply:
     except json.JSONDecodeError:
         res.error = "answer is not valid JSON"
         return res
+    return _read_answer(answer, res)
+
+
+def _read_answer(answer: dict, res: Reply) -> Reply:
+    answer = {k.lower().removeprefix("task_"): v for k, v in answer.items()}
     res.say = str(answer.get("say") or "").strip()
     res.element = str(answer.get("element") or "").strip()
     res.found = bool(answer.get("found"))
@@ -347,6 +341,36 @@ def _parse_task(answer: dict, res: Reply) -> None:
     res.target = target
 
 
+_KEY_Y = re.compile(r'"Y"\s*:\s*-?[\d.]+(?=\s*[,}])')
+_KEY_SAY = re.compile(r'"say"\s*:\s*("(?:[^"\\]|\\.)*")')
+
+
+class EarlyAnswer:
+    """Reads the answer while it arrives. on_mark gets a partial Reply as soon as the step can be shown,
+    on_say the sentence as soon as it is complete; each at most once, and neither if nothing can be read."""
+
+    def __init__(self, on_mark=None, on_say=None):
+        self.on_mark, self.on_say = on_mark, on_say
+        self.marked = self.said = False
+
+    def feed(self, text: str) -> None:
+        if not self.marked and self.on_mark:
+            m = _KEY_Y.search(text)
+            if m:
+                self.marked = True
+                try:
+                    head = json.loads(text[:m.end()] + "}")
+                except json.JSONDecodeError:
+                    head = None
+                if head is not None:
+                    self.on_mark(_read_answer({**head, "found": head.get("Target") != "none"}, Reply()))
+        if not self.said and self.on_say:
+            m = _KEY_SAY.search(text)
+            if m:
+                self.said = True
+                self.on_say(json.loads(m.group(1)).strip())
+
+
 class Tutor:
     def __init__(self, api_key: str, model: str = MODEL, effort: str | None = EFFORT,
                  base_url: str = BASE_URL, timeout: float = TIMEOUT_S, task: bool = True):
@@ -366,24 +390,28 @@ class Tutor:
         except httpx.HTTPError:
             pass
 
-    def ask(self, question: str, image_data_url: str, state: str | None = None, pointer: str | None = None) -> Reply:
-        return self._call(build_body(question, image_data_url, state, self.model, self.effort, self.task, pointer))
+    def ask(self, question: str, image_data_url: str, state: str | None = None, pointer: str | None = None,
+            on_mark=None, on_say=None) -> Reply:
+        return self._call(build_body(question, image_data_url, state, self.model, self.effort, self.task, pointer),
+                          on_mark, on_say)
 
     def follow_up(self, goal: str, last_say: str, image_data_url: str, state: str | None = None,
                   screen_changed: bool | None = None, plan: list[str] | None = None, part: int | None = None,
-                  notes: str = "", acted: str = "click") -> Reply:
+                  notes: str = "", acted: str = "click", on_mark=None, on_say=None) -> Reply:
         """After the user acted and the screen settled: was the step done, is the task done, what next."""
-        return self._call(build_follow_up_body(goal, last_say, image_data_url, state, screen_changed,
-                                               self.model, self.effort, self.task, plan, part, notes, acted))
+        return self._call(build_follow_up_body(goal, last_say, image_data_url, state, screen_changed, self.model,
+                                               self.effort, self.task, plan, part, notes, acted), on_mark, on_say)
 
-    def _call(self, body: dict) -> Reply:
+    def _call(self, body: dict, on_mark=None, on_say=None) -> Reply:
         """One answer. A sentence without Vietnamese diacritics (4 of 104 so far, T4-T8a) would be read
         as nonsense by the voice, so that answer is asked for once more."""
         total = 0.0
+        early = EarlyAnswer(on_mark, on_say) if on_mark or on_say else None
         for attempt in range(2):
             try:
-                resp, elapsed = self._post("/chat/completions", body)
-            except (httpx.HTTPError, RuntimeError) as e:
+                resp, elapsed = self._stream("/chat/completions", body, early) if early else \
+                    self._post("/chat/completions", body)
+            except (httpx.HTTPError, RuntimeError, ValueError) as e:
                 return Reply(error=str(e))
             total += elapsed
             res = parse_reply(resp)
@@ -391,6 +419,32 @@ class Tutor:
             if not (res.say and res.say.isascii()):
                 break
         return res
+
+    def _stream(self, path: str, body: dict, early: EarlyAnswer, max_attempts: int = 3) -> tuple[dict, float]:
+        """As _post, reading the answer while it arrives."""
+        delay = 0.5
+        for attempt in range(1, max_attempts + 1):
+            started = time.perf_counter()
+            with self._http.stream("POST", path, json={**body, "stream": True,
+                                                       "stream_options": {"include_usage": True}}) as r:
+                if r.status_code in RETRY_STATUSES and attempt < max_attempts:
+                    time.sleep(delay)
+                    delay *= 2
+                    continue
+                if r.is_error:
+                    raise RuntimeError(f"HTTP {r.status_code}: {r.read().decode(errors='replace')[:300]}")
+                text, usage = "", {}
+                for line in r.iter_lines():
+                    if not line.startswith("data:") or line[5:].strip() == "[DONE]":
+                        continue
+                    chunk = json.loads(line[5:])
+                    usage = chunk.get("usage") or usage
+                    delta = ((chunk.get("choices") or [{}])[0].get("delta") or {}).get("content")
+                    if delta:
+                        text += delta
+                        early.feed(text)
+            return {"choices": [{"message": {"content": text}}], "usage": usage}, time.perf_counter() - started
+        raise RuntimeError("unreachable")
 
     def _post(self, path: str, body: dict, max_attempts: int = 3) -> tuple[dict, float]:
         delay = 0.5

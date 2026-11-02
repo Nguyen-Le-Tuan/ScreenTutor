@@ -4,7 +4,7 @@ from PIL import Image
 
 from grounding_test.meta_api import vision_prompt
 from screentutor import screen
-from screentutor.tutor import (EFFORT, MODEL, SAY_RULES, Reply, build_body, build_follow_up_body,
+from screentutor.tutor import (EFFORT, MODEL, SAY_RULES, EarlyAnswer, Reply, build_body, build_follow_up_body,
                                build_follow_up_prompt, build_prompt, parse_reply, task_rules)
 from tutor_eval.run import say_problems
 
@@ -25,14 +25,16 @@ def test_pointing_part_is_the_measured_prompt():
         assert v2 == vision_prompt("Mẹ bấm vào đâu?", state) + SAY_RULES + task_rules()
 
 
-def test_body_uses_spark_low_effort_and_asks_for_say():
+def test_body_uses_spark_and_asks_for_say():
     body = build_body("Mẹ bấm vào đâu?", "data:image/png;base64,AAAA", STATE)
     assert body["model"] == MODEL == "muse-spark-1.3"
-    assert body["reasoning_effort"] == EFFORT == "low"
+    assert body["reasoning_effort"] == EFFORT == "minimal"
     schema = body["response_format"]["json_schema"]["schema"]
-    assert set(schema["required"]) == {"found", "x", "y", "element", "say", "caution", "mode", "target", "box",
-                                       "plan", "notes"}
-    assert schema["properties"]["box"]["required"] == ["x1", "y1", "x2", "y2"]
+    assert set(schema["required"]) == {"found", "X", "Y", "element", "say", "Caution", "mode", "Target", "Box",
+                                       "task_plan", "task_notes"}
+    assert schema["properties"]["Box"]["required"] == ["x1", "y1", "x2", "y2"]
+    assert sorted(schema["required"]).index("Y") < sorted(schema["required"]).index("say")      # the API sorts the keys
+    assert sorted(schema["required"]).index("say") < sorted(schema["required"]).index("task_plan")
     assert body["messages"][0]["content"][1]["image_url"]["url"].startswith("data:image/png")
     v1 = build_body("Mẹ bấm vào đâu?", "data:", STATE, task=False)["response_format"]["json_schema"]["schema"]
     assert set(v1["required"]) == {"found", "x", "y", "element", "say", "caution"}
@@ -83,9 +85,10 @@ def test_a_later_turn_says_what_she_did_and_the_click_sentence_stays_as_measured
 def test_follow_up_body_asks_for_step_and_goal():
     body = build_follow_up_body("Mẹ muốn xuất ra PDF", "Bạn bấm File.", "data:image/png;base64,AAAA")
     schema = body["response_format"]["json_schema"]["schema"]
-    assert {"step_done", "goal_done", "say", "x", "y", "part", "target", "box", "plan", "notes"} <= set(schema["required"])
+    assert {"Step_done", "Goal_done", "say", "X", "Y", "task_part", "Target", "Box", "task_plan",
+            "task_notes"} <= set(schema["required"])
     assert "mode" not in schema["properties"]
-    assert body["reasoning_effort"] == "low"
+    assert body["reasoning_effort"] == "minimal"
 
 
 def test_parse_reply_reads_step_and_goal_only_when_present():
@@ -212,3 +215,76 @@ def test_pointer_line_only_when_given():
 
 def test_password_rule_is_always_there():
     assert "mật khẩu" in build_prompt("x") and "mật khẩu" in build_follow_up_prompt("x", "y")
+
+
+# The answer arrives bit by bit (T12 R5, 02/11)
+
+ANSWER = {"Box": {"x1": 0, "x2": 0, "y1": 0, "y2": 0}, "Caution": False, "Goal_done": False, "Step_done": True,
+          "Target": "click", "X": 150, "Y": 250, "element": "File", "found": True, "say": "Bạn bấm \"File\" nhé.",
+          "task_notes": "", "task_part": 1, "task_plan": ["Mở File", "Xuất PDF"]}
+
+
+def _bits(answer=ANSWER, size=7):
+    text = json.dumps(answer, ensure_ascii=False)
+    return [text[i:i + size] for i in range(0, len(text), size)]
+
+
+def test_capital_and_task_keys_read_as_the_plain_fields():
+    r = parse_reply(_resp(ANSWER))
+    assert (r.point, r.target, r.step_done, r.goal_done, r.part) == ((150.0, 250.0), "click", True, False, 1)
+    assert r.plan == ["Mở File", "Xuất PDF"] and r.say == 'Bạn bấm "File" nhé.' and r.box is None
+
+
+def test_the_place_and_the_sentence_are_known_before_the_answer_ends():
+    marks, says, order = [], [], []
+    early = EarlyAnswer(lambda r: (marks.append(r), order.append("mark")), lambda t: (says.append(t), order.append("say")))
+    text, seen_at = "", {}
+    for i, bit in enumerate(_bits()):
+        text += bit
+        early.feed(text)
+        for name, got in (("mark", marks), ("say", says)):
+            if got:
+                seen_at.setdefault(name, i)
+    assert order == ["mark", "say"] and len(marks) == len(says) == 1
+    assert marks[0].point == (150.0, 250.0) and marks[0].target == "click" and marks[0].step_done is True
+    assert says == ['Bạn bấm "File" nhé.']
+    assert seen_at["mark"] < seen_at["say"] < len(_bits()) - 2     # the plan is still on its way
+
+
+def test_a_box_comes_with_the_mark_and_a_half_number_is_not_read():
+    marks = []
+    early = EarlyAnswer(marks.append)
+    early.feed('{"Box": {"x1": 100, "x2": 700, "y1": 200, "y2": 800}, "Caution": false, "Target": "read", "X": 400, "Y": 50')
+    assert marks == []                  # the 50 may be 500
+    early.feed('{"Box": {"x1": 100, "x2": 700, "y1": 200, "y2": 800}, "Caution": false, "Target": "read", "X": 400, "Y": 500,')
+    assert marks[0].box == (100.0, 200.0, 700.0, 800.0) and marks[0].target == "read"
+
+
+def test_the_tutor_streams_when_asked_and_gives_the_same_reply():
+    import httpx
+
+    from screentutor.tutor import Tutor
+
+    def handler(request):
+        body = json.loads(request.content)
+        assert body["stream"] is True
+        lines = [f"data: {json.dumps({'choices': [{'delta': {'content': b}}]})}" for b in _bits()]
+        lines += ['data: {"choices": [], "usage": {"prompt_tokens": 9, "completion_tokens": 5}}', "data: [DONE]"]
+        return httpx.Response(200, text="\n\n".join(lines))
+
+    tutor = Tutor("k")
+    tutor._http = httpx.Client(base_url="https://x", transport=httpx.MockTransport(handler))
+    marks, says = [], []
+    reply = tutor.ask("Xuất PDF", "data:", on_mark=marks.append, on_say=says.append)
+    assert reply.say == 'Bạn bấm "File" nhé.' and reply.point == (150.0, 250.0) and reply.usage["input"] == 9
+    assert len(marks) == len(says) == 1 and reply.latency_s >= 0
+
+
+def test_a_failed_stream_is_an_error_not_a_crash():
+    import httpx
+
+    from screentutor.tutor import Tutor
+
+    tutor = Tutor("k")
+    tutor._http = httpx.Client(base_url="https://x", transport=httpx.MockTransport(lambda r: httpx.Response(400, text="bad")))
+    assert "HTTP 400" in tutor.ask("x", "data:", on_say=print).error
