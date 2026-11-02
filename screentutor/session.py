@@ -52,7 +52,7 @@ class Session:
     wait_screen: object = None     # () -> outcome str: wait for a loading screen to change and settle
     save: object = None            # (n, image, reply) -> None
     pause: object = time.sleep
-    status: object = None          # ("thinking" | "waiting") -> None, for the button and the island
+    status: object = None          # (state) -> None for the island: thinking, turn, caution, loading, error, done, idle
     cancel: object = None          # threading.Event: the user asked something new
     steps: list[Step] = field(default_factory=list)
 
@@ -83,6 +83,7 @@ class Session:
             if self.save:
                 self.save(n, img, reply)
             if reply.error:
+                self._status("error")
                 self.say("Mình chưa xem được màn hình. Bạn hỏi lại nhé.")
                 break
             if reply.goal_done or px is None:
@@ -91,7 +92,7 @@ class Session:
                     break  # done, or nothing to click: the sentence already says why or asks back
                 # T6/T8 (02/11): a page or a file was still loading; the session used to stop here.
                 waits += 1
-                self._status("waiting")
+                self._status("loading")
                 outcome = self.wait_screen()
                 if self._cancelled():
                     break
@@ -103,7 +104,7 @@ class Session:
             shown_at = time.monotonic()
             self.show(px[0], px[1], reply.caution)   # the ring first, so her eyes are there while she hears where
             self.say(reply.say)
-            self._status("waiting")
+            self._status("caution" if reply.caution else "turn")  # the island takes the ring's colour
             click = self.wait_click(shown_at, CLICK_WAIT_S)
             self.hide()
             if click is None or self._cancelled():
@@ -115,6 +116,8 @@ class Session:
             self._status("thinking")
             img, state = self.look()
             reply = self.tutor.follow_up(question, reply.say, self.encode(img), state, outcome != "unchanged")
+        if not self._cancelled() and not (self.steps and self.steps[-1].error):
+            self._status("done" if self.steps and self.steps[-1].goal_done else "idle")
         return self.steps
 
 

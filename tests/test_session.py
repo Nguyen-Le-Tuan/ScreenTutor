@@ -138,3 +138,31 @@ def test_a_caution_step_is_shown_as_such():
     s, log = _session(tutor, [], [])
     s.run("Xuất PDF")
     assert log[0] == ("show!", 1020, 525)
+
+
+def test_tells_the_island_what_it_is_doing():
+    seen = []
+    tutor = FakeTutor([
+        Reply(say="Bạn bấm vào chữ File.", found=True, point=(15, 74)),
+        Reply(say="Bấm Yes thì file cũ sẽ bị thay.", found=True, point=(500, 500), caution=True, step_done=True,
+              goal_done=False),
+        Reply(say="Đợi trang tải nhé.", step_done=True, goal_done=False),
+        Reply(say="Xong rồi bạn nhé.", step_done=True, goal_done=True)])
+    s, _ = _session(tutor, [Click(1.0, 29, 80, "left"), Click(2.0, 960, 540, "left")], ["settled", "settled"],
+                    waits=["settled"])
+    s.status = seen.append
+    s.run("Mẹ muốn xuất ra PDF")
+    assert seen == ["thinking", "turn", "thinking", "caution", "thinking", "loading", "thinking", "done"]
+
+
+def test_an_unfinished_task_ends_idle_and_an_error_says_so():
+    seen = []
+    s, _ = _session(FakeTutor([Reply(say="Bạn mở Zalo trước nhé.", found=False)]), [], [])
+    s.status = seen.append
+    s.run("Gửi file")
+    assert seen == ["thinking", "idle"]
+    seen.clear()
+    s, _ = _session(FakeTutor([Reply(say="", error="timeout")]), [], [])
+    s.status = seen.append
+    s.run("Gửi file")
+    assert seen == ["thinking", "error"]

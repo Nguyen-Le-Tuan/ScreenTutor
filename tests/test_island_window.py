@@ -179,3 +179,29 @@ def test_sound_bars_read_the_level_source_only_while_sound_plays():
     fake.t += 0.02
     isl.tick()
     assert isl.view.level is None  # no bars while it thinks
+
+
+def test_publishes_where_to_mask_and_where_clicks_land_on_it():
+    isl, fake = make()
+    settle(isl, fake)
+    g = isl.geometry()
+    assert isl.cover == (g.x(), g.y(), g.width(), g.height()) and isl.takes_clicks is None  # closed: clicks go through
+    isl.set_mode("pinned")
+    settle(isl, fake)
+    g = isl.geometry()
+    assert isl.takes_clicks == (g.x(), g.y(), g.width(), g.height())
+    isl.set_mode("collapsed")
+    isl.set_avoid(QPointF(centre(isl)))
+    assert isl.cover is None  # hidden over her target: nothing of ours to mask there
+
+
+def test_a_pinned_island_over_the_target_closes_and_an_error_rests():
+    isl, fake = make()
+    isl.set_mode("pinned")
+    settle(isl, fake)
+    r = isl.own_rect()
+    isl.set_avoid(QPointF(r.center().x() + 150, r.bottom() - 10))
+    assert isl.mode == "collapsed"
+    isl.set_state("error")
+    settle(isl, fake, island.DONE_HOLD_S + 0.5)
+    assert isl.view.state == "idle"

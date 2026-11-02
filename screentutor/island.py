@@ -439,7 +439,7 @@ def paint_bubble(p: QPainter, b: conv.Bubble, ox: float, oy: float, accent: QCol
 
 HOVER_DWELL_S = 0.25     # the mouse rests this long on the closed island before it opens
 LEAVE_S = 0.30           # and leaves for this long before it closes again
-DONE_HOLD_S = 3.0        # "done" shows this long, then the island rests
+DONE_HOLD_S = 3.0        # "done" (or an error) shows this long, then the island rests
 POLL_MS, FRAME_MS = 60, 16
 AVOID_MARGIN = 20        # logical px around the island where the ring's target counts as underneath
 SCROLL_STEP = 42         # px per wheel notch in the pinned island
@@ -467,6 +467,9 @@ class Island(QWidget):
         self._avoid: QPointF | None = None
         self.hidden_for_target = False     # the ring points under the closed island: get out of the way
         self.level_source = None           # A6: a callable giving the mic or voice level 0..1 (Meter.value)
+        # A7: read from worker threads, so plain tuples swapped whole (logical x, y, w, h), or None
+        self.cover: tuple[int, int, int, int] | None = None        # what to grey out for the stillness check
+        self.takes_clicks: tuple[int, int, int, int] | None = None  # where a click lands on the island, not her app
         self.no_hover = False              # the ring points under where the open island would be
         self.morph = Morph(self._target())
         self._frame = QTimer(self)
@@ -510,8 +513,9 @@ class Island(QWidget):
                 self.hidden_for_target = True
             elif opened.adjusted(-AVOID_MARGIN, -AVOID_MARGIN, AVOID_MARGIN, AVOID_MARGIN).contains(point.toPoint()):
                 self.no_hover = True
-            if (self.hidden_for_target or self.no_hover) and self.mode == "hover":
-                self.set_mode("collapsed")
+            covered = self.mode != "collapsed" and self.own_rect().contains(point.toPoint())
+            if self.mode != "collapsed" and (self.hidden_for_target or self.no_hover or covered):
+                self.set_mode("collapsed")  # open or pinned over her target: close
         self._apply_click_through()
         self.update()
 
@@ -570,6 +574,10 @@ class Island(QWidget):
         self._apply_click_through()
         self._poll.start()
 
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self._publish()
+
     def mouseReleaseEvent(self, event):
         if event.button() != Qt.LeftButton:
             return
@@ -614,7 +622,7 @@ class Island(QWidget):
         self.morph.step(dt)
         if self.level_source is not None and self.view.state in ("listening", "speaking"):
             self.view.level = self.level_source()
-        if self.view.state == "done" and now - self._state_at >= DONE_HOLD_S:
+        if self.view.state in ("done", "error") and now - self._state_at >= DONE_HOLD_S:
             self.set_state("idle")
         if not self.morph.moving():
             self._fit()
@@ -657,10 +665,18 @@ class Island(QWidget):
             self.setGeometry(rect)
             if self.isVisible():
                 self._apply_click_through()  # T7 (02/11): Windows forgot the click-through after a resize
+        self._publish()
+
+    def _publish(self) -> None:
+        g = self.geometry()
+        box = (g.x(), g.y(), g.width(), g.height())
+        self.cover = None if self.hidden_for_target or not self.isVisible() else box
+        self.takes_clicks = None if self.click_through or not self.isVisible() else box
 
     def _apply_click_through(self) -> None:
         self.click_through = self.mode == "collapsed" or self.hidden_for_target
         self.setAttribute(Qt.WA_TransparentForMouseEvents, self.click_through)
+        self._publish()
         if self.isVisible():
             _win_harden(self, click_through=self.click_through)
 
