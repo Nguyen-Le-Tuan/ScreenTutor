@@ -123,7 +123,7 @@ python -m tutor_eval.sam run --yes          # T11 (about $0.06)
 | `screentutor/inputs.py`, `still.py`, `session.py` | Observing clicks; waiting for a still screen; the step-by-step loop |
 | `screentutor/speak.py` | Local VieNeu voice, with fixes for how file names and times are read |
 | `grounding_test/`, `tutor_eval/`, `stt_eval/`, `tts_eval/` | The tests above, each with its pre-registered rule |
-| `docs/tests/` | Checklists and results of the hands-on Windows runs. T2–T8 are filled in; T9 is the next run. T10, her own trial, is not planned before the deadline |
+| `docs/tests/` | Checklists and results of the hands-on Windows runs. T2–T8 are filled in; T9 is the next run. T10 is her own first trial, on her own tasks; the filled-in sheet holds her words and stays private |
 
 ## Built during the hackathon
 

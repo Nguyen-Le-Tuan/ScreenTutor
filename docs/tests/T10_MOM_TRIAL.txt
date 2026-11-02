@@ -6,8 +6,9 @@ Khoảng 45-60 phút. Mỗi câu hỏi tốn vài xu.
 
 Trước khi bắt đầu:
 [ ] App đã cài và chạy được (docs\INSTALL_FOR_DAD.txt, mục 6).
-[ ] Mẹ đã được nói: máy gửi ảnh màn hình và giọng mẹ tới Meta khi mẹ hỏi; ảnh từng bước lưu
-    trên máy mẹ (mục 7 của hướng dẫn cài). Mẹ đồng ý dùng thử: ______
+[ ] Mẹ đã được nói đủ mục 7 của hướng dẫn cài: khi mẹ hỏi, giọng mẹ được gửi tới Meta; ở mỗi bước
+    hướng dẫn, máy gửi ảnh màn hình cùng tên các cửa sổ đang mở và tên file mới sửa; ảnh từng bước
+    lưu trên máy mẹ. Mẹ đồng ý dùng thử: ______
 [ ] Mẹ có tờ docs\HUONG_DAN_CHO_ME.txt. Ba giải thích 2 phút: nút Hỏi, giữ Ctrl+Alt, vòng đỏ,
     vòng vàng = cẩn thận. Sau đó để mẹ tự làm.
 

@@ -61,13 +61,23 @@ Cần: Internet ổn định, micro và loa của laptop, khoảng 2 GB ổ C (t
     (create shortcut). Đổi tên lối tắt thành "Hỏi máy tính".
 
 
-7. NÓI VỚI MẸ (quan trọng)
---------------------------
-- Mỗi lần mẹ hỏi, ScreenTutor chụp màn hình và gửi ảnh đó cùng câu hỏi tới Meta để hiểu mẹ
-  đang thấy gì. Dùng model bản Standard; theo tài liệu Meta, nội dung gửi tới bản này không dùng
-  để huấn luyện. Giọng mẹ cũng được gửi tới Meta để chép thành chữ; tài liệu về phần giọng nói
-  chưa nói rõ chính sách dữ liệu. Không có gì được gửi khi mẹ không bấm "Hỏi" hay giữ Ctrl+Alt.
-  Giọng đọc của tutor được tạo ngay trên máy, không gửi đi đâu.
+7. NÓI VỚI MẸ (quan trọng, nói TRƯỚC khi mẹ đồng ý dùng thử)
+-------------------------------------------------------------
+- Những gì được gửi tới Meta, và khi nào:
+  + Khi mẹ bấm "Hỏi" hay giữ Ctrl+Alt, giọng mẹ được gửi đi để chép thành chữ.
+  + Sau đó, ở MỖI BƯỚC hướng dẫn, ScreenTutor chụp màn hình và gửi ảnh đó cùng câu hỏi và một bản
+    tóm tắt về máy: tiêu đề các cửa sổ đang mở (thường có tên file, tên trang web hay tên nhóm Zalo),
+    app mở mặc định, đường dẫn các thư mục chuẩn, và tên các file tài liệu hay ảnh mới sửa trong 3
+    ngày qua.
+  + Một câu hỏi có thể kéo dài nhiều bước: mỗi lần mẹ bấm chuột trong lúc máy đang hướng dẫn (và
+    khi máy đang chờ một trang tải xong), nó tự chụp và gửi tiếp, cho tới khi xong việc (tối đa 12
+    bước), mẹ hỏi câu khác, hoặc 3 phút mẹ không bấm gì.
+  + Vì vậy, trong lúc máy đang hướng dẫn, đừng để trên màn hình thứ mẹ không muốn gửi đi (tin nhắn
+    riêng, điểm hay thông tin học sinh, mật khẩu).
+  + Chưa hỏi thì không có gì của mẹ được gửi đi. Lúc mới bật, app chỉ gọi Meta một lần để kiểm tra
+    kết nối, không kèm ảnh hay giọng. Giọng đọc của tutor được tạo ngay trên máy.
+- Dùng model bản Standard; theo tài liệu Meta, nội dung gửi tới bản này không dùng để huấn luyện.
+  Tài liệu về phần giọng nói chưa nói rõ chính sách dữ liệu.
 - Ảnh từng bước được lưu lại trên chính máy mẹ, trong C:\ScreenTutor\tutor_runs, để Tuấn xem
   lại khi cần sửa lỗi. Có thể xoá thư mục này bất cứ lúc nào. Không gửi thư mục này cho ai.
 - Đưa mẹ tờ docs\HUONG_DAN_CHO_ME.txt (in ra được).
