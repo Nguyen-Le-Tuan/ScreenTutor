@@ -92,3 +92,15 @@ def test_desktop_in_front_is_not_reported_as_an_app():
 def test_take_snapshot_refuses_off_windows():
     with pytest.raises(RuntimeError):
         take_snapshot()
+
+
+def test_zalo_folders_include_its_read_only_temporary_copies(tmp_path):
+    from screentutor.state import ZALO_TEMP, zalo_folders
+
+    docs, temp = tmp_path / "Documents", tmp_path / "Temp"
+    assert zalo_folders(str(docs), str(temp)) == {}
+    (docs / "Zalo Received Files").mkdir(parents=True)
+    (temp / "Zalo Temp" / "TempDownloads").mkdir(parents=True)
+    found = zalo_folders(str(docs), str(temp))
+    assert found["Zalo Received Files"].endswith("Zalo Received Files")
+    assert found[ZALO_TEMP].endswith("TempDownloads") and "chỉ đọc" in ZALO_TEMP

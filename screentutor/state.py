@@ -189,6 +189,23 @@ def format_vi(s: Snapshot) -> str:
     return "\n".join(lines)
 
 
+# T5 X-1 (02/11): a file clicked straight in Zalo opens from here, read-only; edits made there never reach
+# the real file, which is how mom's "blank copy" happens. The label says so to the model.
+ZALO_TEMP = "bản tạm chỉ đọc của Zalo (Zalo Temp)"
+
+
+def zalo_folders(documents: str, temp: str) -> dict[str, str]:
+    """Zalo's own folders, when they exist: received files, and the temporary copies it opens."""
+    out = {}
+    received = Path(documents) / "Zalo Received Files" if documents else None
+    if received and received.is_dir():
+        out["Zalo Received Files"] = str(received)
+    opened = Path(temp) / "Zalo Temp" / "TempDownloads" if temp else None
+    if opened and opened.is_dir():
+        out[ZALO_TEMP] = str(opened)
+    return out
+
+
 def take_snapshot(hours: int = DEFAULT_HOURS) -> Snapshot:
     if sys.platform != "win32":
         raise RuntimeError("Cảm biến trạng thái chỉ chạy trên Windows.")
@@ -217,12 +234,11 @@ def take_snapshot(hours: int = DEFAULT_HOURS) -> Snapshot:
         snap.foreground = run("cửa sổ trước mặt", lambda: winstate.describe(fg_hwnd))
     snap.defaults = run("app mặc định", winstate.default_apps) or {}
     snap.folders = run("thư mục chuẩn", winstate.known_folders) or {}
-    zalo = Path(snap.folders.get("Documents", "")) / "Zalo Received Files"
-    if snap.folders and zalo.is_dir():
-        snap.folders["Zalo Received Files"] = str(zalo)
+    if snap.folders:
+        snap.folders.update(zalo_folders(snap.folders.get("Documents", ""), os.environ.get("TEMP", "")))
     since = snap.taken_at - hours * 3600
     snap.recent_files = run("file mới", lambda: recent_files(
-        snap.folders, since, depth={"Zalo Received Files": 1})) or []
+        snap.folders, since, depth={"Zalo Received Files": 1, ZALO_TEMP: 1})) or []
     snap.timings_ms["tổng"] = round(sum(snap.timings_ms.values()), 1)
     return snap
 

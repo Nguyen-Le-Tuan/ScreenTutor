@@ -2,7 +2,7 @@
 
 Button: a pill at the bottom right, just above the taskbar, always on top. Clicking
 it never takes the focus away from the app the user works in. Its colour and words
-say what the tutor is doing: Hỏi / Đang nghe / Đang xem / Đang nói.
+say what the tutor is doing: Hỏi / Đang nghe / Đang xem màn hình / Đang nói.
 
 Island: a small dark pill at the top centre with the raw words the tutor heard
 (founder, 30/10: show the transcript as it is; tidy it up later). The mouse over it
@@ -28,7 +28,7 @@ from .overlay import _win_harden, _win_topmost
 STATES = {
     "idle": ("Hỏi", QColor(37, 99, 235)),
     "listening": ("Đang nghe…", QColor(220, 38, 38)),
-    "thinking": ("Đang xem…", QColor(217, 119, 6)),
+    "thinking": ("Đang xem màn hình…", QColor(217, 119, 6)),   # founder, T8 P-7 (02/11): "Đang xem" was too vague
     "speaking": ("Đang nói…", QColor(22, 163, 74)),
 }
 MARGIN = 16                 # logical px from the screen edge / taskbar
@@ -63,7 +63,7 @@ class AskButton(QWidget):
         self._place()
 
     def _place(self) -> None:
-        w = QFontMetrics(_font(20, True)).horizontalAdvance("Đang nghe…") + 2 * 28
+        w = max(QFontMetrics(_font(20, True)).horizontalAdvance(label) for label, _ in STATES.values()) + 2 * 28
         area = self._screen.availableGeometry()  # above the taskbar
         self.setFixedSize(QSize(w + 2 * 8, BUTTON_H + 2 * 8))  # room for the glow
         self.move(area.right() - self.width() - MARGIN + 8, area.bottom() - self.height() - MARGIN + 8)
@@ -151,6 +151,8 @@ class Island(QWidget):
         top = self._screen.geometry()
         self.setFixedSize(w, h)
         self.move(top.x() + (top.width() - w) // 2, top.y() + 6)
+        if self.isVisible():
+            _win_harden(self, click_through=True)  # T7 (02/11): clicks stopped going through after it resized
 
     def paintEvent(self, _event):
         p = QPainter(self)

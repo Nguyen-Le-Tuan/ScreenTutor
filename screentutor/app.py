@@ -23,8 +23,17 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-OWN_WIDGETS_NOTE = ("- Nút \"Hỏi\" ở góc dưới bên phải và ô chữ đen ở giữa mép trên màn hình là của chính tutor, "
-                    "không phải của app nào; không chỉ vào chúng.")
+# Facts about this machine sent with the state text. WPS: T6/T8 (02/11), the "Create PDF" button only asked to
+# install WPS; founder: use File > Export > Create PDF/XPS. Zalo Temp: T5 X-1 (02/11), founder's observation.
+MACHINE_NOTES = "\n".join([
+    "- Nút \"Hỏi\" ở góc dưới bên phải và ô chữ đen ở giữa mép trên màn hình là của chính tutor, "
+    "không phải của app nào; không chỉ vào chúng.",
+    "- Nút \"Create PDF\" của WPS trên thanh công cụ Word không dùng được trên máy này (bấm vào chỉ hiện hộp đòi "
+    "cài WPS). Muốn xuất PDF thì dùng File > Export > Create PDF/XPS.",
+    "- Bấm thẳng vào file trong tin nhắn Zalo thì Word mở một bản tạm chỉ đọc (Read-Only) trong thư mục Zalo Temp; "
+    "sửa trên bản đó sẽ không vào file thật.",
+])
+WAIT_GRACE_S = 5.0    # a loading page may stay blank this long before anything changes
 NOT_HEARD = "Mình chưa nghe rõ. Bạn hỏi lại nhé."
 ISLAND_MASK_H = 160   # logical px at the top centre kept out of the stillness check (the island opens up there)
 
@@ -73,16 +82,17 @@ def main(argv=None) -> None:
     tutor = Tutor(key)
     speaker = Speaker()
     threading.Thread(target=speaker.load, daemon=True).start()
+    threading.Thread(target=tutor.warm, daemon=True).start()  # T8 (02/11): the first answer took 8.8 s
     out = Path("tutor_runs") / (datetime.now().strftime("%Y%m%d-%H%M%S") + "-app")
     out.mkdir(parents=True, exist_ok=True)
 
     class Bridge(QObject):  # worker threads talk to the widgets only through these
-        point = Signal(int, int)
+        point = Signal(int, int, bool)
         clear = Signal()
         state = Signal(str, object)
 
     bridge = Bridge()
-    bridge.point.connect(lambda x, y: overlay.point_at(x, y))
+    bridge.point.connect(lambda x, y, caution: overlay.point_at(x, y, caution=caution))
     bridge.clear.connect(overlay.clear)
 
     def on_state(state, text):
@@ -103,12 +113,15 @@ def main(argv=None) -> None:
                 round(ISLAND_MASK_H * dpr))
         return [physical(button), band]
 
+    def grab_own_masked():
+        return masked(screen.grab(), own_rects())
+
     def on_button(click: Click) -> bool:
         x1, y1, x2, y2 = physical(button)
         return x1 <= click.x <= x2 and y1 <= click.y <= y2
 
     def look():
-        return screen.grab(), format_vi(take_snapshot()) + "\n" + OWN_WIDGETS_NOTE
+        return screen.grab(), format_vi(take_snapshot()) + "\n" + MACHINE_NOTES
 
     def say(text: str) -> None:
         """Speak without blocking the session; a click or a new question cuts it off."""
@@ -163,9 +176,10 @@ def main(argv=None) -> None:
 
         session = Session(
             tutor=tutor, look=look, encode=screen.png_data_url,
-            show=lambda x, y: bridge.point.emit(x, y), hide=bridge.clear.emit, say=say,
+            show=lambda x, y, caution: bridge.point.emit(x, y, caution), hide=bridge.clear.emit, say=say,
             wait_click=wait_click,
-            settle=lambda c: wait_until_settled(c.t, lambda: masked(screen.grab(), own_rects()))[0],
+            settle=lambda c: wait_until_settled(c.t, grab_own_masked)[0],
+            wait_screen=lambda: wait_until_settled(time.monotonic(), grab_own_masked, grace_s=WAIT_GRACE_S)[0],
             save=save, status=lambda st: show_state(st), cancel=cancel)
         steps = session.run(heard.text)
         for s in steps:

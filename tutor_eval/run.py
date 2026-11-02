@@ -41,6 +41,14 @@ mẹ" becomes "says bạn"; the "con" checks become: calls the user "mẹ" or th
 tutor "con", asks a favour ("giúp mình", "nhờ bạn", "mời bạn"), promises to
 act for her. Thresholds unchanged. Reported but not scored: how many
 sentences say "mình".
+
+Fourth rule, fixed before the 02/11 rerun. After the Windows trip the prompt gained
+three sentence rules (no talk about itself, a needed earlier step comes first,
+and caution=true with the consequence said when a click sends something or
+replaces a file), and (3) gained a "nói về mình" check. The pointing text is
+unchanged. Thresholds (1)-(3) unchanged; added (4): caution=true in at most
+1/24 calls, since no step in these 12 cases sends or replaces anything. If (1)
+or (2) fail, the three new rules are taken out again.
 """
 
 from __future__ import annotations
@@ -80,6 +88,7 @@ FAMILY_WORDS = re.compile(r"\bmẹ\b|\b(?:nhé|nha|nhá|ạ|cho|giúp|nhờ|mờ
 ASKS_FAVOUR = re.compile(r"\bgiúp mình\b|\b(?:nhờ|mời)\s+bạn\b", re.IGNORECASE)
 ACTS_FOR_HER = re.compile(r"\b(?:mình|con)\s+(?:sẽ\s+)?(?:mở|bấm|làm|gửi|lưu|tắt|tạo)\b", re.IGNORECASE)
 SELF = re.compile(r"\bmình\b", re.IGNORECASE)
+SELF_TALK = re.compile(r"\bmình\s+(?:nói|chỉ|nhắc|dặn|thấy|hướng dẫn|giải thích)\b", re.IGNORECASE)  # T5 (02/11)
 
 
 def say_problems(say: str) -> list[str]:
@@ -104,6 +113,8 @@ def say_problems(say: str) -> list[str]:
         problems.append("nhờ vả")
     if ACTS_FOR_HER.search(say):
         problems.append("hứa làm hộ")
+    if SELF_TALK.search(say):
+        problems.append("nói về mình")
     if "\n" in say or any(c in MARKUP for c in say):
         problems.append("có ký hiệu")
     if any(ord(c) > 0xFFFF for c in say):
@@ -154,7 +165,7 @@ def cmd_run(args) -> None:
                     rec = {
                         "item_id": it.item_id, "run": run, "question": it.question_vi, "state": state,
                         "found": reply.found, "point": reply.point, "element": reply.element,
-                        "say": reply.say, "say_problems": say_problems(reply.say),
+                        "say": reply.say, "say_problems": say_problems(reply.say), "caution": reply.caution,
                         "result": scores["norm1000"]["result"], "distance_px": scores["norm1000"].get("distance_px"),
                         "latency_s": round(reply.latency_s, 3), "usage": reply.usage, "error": reply.error,
                         "raw_file": raw_file,
@@ -193,6 +204,7 @@ def summarize(out: Path) -> Path:
         f"| (2) Trễ trung vị / p90 | {med:.2f} s / {p90:.2f} s | ≤ {LATENCY_LIMIT_S:.0f} s (mốc 2,39 s) | {mark[ok2]} |",
         f"| (3) Câu nói qua kiểm tra tự động | {say_ok}/{len(rows)} | ≥ {MIN_SAY_OK}/24 | {mark[ok3]} |",
         f"| Câu có chữ \"mình\" (không chấm) | {sum(bool(SELF.search(r['say'])) for r in rows)}/{len(rows)} | | |",
+        f"| (4) caution bật (từ 02/11) | {sum(bool(r.get('caution')) for r in rows)}/{len(rows)} | ≤ 1/24 | |",
         "", f"**Theo luật đặt trước: {'đạt cả ba' if ok1 and ok2 and ok3 else 'chưa đạt'}.**", "",
         "| Ca | Trạng thái | Mốc 29/10 | " + " | ".join(f"Lần {k}" for k in runs) + " | Trễ | Chỉ vào |",
         "|---|---|---|" + "---|" * len(runs) + "---|---|",

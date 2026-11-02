@@ -29,7 +29,7 @@ def test_body_uses_spark_low_effort_and_asks_for_say():
     assert body["model"] == MODEL == "muse-spark-1.3"
     assert body["reasoning_effort"] == EFFORT == "low"
     schema = body["response_format"]["json_schema"]["schema"]
-    assert set(schema["required"]) == {"found", "x", "y", "element", "say"}
+    assert set(schema["required"]) == {"found", "x", "y", "element", "say", "caution"}
     assert body["messages"][0]["content"][1]["image_url"]["url"].startswith("data:image/png")
 
 
@@ -97,6 +97,7 @@ def test_say_checks():
     assert "nhờ vả" in say_problems("Bạn bấm vào nút OK giúp mình nhé.")
     assert "nhờ vả" in say_problems("Mình nhờ bạn bấm vào nút OK nhé.")
     assert "hứa làm hộ" in say_problems("Bạn chờ chút, mình sẽ mở bảng tính cho bạn xem.")
+    assert "nói về mình" in say_problems("Bạn bấm vào khung màu xanh nhé, mình nói kỹ vậy cho dễ tìm.")
 
 
 def test_mark_draws_only_when_there_is_a_point():

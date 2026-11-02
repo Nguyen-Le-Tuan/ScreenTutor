@@ -27,6 +27,10 @@ Rule, fixed before the run (31/10/2026):
   and rerun once; if it fails again, the tutor never decides "done" by itself
   and asks the user instead (fallback of Decision 2b). (2), (3) or (4) fail:
   fix and rerun under the same rule.
+
+Rerun rule, fixed before the 02/11 rerun: same pairs and thresholds, with the
+prompt's three new sentence rules (see tutor_eval/run.py, fourth rule); added:
+caution=true in at most 1/24 calls (no pair sends or replaces anything).
 """
 
 from __future__ import annotations
@@ -127,7 +131,7 @@ def cmd_run(args) -> None:
                         "screen_changed": changed, "want_step": want_step, "want_goal": want_goal,
                         "step_done": reply.step_done, "goal_done": reply.goal_done, "found": reply.found,
                         "point": reply.point, "element": reply.element, "result": result,
-                        "say": reply.say, "say_problems": say_problems(reply.say),
+                        "say": reply.say, "say_problems": say_problems(reply.say), "caution": reply.caution,
                         "latency_s": round(reply.latency_s, 3), "usage": reply.usage, "error": reply.error,
                         "raw_file": raw_file,
                     }
@@ -167,6 +171,7 @@ def summarize(out: Path) -> Path:
         f"| (2) Trỏ bước tiếp (P và N) | {hits}/{len(pointed)} | ≥ {MIN_HITS}/18 | {mark[ok2]} |",
         f"| (3) Trễ trung vị / p90 | {med:.2f} s / {p90:.2f} s | ≤ {LATENCY_LIMIT_S:.0f} s | {mark[ok3]} |",
         f"| (4) Câu nói qua kiểm tra tự động | {say_ok}/{len(rows)} | ≥ {MIN_SAY_OK}/24 | {mark[ok4]} |",
+        f"| (5) caution bật (từ 02/11) | {sum(bool(r.get('caution')) for r in rows)}/{len(rows)} | ≤ 1/24 | |",
         "", f"**Theo luật đặt trước: {'đạt cả bốn' if ok1 and ok2 and ok3 and ok4 else 'chưa đạt'}.**", "",
         "| Cặp | Ảnh sau | Cần (bước / việc) | Lần 1 | Lần 2 |", "|---|---|---|---|---|",
     ]

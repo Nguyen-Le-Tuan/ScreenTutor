@@ -16,6 +16,14 @@ Rule, fixed before the run (31/10/2026); the thresholds are Claude's, not the fo
 - (2) Spoken sentence: at least 7/8 pass the T4 automatic checks.
 - Measured, not scored: the wait from the end of her speech (the model's
   speechEnd) to the first sound of the answer, split into hearing, Spark and voice.
+
+T8b rule, fixed before the 02/11 rerun. Changes from T8a, each from the Windows
+trip: the state text carries MACHINE_NOTES (the WPS "Create PDF" button only asks
+to install WPS, T8 X-2); the prompt has the three new sentence rules; for me_07
+the link in Zalo also counts as a hit (case_03's labels on the same screenshot),
+because clicking it again brings Brave to the front with the Sheet (T8 X-3).
+- (1) at least 6/8 hits; (2) at least 7/8 sentences pass the checks;
+  (3) caution=true in at most 1/8.
 """
 
 from __future__ import annotations
@@ -31,7 +39,7 @@ from pathlib import Path
 from grounding_test import config as gconfig
 from grounding_test.datasets import CASES_DIR, load_cases, prepare_image
 from grounding_test.scoring import score_point
-from screentutor.app import OWN_WIDGETS_NOTE
+from screentutor.app import MACHINE_NOTES
 from screentutor.listen import _api_key, file_frames, listen
 from screentutor.speak import VOICE, _load_engine, for_speech
 from screentutor.tutor import Tutor
@@ -40,6 +48,7 @@ from tutor_eval.run import load_states, say_problems
 HERE = Path(__file__).parent
 AUDIO = HERE.parent / "stt_eval" / "audio"
 PAIRS = [("me_06.m4a", "case_05"), ("me_04.m4a", "case_12"), ("me_07.m4a", "case_04"), ("me_05.m4a", "case_10")]
+ALSO_RIGHT = {"case_04": "case_03"}   # T8b: re-clicking the link also works (T8 X-3, 02/11)
 RUNS = 2
 MIN_HITS = 6
 MIN_SAY_OK = 7
@@ -63,7 +72,7 @@ def cmd_run(_args) -> None:
     try:
         for rec, case in PAIRS:
             data_url, sent, orig = prepare_image(CASES_DIR / f"{case}.png")
-            state = (states.get(case, "") + "\n" + OWN_WIDGETS_NOTE).strip()
+            state = (states.get(case, "") + "\n" + MACHINE_NOTES).strip()
             for run in range(1, RUNS + 1):
                 heard = asyncio.run(listen(key, file_frames(AUDIO / rec), "ENDPOINTING"))
                 t_heard = time.monotonic()
@@ -74,10 +83,12 @@ def cmd_run(_args) -> None:
                     first_sound = time.monotonic()
                     break
                 end = speech_end(heard)
-                result = score_point(reply.point, sent, orig, items[case].boxes, gconfig.NEAR_PX)["norm1000"]["result"]
+                boxes = items[case].boxes + (items[ALSO_RIGHT[case]].boxes if case in ALSO_RIGHT else [])
+                result = score_point(reply.point, sent, orig, boxes, gconfig.NEAR_PX)["norm1000"]["result"]
                 row = {"recording": rec, "case": case, "run": run, "heard": heard.text, "say": reply.say,
                        "spoken": for_speech(reply.say), "result": result, "element": reply.element,
                        "say_problems": say_problems(reply.say), "error": heard.error or reply.error,
+                       "caution": reply.caution,
                        "hear_s": round(heard.final_at - end, 2) if end and heard.final_at else None,
                        "spark_s": round(t_reply - t_heard, 2),
                        "voice_s": round(first_sound - t_reply, 2) if first_sound else None,
@@ -101,6 +112,7 @@ def summarize(out: Path) -> Path:
              "| Điều kiện | Kết quả | Ngưỡng | |", "|---|---|---|---|",
              f"| (1) Trỏ trúng | {hits}/{len(rows)} | ≥ {MIN_HITS}/8 | {mark[hits >= MIN_HITS]} |",
              f"| (2) Câu nói qua kiểm tra tự động | {say_ok}/{len(rows)} | ≥ {MIN_SAY_OK}/8 | {mark[say_ok >= MIN_SAY_OK]} |",
+             f"| (3) caution bật | {sum(bool(r.get('caution')) for r in rows)}/{len(rows)} | ≤ 1/8 | |",
              "", "| Đo (trung vị) | Giây |", "|---|---|",
              f"| Nghe: từ lúc ngừng nói tới khi đủ câu hỏi | {med('hear_s'):.2f} |",
              f"| Spark M2: hỏi tới khi có câu trả lời | {med('spark_s'):.2f} |",

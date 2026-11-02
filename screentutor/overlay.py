@@ -21,6 +21,7 @@ from PySide6.QtCore import QElapsedTimer, QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import QColor, QCursor, QGuiApplication, QImage, QPainter, QPen
 
 COLOR = QColor(255, 69, 58)          # red-orange: stands out on white Word pages, Zalo blue and the dark taskbar
+CAUTION_COLOR = QColor(255, 176, 0)  # amber: this click sends something or replaces a file (founder's rule, 27/10)
 HALO = QColor(255, 255, 255, 230)    # white edge so the ring reads on dark and light backgrounds alike
 FILL_ALPHA = 40                      # faint tint inside: the button or word under the ring stays readable
 TRAVEL_S = 0.45                      # glide from the mouse cursor to the target
@@ -67,22 +68,22 @@ def frame_at(t: float, start: tuple[float, float], target: tuple[float, float]) 
     return Frame(x, y, radius, arrived=True, pulses=sorted(pulses))
 
 
-def paint_frame(p: QPainter, f: Frame, scale: float = 1.0) -> None:
+def paint_frame(p: QPainter, f: Frame, scale: float = 1.0, color: QColor = COLOR) -> None:
     p.setRenderHint(QPainter.Antialiasing)
     c = QPointF(f.x, f.y)
     p.setBrush(Qt.NoBrush)
     for radius, alpha in f.pulses:
-        pulse = QColor(COLOR)
+        pulse = QColor(color)
         pulse.setAlpha(alpha)
         p.setPen(QPen(pulse, 3 * scale))
         p.drawEllipse(c, radius * scale, radius * scale)
     r = f.radius * scale
-    fill = QColor(COLOR)
+    fill = QColor(color)
     fill.setAlpha(FILL_ALPHA)
     p.setPen(QPen(HALO, (STROKE + 3) * scale))
     p.setBrush(fill)
     p.drawEllipse(c, r, r)
-    p.setPen(QPen(COLOR, STROKE * scale))
+    p.setPen(QPen(color, STROKE * scale))
     p.setBrush(Qt.NoBrush)
     p.drawEllipse(c, r, r)
 
@@ -98,7 +99,7 @@ class Overlay:
                 if self._target is None:
                     return
                 p = QPainter(inner)
-                paint_frame(p, self._frame())
+                paint_frame(p, self._frame(), color=self._color)
                 p.end()
 
         self._screen = screen or QGuiApplication.primaryScreen()
@@ -111,14 +112,16 @@ class Overlay:
         self._target = None
         self._start = (0.0, 0.0)
         self._until_ms = None
+        self._color = COLOR
         self._clock = QElapsedTimer()
         self._last_topmost = 0
         self._timer = QTimer(self._w)
         self._timer.setInterval(16)
         self._timer.timeout.connect(self._tick)
 
-    def point_at(self, px: float, py: float, seconds: float | None = None) -> None:
-        """px, py: pixels of a screenshot of this screen (physical pixels)."""
+    def point_at(self, px: float, py: float, seconds: float | None = None, caution: bool = False) -> None:
+        """px, py: pixels of a screenshot of this screen (physical pixels). caution: amber instead of red."""
+        self._color = CAUTION_COLOR if caution else COLOR
         geo = self._screen.geometry()
         x, y = to_logical(px, py, self._screen.devicePixelRatio())
         if self._target is not None:
@@ -164,7 +167,9 @@ def _win_harden(widget, click_through: bool = True) -> None:
     user32 = ctypes.windll.user32
     user32.GetWindowLongW.restype = ctypes.c_long
     hwnd = ctypes.c_void_p(int(widget.winId()))
-    style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE) | WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_NOACTIVATE
+    WS_EX_APPWINDOW = 0x40000  # T5 (02/11): the ring showed up in Alt+Tab; an app-window flag overrides the tool flag
+    style = (user32.GetWindowLongW(hwnd, GWL_EXSTYLE) | WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_NOACTIVATE) \
+        & ~WS_EX_APPWINDOW
     user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style | WS_EX_TRANSPARENT if click_through else style)
     _win_topmost(widget)
 

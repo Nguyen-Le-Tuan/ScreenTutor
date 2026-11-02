@@ -20,7 +20,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 
-MAX_STEPS = 8
+MAX_STEPS = 12        # T6 (02/11): exporting a PDF after backing out of a wrong dialog took 8 steps and hit 8
+MAX_WAITS = 3         # "please wait, it is loading" answers in a row before giving up
 CLICK_WAIT_S = 180
 HIDE_PAUSE_S = 0.12   # let the ring disappear before watching the screen, or its vanishing looks like a change
 
@@ -43,16 +44,22 @@ class Session:
     tutor: object                  # .ask(question, data_url, state) / .follow_up(goal, last_say, data_url, state, changed)
     look: object                   # () -> (PIL image, state text or None)
     encode: object                 # PIL image -> data URL
-    show: object                   # (x, y) physical px -> None
+    show: object                   # (x, y, caution) physical px -> None
     hide: object                   # () -> None
     say: object                    # (text) -> None
     wait_click: object             # (since, timeout_s) -> Click or None
     settle: object                 # (click) -> outcome str
+    wait_screen: object = None     # () -> outcome str: wait for a loading screen to change and settle
     save: object = None            # (n, image, reply) -> None
     pause: object = time.sleep
     status: object = None          # ("thinking" | "waiting") -> None, for the button and the island
     cancel: object = None          # threading.Event: the user asked something new
     steps: list[Step] = field(default_factory=list)
+
+    @staticmethod
+    def _is_waiting(reply) -> bool:
+        """The step was done, the task is not, and there is nothing to click yet: something is loading."""
+        return reply.step_done is True and reply.goal_done is False and not reply.error
 
     def _cancelled(self) -> bool:
         return self.cancel is not None and self.cancel.is_set()
@@ -66,6 +73,7 @@ class Session:
         img, state = self.look()
         reply = self.tutor.ask(question, self.encode(img), state)
         outcome = None
+        waits = 0
         for n in range(1, max_steps + 1):
             if self._cancelled():
                 break
@@ -79,9 +87,21 @@ class Session:
                 break
             if reply.goal_done or px is None:
                 self.say(reply.say)
-                break  # done, or nothing to click: the sentence already says why or asks back
+                if not self._is_waiting(reply) or waits >= MAX_WAITS or self.wait_screen is None:
+                    break  # done, or nothing to click: the sentence already says why or asks back
+                # T6/T8 (02/11): a page or a file was still loading; the session used to stop here.
+                waits += 1
+                self._status("waiting")
+                outcome = self.wait_screen()
+                if self._cancelled():
+                    break
+                self._status("thinking")
+                img, state = self.look()
+                reply = self.tutor.follow_up(question, reply.say, self.encode(img), state, outcome != "unchanged")
+                continue
+            waits = 0
             shown_at = time.monotonic()
-            self.show(*px)        # the ring first, so her eyes are there while she hears where
+            self.show(px[0], px[1], reply.caution)   # the ring first, so her eyes are there while she hears where
             self.say(reply.say)
             self._status("waiting")
             click = self.wait_click(shown_at, CLICK_WAIT_S)
@@ -153,12 +173,12 @@ def main(argv=None) -> None:
     overlay = Overlay()
 
     class Bridge(QObject):  # the session runs in a worker thread; the ring lives in the Qt thread
-        point = Signal(int, int)
+        point = Signal(int, int, bool)
         clear = Signal()
         finished = Signal()
 
     bridge = Bridge()
-    bridge.point.connect(lambda x, y: overlay.point_at(x, y))
+    bridge.point.connect(lambda x, y, caution: overlay.point_at(x, y, caution=caution))
     bridge.clear.connect(overlay.clear)
     bridge.finished.connect(app.quit)
 
@@ -185,10 +205,11 @@ def main(argv=None) -> None:
                 time.sleep(1)
             session = Session(
                 tutor=tutor, look=look, encode=screen.png_data_url,
-                show=lambda x, y: bridge.point.emit(x, y), hide=bridge.clear.emit,
+                show=lambda x, y, caution: bridge.point.emit(x, y, caution), hide=bridge.clear.emit,
                 say=lambda text: print(f"\nTutor: {text}", flush=True),
                 wait_click=clicks.wait,
                 settle=lambda c: wait_until_settled(c.t, screen.grab)[0],
+                wait_screen=lambda: wait_until_settled(time.monotonic(), screen.grab, grace_s=5.0)[0],
                 save=save)
             steps = session.run(args.question)
             for s in steps:

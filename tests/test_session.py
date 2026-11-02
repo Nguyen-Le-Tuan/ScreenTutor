@@ -18,15 +18,17 @@ class FakeTutor:
         return self.replies.pop(0)
 
 
-def _session(tutor, clicks, outcomes):
+def _session(tutor, clicks, outcomes, waits=()):
     log = []
-    clicks, outcomes = list(clicks), list(outcomes)
+    clicks, outcomes, waits = list(clicks), list(outcomes), list(waits)
     s = Session(
         tutor=tutor, look=lambda: (Image.new("RGB", (1920, 1080)), "state"), encode=lambda img: "data:",
-        show=lambda x, y: log.append(("show", x, y)), hide=lambda: log.append(("hide",)),
+        show=lambda x, y, caution=False: log.append(("show", x, y) if not caution else ("show!", x, y)),
+        hide=lambda: log.append(("hide",)),
         say=lambda text: log.append(("say", text)),
         wait_click=lambda since, timeout: clicks.pop(0) if clicks else None,
-        settle=lambda click: outcomes.pop(0), pause=lambda s: None)
+        settle=lambda click: outcomes.pop(0), pause=lambda s: None,
+        wait_screen=lambda: (log.append(("wait",)), waits.pop(0))[1])
     return s, log
 
 
@@ -103,3 +105,36 @@ def test_click_box_skips_clicks_on_our_own_button_and_stops_on_cancel():
     cancel = threading.Event()
     cancel.set()
     assert box.wait(since=2.0, timeout_s=5, cancel=cancel) is None
+
+
+def test_a_loading_screen_is_watched_again_instead_of_ending_the_session():
+    tutor = FakeTutor([
+        Reply(say="Bạn bấm vào link Bảng kê khai.", found=True, point=(610, 525)),
+        Reply(say="Trang đang tải, bạn chờ một chút nhé.", found=False, step_done=True, goal_done=False),
+        Reply(say="Bảng tính đã mở xong rồi.", step_done=True, goal_done=True)])
+    s, log = _session(tutor, [Click(1.0, 1171, 567, "left")], ["settled"], waits=["settled"])
+    steps = s.run("Link không mở lên")
+    assert ("wait",) in log and steps[-1].goal_done and len(tutor.calls) == 3
+    assert tutor.calls[2] == ("follow_up", "Link không mở lên", "Trang đang tải, bạn chờ một chút nhé.", True)
+
+
+def test_waiting_gives_up_after_three_looks_and_asking_back_still_ends():
+    from screentutor.session import MAX_WAITS
+
+    loading = Reply(say="Bạn chờ một chút nhé.", found=False, step_done=True, goal_done=False)
+    tutor = FakeTutor([Reply(say="Bạn bấm link.", found=True, point=(610, 525))] + [loading] * (MAX_WAITS + 1))
+    s, log = _session(tutor, [Click(1.0, 1171, 567, "left")], ["settled"], waits=["unchanged"] * MAX_WAITS)
+    s.run("Link không mở lên")
+    assert log.count(("wait",)) == MAX_WAITS and len(tutor.calls) == MAX_WAITS + 2
+    asks_back = FakeTutor([Reply(say="Bạn muốn mở file nào?", found=False)])  # first turn: no step to be done
+    s, log = _session(asks_back, [], [], waits=["settled"])
+    s.run("Mở file")
+    assert ("wait",) not in log
+
+
+def test_a_caution_step_is_shown_as_such():
+    tutor = FakeTutor([Reply(say="Bấm Yes thì file PDF cũ cùng tên sẽ bị thay bằng file mới.", found=True,
+                             point=(531, 486), caution=True)])
+    s, log = _session(tutor, [], [])
+    s.run("Xuất PDF")
+    assert log[0] == ("show!", 1020, 525)

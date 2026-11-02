@@ -52,8 +52,12 @@ SAY_RULES = (
     "- Gọi người dùng là \"bạn\", xưng \"mình\", dù người dùng tự xưng thế nào. Không gọi người dùng "
     "là \"mẹ\", \"cô\" hay \"con\". Giọng nhẹ nhàng, rõ ràng, không đùa.\n"
     "- Người dùng là người tự bấm: không nhờ, không mời, không nói \"giúp mình\", và không hứa là "
-    "mình sẽ bấm hay mở hộ. Không thêm câu nói về bản thân.\n"
-    "- Chỉ nói MỘT bước tiếp theo, tối đa hai câu ngắn.\n"
+    "mình sẽ bấm hay mở hộ. Không thêm câu nói về bản thân, ví dụ \"mình nói kỹ vậy cho dễ tìm\".\n"
+    "- Chỉ nói MỘT bước tiếp theo, tối đa hai câu ngắn. Nếu phải làm một việc khác trước thì mới bấm được "
+    "(ví dụ bôi đen đoạn chữ trước khi đổi cỡ chữ), bước tiếp theo là việc đó.\n"
+    "- Nếu bấm vào chỗ đó sẽ gửi tin nhắn hay file cho người khác, hoặc thay thế (ghi đè) một file đã có, "
+    "đặt caution=true và nói rõ điều sẽ xảy ra, ví dụ \"Bấm Yes thì file PDF cũ cùng tên sẽ bị thay bằng "
+    "file mới.\" Các bước khác đặt caution=false.\n"
     "- Tả chỗ cần bấm bằng vị trí và hình dáng dễ thấy, ví dụ \"góc trên bên trái\", "
     "\"biểu tượng thư mục màu vàng\". Nếu trên nút có chữ tiếng Anh thì đọc đúng chữ đó.\n"
     "- Nếu hợp, thêm một vế ngắn để người dùng hiểu bấm vào đó để làm gì.\n"
@@ -69,8 +73,9 @@ REPLY_SCHEMA = {
         "y": {"type": "number"},
         "element": {"type": "string"},
         "say": {"type": "string"},
+        "caution": {"type": "boolean"},   # sends something or replaces a file (founder's rule, 27/10)
     },
-    "required": ["found", "x", "y", "element", "say"],
+    "required": ["found", "x", "y", "element", "say", "caution"],
     "additionalProperties": False,
 }
 
@@ -143,6 +148,7 @@ class Reply:
     found: bool = False
     point: tuple[float, float] | None = None  # 0-1000 grid, clamped
     element: str = ""
+    caution: bool = False          # the click sends something or replaces a file
     step_done: bool | None = None  # later turns only
     goal_done: bool | None = None
     latency_s: float = 0.0
@@ -176,6 +182,7 @@ def parse_reply(resp: dict) -> Reply:
     res.say = str(answer.get("say") or "").strip()
     res.element = str(answer.get("element") or "").strip()
     res.found = bool(answer.get("found"))
+    res.caution = bool(answer.get("caution"))
     for key in ("step_done", "goal_done"):
         if key in answer:
             setattr(res, key, bool(answer[key]))
@@ -196,6 +203,13 @@ class Tutor:
 
     def close(self) -> None:
         self._http.close()
+
+    def warm(self) -> None:
+        """Open the connection (DNS, TLS) before the first question; the pool keeps it for the first answer."""
+        try:
+            self._http.get("/models")
+        except httpx.HTTPError:
+            pass
 
     def ask(self, question: str, image_data_url: str, state: str | None = None) -> Reply:
         return self._call(build_body(question, image_data_url, state, self.model, self.effort))

@@ -45,8 +45,9 @@ def changed_fraction(a: bytes, b: bytes, tol: int = PIXEL_TOL) -> float:
 class SettleWatcher:
     """Feed it (time, signature) pairs after a click; it says when to look again. Pure logic."""
 
-    def __init__(self, clicked_at: float):
+    def __init__(self, clicked_at: float, grace_s: float = GRACE_S):
         self.clicked_at = clicked_at
+        self.grace_s = grace_s
         self._prev: bytes | None = None
         self._changed = False
         self._last_change = clicked_at
@@ -61,12 +62,13 @@ class SettleWatcher:
             return "timeout"
         if self._changed:
             return "settled" if t - self._last_change >= STILL_S else "waiting"
-        return "unchanged" if t - self.clicked_at >= GRACE_S else "waiting"
+        return "unchanged" if t - self.clicked_at >= self.grace_s else "waiting"
 
 
-def wait_until_settled(clicked_at: float, grab, clock=time.monotonic, sleep=time.sleep) -> tuple[str, float]:
+def wait_until_settled(clicked_at: float, grab, clock=time.monotonic, sleep=time.sleep,
+                       grace_s: float = GRACE_S) -> tuple[str, float]:
     """Grab until the watcher decides. Returns (outcome, seconds since the click)."""
-    watcher = SettleWatcher(clicked_at)
+    watcher = SettleWatcher(clicked_at, grace_s)
     while True:
         t = clock()
         outcome = watcher.feed(t, signature(grab()))
