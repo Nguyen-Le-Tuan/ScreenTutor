@@ -49,7 +49,7 @@ BOX_RADIUS, BOX_PAD = 14.0, 8.0      # logical px; a box from the model is rarel
 HINT_W, HINT_H = 62.0, 132.0
 TICK_S = 0.9
 GLOW_S = 7.0                         # one turn of the colours
-GLOW_PX = 46                         # how far the light reaches in from the edge
+GLOW_PX = 36                         # how far the light reaches in from the edge
 GLOW_IN, GLOW_OUT = 2.5, 5.0         # per second: comes up slowly, leaves before the tutor speaks
 GLOW_FRAME_MS = 40
 GLOW_COLORS = [QColor(10, 132, 255), QColor(191, 90, 242), QColor(255, 55, 135), QColor(255, 159, 10),
@@ -193,17 +193,17 @@ def paint_hint(p: QPainter, f: Hint, scale: float = 1.0, color: QColor = COLOR) 
     p.setBrush(color)
     p.drawRoundedRect(QRectF(c.x() - 2.5 * scale, wheel, 5 * scale, 11 * scale), 2.5 * scale, 2.5 * scale)
     for i in range(3):
-        strength = max(0.18, 1 - abs(f.phase * 3 - i - 0.5) / 1.3)
+        strength = max(0.22, 1 - abs(f.phase * 3 - i - 0.5) / 1.3)
         chevron = QColor(color)
         chevron.setAlpha(round(255 * strength))
-        pen = QPen(chevron, 3.5 * scale)
+        pen = QPen(chevron, 3 * scale)
         pen.setCapStyle(Qt.RoundCap)
         pen.setJoinStyle(Qt.RoundJoin)
         p.setPen(pen)
-        y = c.y() + (6 + i * 13) * scale
-        path = QPainterPath(QPointF(c.x() - 10 * scale, y))
-        path.lineTo(QPointF(c.x(), y + 8 * scale))
-        path.lineTo(QPointF(c.x() + 10 * scale, y))
+        y = c.y() + (4 + i * 16) * scale
+        path = QPainterPath(QPointF(c.x() - 9 * scale, y))
+        path.lineTo(QPointF(c.x(), y + 7 * scale))
+        path.lineTo(QPointF(c.x() + 9 * scale, y))
         p.drawPath(path)
 
 
@@ -243,10 +243,13 @@ class EdgeGlow:
         self.mask = QImage(*self.small, QImage.Format_ARGB32_Premultiplied)
         self.mask.fill(Qt.transparent)
         p = QPainter(self.mask)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setBrush(Qt.NoBrush)
         depth = max(int(GLOW_PX * scale / 4), 1)
         for i in range(depth):
-            p.setPen(QPen(QColor(255, 255, 255, round(235 * (1 - i / depth) ** 2.2)), 1))
-            p.drawRect(i, i, self.small[0] - 1 - 2 * i, self.small[1] - 1 - 2 * i)
+            p.setPen(QPen(QColor(255, 255, 255, round(205 * (1 - i / depth) ** 2.4)), 1.6))
+            r = depth + 2 - i * 0.6        # rounder inside, so the corners fade instead of showing a square
+            p.drawRoundedRect(QRectF(i, i, self.small[0] - 2 * i, self.small[1] - 2 * i), r, r)
         p.end()
 
     def paint(self, p: QPainter, t: float, level: float) -> None:

@@ -1,0 +1,187 @@
+"""A first look at the founder's two big tasks: the real Session and the real tutor on invented Zalo screens.
+
+  .venv/bin/python -m tutor_eval.big_task run --yes       # about 30 paid calls, under $0.30
+  .venv/bin/python -m tutor_eval.big_task summary tutor_eval/results/<stamp>-big
+
+Rule, fixed before the first run (02/11). This is NOT T12: the screens are drawn by
+tutor_eval/fake_zalo.py and every word on them is made up, so a pass says the session and
+the prompt work together, not that they work on her real messages. T12 still needs the
+founder's messages on Windows. Each of the two tasks runs 3 times; a simulated user
+scrolls when told, says she has read when shown a region, and stops at the first click,
+because there is nothing to click on a picture.
+- P2 plan: in at least 5/6 runs a plan appears, naming at least 80% of the parts, with at
+  most 1 part beyond them. (Draft R2.)
+- P3 box: at least 80% of the read steps have IoU at least 0.5 with the true message box.
+  (Draft R3.)
+- P4 scroll: when the message runs past the bottom of the view the tutor says to scroll in
+  at least 80% of those turns, and says it at most once when everything is already in view.
+  (Draft R4.)
+- P5 words: at least 90% of the sentences pass tutor_eval.run.say_problems, leaving out the
+  check on the number of sentences on a turn that opens with "Việc này có N phần".
+- No session error in any run.
+A part counts as named when the plan contains one of its keywords, ignoring case.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import statistics
+import sys
+import time
+from datetime import datetime
+from pathlib import Path
+
+from screentutor import screen
+from screentutor.app import MACHINE_NOTES
+from screentutor.gesture import describe
+from screentutor.inputs import Click
+from screentutor.session import Session
+from screentutor.tutor import Tutor, _api_key
+from tutor_eval.fake_zalo import H, HEADER_H, INPUT_H, PRINCIPAL, STUDY, TASKBAR_H, W, view
+from tutor_eval.run import say_problems
+
+HERE = Path(__file__).parent
+RUNS = 3
+SCROLL_PX = 420
+STATE = ("- Cửa sổ đang ở trước mặt: Zalo (Zalo.exe), tiêu đề \"Zalo\", đang phóng to toàn màn hình.\n" + MACHINE_NOTES)
+TASKS = {
+    "study": {"chat": STUDY, "message": 2, "question": "Học cái này trong Zalo",
+              "parts": [("đăng nhập",), ("mô đun",), ("video",), ("kiểm tra",), ("chứng nhận",), ("gửi", "nộp")]},
+    "principal": {"chat": PRINCIPAL, "message": 1, "question": "Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?",
+                  "parts": [("dự thảo", "quy chế"), ("phiếu", "ý kiến"), ("biểu mẫu", "link", "trực tuyến"), ("tổ trưởng", "nộp")]},
+}
+
+
+def iou(a, b) -> float:
+    w = min(a[2], b[2]) - max(a[0], b[0])
+    h = min(a[3], b[3]) - max(a[1], b[1])
+    if w <= 0 or h <= 0:
+        return 0.0
+    inter = w * h
+    return inter / ((a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - inter)
+
+
+def more_below(chat, top: int) -> bool:
+    return chat.canvas.height - top > H - TASKBAR_H - INPUT_H - HEADER_H
+
+
+class Mom:
+    """Does what a patient user does, and writes down each turn with what was true on the screen."""
+
+    def __init__(self, chat, message: int):
+        self.chat, self.message = chat, message
+        self.top = 0
+        self.turns = []
+
+    def look(self):
+        img, boxes = view(self.chat, self.top)
+        self.turns.append({"top": self.top, "more_below": more_below(self.chat, self.top), "true_box": boxes[self.message]})
+        return img, STATE
+
+    def wait_change(self, timeout_s, min_change, stop):
+        if stop():
+            return "stopped"
+        self.top = min(self.top + SCROLL_PX, max(self.chat.canvas.height - (H - TASKBAR_H - INPUT_H - HEADER_H), 0))
+        return "settled"
+
+    def wait_click(self, since, timeout_s):
+        return Click(time.monotonic(), 0, 0, "left") if timeout_s == 0 else None  # "I have read it"; real clicks end the run
+
+
+def one(tutor: Tutor, spec: dict) -> dict:
+    mom = Mom(spec["chat"], spec["message"])
+    _, boxes = view(spec["chat"], 0)
+    x1, y1, x2, y2 = boxes[spec["message"]]
+    path = [(i * 0.015, (x1 + x2) // 2, min((y1 + y2) // 2, 700)) for i in range(60)]   # she rests the mouse on the message
+    shown, said = {}, []
+    s = Session(tutor=tutor, look=mom.look, encode=screen.png_data_url, show=lambda x, y, c=False: None, hide=lambda: None,
+                say=said.append, wait_click=mom.wait_click, settle=lambda c: "unchanged", pause=lambda t: None,
+                wait_change=mom.wait_change, pointer=describe(path, (W, H)),
+                show_box=lambda box, c: shown.__setitem__(len(said), box))
+    steps = s.run(spec["question"], max_steps=8)
+    turns = []
+    for i, st in enumerate(steps):
+        t = mom.turns[i] if i < len(mom.turns) else {}
+        turns.append({**t, "n": st.n, "target": st.target, "say": st.say, "latency_s": st.latency_s, "error": st.error,
+                      "goal_done": st.goal_done})
+    return {"steps": turns, "plan": s.plan, "notes": s.notes, "mode": s.mode, "boxes": list(shown.values()), "said": said}
+
+
+def cmd_run(args) -> None:
+    print(f"Sẽ chạy {len(TASKS) * RUNS} lượt việc lớn, mỗi lượt vài lần gọi Spark.")
+    if not args.yes:
+        sys.exit("Thêm --yes để thực sự gọi API (tốn tiền).")
+    out = HERE / "results" / (datetime.now().strftime("%Y%m%d-%H%M%S") + "-big")
+    out.mkdir(parents=True)
+    tutor = Tutor(_api_key())
+    rows = []
+    try:
+        for name, spec in TASKS.items():
+            for run in range(1, RUNS + 1):
+                r = one(tutor, spec)
+                rows.append({"task": name, "run": run, **r})
+                print(f"{name} {run}: {[(s['target'], round(s['latency_s'], 1)) for s in r['steps']]} plan={r['plan']}", flush=True)
+                (out / "runs.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
+    finally:
+        tutor.close()
+    print(summarize(out))
+
+
+def summarize(out: Path) -> str:
+    rows = json.loads((out / "runs.json").read_text(encoding="utf-8"))
+    plans_ok, ious, should, did, extra, says, ok_says, errors, lat = 0, [], 0, 0, 0, 0, 0, 0, []
+    for r in rows:
+        spec = TASKS[r["task"]]
+        plan = " | ".join(r["plan"]).lower()
+        named = sum(any(k in plan for k in keys) for keys in spec["parts"])
+        extras = sum(not any(k in p.lower() for keys in spec["parts"] for k in keys) for p in r["plan"])
+        plans_ok += bool(r["plan"]) and named >= 0.8 * len(spec["parts"]) and extras <= 1
+        reads = [s for s in r["steps"] if s["target"] == "read"]
+        for s, box in zip(reads, r["boxes"]):
+            if s.get("true_box"):
+                ious.append(iou(box, s["true_box"]))
+        for s in r["steps"]:
+            lat.append(s["latency_s"])
+            errors += bool(s["error"])
+            if s.get("more_below") and not s["goal_done"]:
+                should += 1
+                did += s["target"] == "scroll"
+            elif s["target"] == "scroll":
+                extra += 1
+            says += 1
+            problems = say_problems(s["say"])
+            if s["say"].startswith("Việc này có"):
+                problems = [p for p in problems if not p.endswith(" câu")]
+            ok_says += not problems
+    p3 = sum(x >= 0.5 for x in ious)
+    lines = [f"# Việc lớn trên màn hình giả ({out.name})", "",
+             f"P2 kế hoạch đủ phần: {plans_ok}/{len(rows)} (cần ≥ 5/6)",
+             f"P3 khung đọc IoU ≥ 0,5: {p3}/{len(ious)} (cần ≥ 80%), IoU {[round(x, 2) for x in ious]}",
+             f"P4 bảo kéo khi còn tiếp: {did}/{should} (cần ≥ 80%); bảo kéo khi đã hết: {extra} (tối đa 1)",
+             f"P5 câu nói qua kiểm tra: {ok_says}/{says} (cần ≥ 90%)",
+             f"Lỗi phiên: {errors}. Trễ trung vị mỗi lượt: {statistics.median(lat):.1f} s", ""]
+    for r in rows:
+        lines.append(f"- {r['task']} {r['run']}: {[s['target'] for s in r['steps']]} | {r['mode']} | plan: {r['plan']}")
+        lines += [f"    {s['target']}: {s['say']}" for s in r["steps"]]
+    text = "\n".join(lines)
+    (out / "summary.md").write_text(text + "\n", encoding="utf-8")
+    return text
+
+
+def main(argv=None) -> None:
+    p = argparse.ArgumentParser(prog="python -m tutor_eval.big_task")
+    sub = p.add_subparsers(dest="cmd", required=True)
+    r = sub.add_parser("run")
+    r.add_argument("--yes", action="store_true", help="xác nhận gọi API có tính phí")
+    s = sub.add_parser("summary")
+    s.add_argument("dir")
+    args = p.parse_args(argv)
+    if args.cmd == "summary":
+        print(summarize(Path(args.dir)))
+    else:
+        cmd_run(args)
+
+
+if __name__ == "__main__":
+    main()
