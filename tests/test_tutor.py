@@ -5,7 +5,7 @@ from PIL import Image
 from grounding_test.meta_api import vision_prompt
 from screentutor import screen
 from screentutor.tutor import (EFFORT, MODEL, SAY_RULES, Reply, build_body, build_follow_up_body,
-                               build_follow_up_prompt, build_prompt, parse_reply)
+                               build_follow_up_prompt, build_prompt, parse_reply, task_rules)
 from tutor_eval.run import say_problems
 
 STATE = "- Cửa sổ đang ở trước mặt: Zalo (Zalo.exe), tiêu đề \"Zalo\", đang phóng to toàn màn hình."
@@ -20,8 +20,9 @@ def _resp(answer: dict | str) -> dict:
 
 def test_pointing_part_is_the_measured_prompt():
     for state in (None, STATE):
-        text = build_prompt("Mẹ bấm vào đâu?", state)
-        assert text == vision_prompt("Mẹ bấm vào đâu?", state) + SAY_RULES
+        assert build_prompt("Mẹ bấm vào đâu?", state, task=False) == vision_prompt("Mẹ bấm vào đâu?", state) + SAY_RULES
+        v2 = build_prompt("Mẹ bấm vào đâu?", state)  # B1: the measured text and the speech rules come first, unchanged
+        assert v2 == vision_prompt("Mẹ bấm vào đâu?", state) + SAY_RULES + task_rules()
 
 
 def test_body_uses_spark_low_effort_and_asks_for_say():
@@ -29,8 +30,12 @@ def test_body_uses_spark_low_effort_and_asks_for_say():
     assert body["model"] == MODEL == "muse-spark-1.3"
     assert body["reasoning_effort"] == EFFORT == "low"
     schema = body["response_format"]["json_schema"]["schema"]
-    assert set(schema["required"]) == {"found", "x", "y", "element", "say", "caution"}
+    assert set(schema["required"]) == {"found", "x", "y", "element", "say", "caution", "mode", "target", "box",
+                                       "plan", "notes"}
+    assert schema["properties"]["box"]["required"] == ["x1", "y1", "x2", "y2"]
     assert body["messages"][0]["content"][1]["image_url"]["url"].startswith("data:image/png")
+    v1 = build_body("Mẹ bấm vào đâu?", "data:", STATE, task=False)["response_format"]["json_schema"]["schema"]
+    assert set(v1["required"]) == {"found", "x", "y", "element", "say", "caution"}
 
 
 def test_parse_reply_reads_point_say_and_usage():
@@ -53,16 +58,19 @@ def test_parse_reply_bad_json_is_an_error():
 
 def test_follow_up_keeps_the_pointing_text_and_adds_the_last_step():
     last = "Bạn bấm vào chữ File ở góc trên bên trái."
-    text = build_follow_up_prompt("Mẹ muốn xuất ra PDF", last, STATE, screen_changed=False)
+    text = build_follow_up_prompt("Mẹ muốn xuất ra PDF", last, STATE, screen_changed=False, task=False)
     assert text.startswith(vision_prompt("Mẹ muốn xuất ra PDF", STATE))
     assert last in text and "màn hình không thay đổi" in text and text.endswith(SAY_RULES)
+    v2 = build_follow_up_prompt("Mẹ muốn xuất ra PDF", last, STATE, screen_changed=False)
+    assert v2.startswith(text) and "part:" in v2 and "mode:" not in v2  # no re-deciding the mode
     assert "Chương trình đo được" not in build_follow_up_prompt("x", last)  # no measurement claimed when unknown
 
 
 def test_follow_up_body_asks_for_step_and_goal():
     body = build_follow_up_body("Mẹ muốn xuất ra PDF", "Bạn bấm File.", "data:image/png;base64,AAAA")
     schema = body["response_format"]["json_schema"]["schema"]
-    assert {"step_done", "goal_done", "say", "x", "y"} <= set(schema["required"])
+    assert {"step_done", "goal_done", "say", "x", "y", "part", "target", "box", "plan", "notes"} <= set(schema["required"])
+    assert "mode" not in schema["properties"]
     assert body["reasoning_effort"] == "low"
 
 
@@ -120,3 +128,73 @@ def test_answer_without_diacritics_is_asked_again_once():
     t._post = lambda path, body: (_resp({"found": False, "x": 0, "y": 0, "element": "", "say": "Ban oi"}), 1.0)
     assert t.ask("x", "data:").say == "Ban oi"  # asked twice, then given up: the session still goes on
     t.close()
+
+
+def _v2(**kw):
+    base = {"found": True, "x": 500, "y": 400, "element": "tin nhắn", "say": "Bạn đọc tin nhắn trong khung sáng.",
+            "caution": False, "mode": "guide", "target": "click", "box": {"x1": 0, "y1": 0, "x2": 0, "y2": 0},
+            "plan": [], "notes": ""}
+    base.update(kw)
+    return parse_reply(_resp(base))
+
+
+def test_first_turn_reads_mode_plan_and_notes():
+    r = _v2(plan=["  Đọc hướng dẫn ", "", "Đăng nhập trang học"], notes=" Bước 1 mở link. ")
+    assert (r.mode, r.plan, r.notes, r.target) == ("guide", ["Đọc hướng dẫn", "Đăng nhập trang học"], "Bước 1 mở link.",
+                                                   "click")
+    long = _v2(plan=[f"phần {i} " + "chữ " * 20 for i in range(9)])
+    assert len(long.plan) == 6 and all(len(p.split()) <= 12 for p in long.plan)
+    assert _v2(mode="hmm", plan=[]).mode == "answer" and _v2(mode="hmm", plan=["a", "b"]).mode == "guide"
+
+
+def test_read_target_comes_with_a_box_in_order_and_on_the_grid():
+    r = _v2(target="read", box={"x1": 700, "y1": 900, "x2": 300, "y2": -50})
+    assert r.target == "read" and r.box == (300.0, 0.0, 700.0, 900.0)
+    assert r.box_px((1920, 1080)) == (576, 0, 1344, 972)
+    centre = _v2(target="read", found=False, x=0, y=0, box={"x1": 100, "y1": 100, "x2": 300, "y2": 500})
+    assert centre.found and centre.point == (200.0, 300.0)  # no point given: the middle of the box
+    flat = _v2(target="read")  # four zeros: no box, so a plain ring at the point
+    assert flat.target == "click" and flat.box is None and flat.point == (500.0, 400.0)
+
+
+def test_other_targets_drop_the_box_and_none_drops_the_point():
+    s = _v2(target="scroll", box={"x1": 1, "y1": 1, "x2": 900, "y2": 900})
+    assert s.target == "scroll" and s.box is None and s.point == (500.0, 400.0)
+    n = _v2(target="none")
+    assert n.target == "none" and n.point is None and not n.found
+    odd = _v2(target="banana")
+    assert odd.target == "click"
+    lost = _v2(target="click", found=False)
+    assert lost.target == "none" and lost.point is None
+
+
+def test_later_turn_reads_the_part():
+    r = _v2(step_done=True, goal_done=False, part=2)
+    assert r.part == 2
+    assert _v2(part=0).part == 0 and _v2(part=True).part is None
+
+
+def test_v1_answers_still_parse_as_before():
+    r = parse_reply(_resp({"found": True, "x": 10, "y": 20, "element": "File", "say": "Bạn bấm File.",
+                           "caution": False}))
+    assert (r.mode, r.plan, r.target, r.box, r.notes, r.part) == ("", [], "", None, "", None)
+    assert r.point == (10.0, 20.0)
+
+
+def test_follow_up_carries_the_plan_the_part_and_the_notes():
+    text = build_follow_up_prompt("Học cái trong Zalo", "Bạn kéo xuống nhé.", plan=["Đọc hướng dẫn", "Đăng nhập"],
+                                  part=5, notes="Bước 1 mở link.")
+    assert "1. Đọc hướng dẫn; 2. Đăng nhập" in text and "thuộc phần 2" in text  # the part is kept within the plan
+    assert "Bước 1 mở link." in text
+    bare = build_follow_up_prompt("x", "y")
+    assert "đã được chia" not in bare and "đã đọc được ở các lượt trước" not in bare
+
+
+def test_pointer_line_only_when_given():
+    assert "chuột của người dùng" not in build_prompt("Học cái này")
+    text = build_prompt("Học cái này", pointer="dừng ở (412, 530) trên lưới 0-1000")
+    assert "chuột của người dùng dừng ở (412, 530)" in text
+
+
+def test_password_rule_is_always_there():
+    assert "mật khẩu" in build_prompt("x") and "mật khẩu" in build_follow_up_prompt("x", "y")

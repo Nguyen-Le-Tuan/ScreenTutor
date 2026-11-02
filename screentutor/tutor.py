@@ -9,6 +9,12 @@ The pointing instructions are the exact text that scored 10/12 on the real
 cases (grounding_test.meta_api.vision_prompt); the spoken-answer rules are
 appended after them, so the part that was measured stays unchanged.
 
+B1 (02/11) appends a third block, after both: whether she wants one answer or a task
+walked through, the parts of a big task (taken from the message on screen when the
+school's message is the task), what the next step is (click, read a region, scroll on),
+a box around what to read, and notes that carry a long message across screens. With
+task_rules=False the prompt is exactly the one T4 measured, for comparison.
+
   python -m screentutor.tutor --image case_04.png --state-file state.txt "Mẹ bấm vào đâu?"
   py -m screentutor.tutor --live --delay 5 "Mẹ muốn mở file giáo án thì bấm vào đâu?"   # Windows
   py -m screentutor.tutor --live --delay 5 --show 15 "Bấm vào đâu để tạo file PDF?"     # + vòng chỉ trên màn hình
@@ -65,6 +71,48 @@ SAY_RULES = (
     "- Không dùng ký hiệu, gạch đầu dòng, emoji hay toạ độ."
 )
 
+# B1 (02/11): founder's ideas of 02/11, after the measured text and the speech rules.
+TASK_HEAD = "\n\nNgoài chỗ cần bấm, trả lời thêm:\n"
+POINTER_LINE = ("- Lúc hỏi, chuột của người dùng {pointer}; nếu người dùng nói \"cái này\", \"chỗ này\", đó là chỗ "
+                "đang được chỉ.\n")
+MODE_RULE = ("- mode: \"answer\" nếu người dùng chỉ muốn biết một điều (ở đâu, là gì, vì sao) và một lần chỉ hay một "
+             "câu trả lời là đủ; \"guide\" nếu đó là một việc phải làm qua nhiều bước.\n")
+PLAN_RULE = ("- plan: với \"guide\", chia việc thành 2 đến 6 phần lớn theo đúng thứ tự, mỗi phần tối đa 8 chữ, ví dụ "
+             "[\"Xuất giáo án ra PDF\", \"Mở chat tiệm in trong Zalo\", \"Gửi file PDF\"]. Nếu việc được giao trong một "
+             "tin nhắn hay tài liệu đang hiện trên màn hình, lấy các phần từ chính nội dung đó, không tự thêm; nếu nội "
+             "dung đó còn tiếp ở dưới chưa đọc hết, để plan rỗng và cho người dùng kéo xuống trước. Với \"answer\" hoặc "
+             "việc chỉ có một bước, để plan rỗng. Khi có từ 2 phần trở lên, câu đầu của say nói ngắn việc có mấy phần, "
+             "ví dụ \"Việc này có ba phần.\", câu sau là bước đầu tiên.\n")
+PLAN_FOLLOW = ("- plan: để rỗng nếu kế hoạch không đổi. Chỉ điền khi vừa đọc hết nội dung giao việc và cần lập hoặc sửa "
+               "kế hoạch, theo cùng cách: 2 đến 6 phần, mỗi phần tối đa 8 chữ, lấy từ chính nội dung đó.\n")
+TARGET_RULES = (
+    "- target: \"click\" nếu bước tiếp theo là bấm vào một chỗ, x và y là tâm chỗ đó. \"read\" nếu bước tiếp theo "
+    "là đọc một vùng nội dung (một tin nhắn, một đoạn văn, một danh sách file): box là khung bao vùng đó trên cùng "
+    "thang 0-1000, x và y là tâm khung. \"scroll\" nếu nội dung cần đọc còn tiếp ở dưới mép màn hình hay mép khung "
+    "chat: x và y là giữa vùng cần kéo, và say bảo người dùng kéo xuống. \"none\" nếu không có gì để chỉ, khi đó "
+    "found=false.\n"
+    "- box: chỉ dùng khi target là \"read\"; các trường hợp khác đặt cả bốn số bằng 0.\n"
+)
+NOTES_RULE = ("- notes: khi đang đọc một nội dung dài qua nhiều màn hình, ghi ngắn (tối đa 80 chữ) những gì đã đọc được "
+              "và cần nhớ, ví dụ các bước nhà trường yêu cầu và hạn nộp; các trường hợp khác để rỗng.\n")
+NOTES_FOLLOW = ("- notes: nếu vừa đọc thêm nội dung, viết lại đủ ghi chú cũ cộng phần mới (tối đa 80 chữ); nếu không "
+                "đọc thêm thì để rỗng.\n")
+PART_RULE = ("- part: số thứ tự (từ 1) của phần mà bước tiếp theo thuộc về; nếu đã xong hết thì bằng số phần; nếu "
+             "chưa có phần nào thì bằng 0.\n")
+LOGIN_RULE = ("- Nếu màn hình là chỗ đăng nhập, chỉ ô cần gõ để người dùng tự gõ. Không bao giờ đọc to, nhắc lại hay "
+              "đoán mật khẩu.")
+FOLLOW_PLAN = "\n\nViệc này đã được chia thành các phần: {parts}. Bước vừa rồi thuộc phần {part}."
+FOLLOW_NOTES = "\n\nNhững gì đã đọc được ở các lượt trước: \"{notes}\""
+MODES = ("answer", "guide")
+TARGETS = ("click", "read", "scroll", "none")
+MAX_PARTS, MAX_PART_WORDS = 6, 12
+BOX_SCHEMA = {
+    "type": "object",
+    "properties": {k: {"type": "number"} for k in ("x1", "y1", "x2", "y2")},
+    "required": ["x1", "y1", "x2", "y2"],
+    "additionalProperties": False,
+}
+
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
@@ -99,6 +147,24 @@ FOLLOW_SCHEMA = {
     "required": ["step_done", "goal_done", *REPLY_SCHEMA["required"]],
     "additionalProperties": False,
 }
+_TASK_PROPS = {
+    "target": {"type": "string", "enum": list(TARGETS)},
+    "box": BOX_SCHEMA,
+    "plan": {"type": "array", "items": {"type": "string"}},
+    "notes": {"type": "string"},
+}
+REPLY_SCHEMA_V2 = {
+    "type": "object",
+    "properties": {**REPLY_SCHEMA["properties"], "mode": {"type": "string", "enum": list(MODES)}, **_TASK_PROPS},
+    "required": [*REPLY_SCHEMA["required"], "mode", *_TASK_PROPS],
+    "additionalProperties": False,
+}
+FOLLOW_SCHEMA_V2 = {
+    "type": "object",
+    "properties": {**FOLLOW_SCHEMA["properties"], "part": {"type": "integer"}, **_TASK_PROPS},
+    "required": [*FOLLOW_SCHEMA["required"], "part", *_TASK_PROPS],
+    "additionalProperties": False,
+}
 
 
 def point_prompt(question: str, state: str | None = None) -> str:
@@ -106,26 +172,48 @@ def point_prompt(question: str, state: str | None = None) -> str:
     return POINT_PROMPT.format(question=question, state=STATE_BLOCK.format(state=state) if state else "")
 
 
-def build_prompt(question: str, state: str | None = None) -> str:
-    return point_prompt(question, state) + SAY_RULES
+def task_rules(pointer: str | None = None) -> str:
+    """The first turn: answer or guide, the parts, what the next step is, notes, logins."""
+    head = TASK_HEAD + (POINTER_LINE.format(pointer=pointer) if pointer else "")
+    return head + MODE_RULE + PLAN_RULE + TARGET_RULES + NOTES_RULE + LOGIN_RULE
+
+
+def follow_task_rules(plan: list[str] | None, part: int | None, notes: str) -> str:
+    """Later turns: where the task stands, then the same fields without re-planning."""
+    text = ""
+    if plan:
+        parts = "; ".join(f"{i + 1}. {p}" for i, p in enumerate(plan))
+        text += FOLLOW_PLAN.format(parts=parts, part=min(max(part or 1, 1), len(plan)))
+    if notes:
+        text += FOLLOW_NOTES.format(notes=notes)
+    return text + TASK_HEAD + PART_RULE + PLAN_FOLLOW + TARGET_RULES + NOTES_FOLLOW + LOGIN_RULE
+
+
+def build_prompt(question: str, state: str | None = None, task: bool = True, pointer: str | None = None) -> str:
+    return point_prompt(question, state) + SAY_RULES + (task_rules(pointer) if task else "")
 
 
 def build_follow_up_prompt(goal: str, last_say: str, state: str | None = None,
-                           screen_changed: bool | None = None) -> str:
-    return (point_prompt(goal, state)
+                           screen_changed: bool | None = None, task: bool = True,
+                           plan: list[str] | None = None, part: int | None = None, notes: str = "") -> str:
+    text = (point_prompt(goal, state)
             + FOLLOW_BLOCK.format(last_say=last_say, changed=SCREEN_CHANGED[screen_changed]) + SAY_RULES)
+    return text + follow_task_rules(plan, part, notes) if task else text
 
 
 def build_body(question: str, image_data_url: str, state: str | None = None,
-               model: str = MODEL, effort: str | None = EFFORT) -> dict:
-    return _body(build_prompt(question, state), image_data_url, "tutor_reply", REPLY_SCHEMA, model, effort)
+               model: str = MODEL, effort: str | None = EFFORT, task: bool = True,
+               pointer: str | None = None) -> dict:
+    return _body(build_prompt(question, state, task, pointer), image_data_url, "tutor_reply",
+                 REPLY_SCHEMA_V2 if task else REPLY_SCHEMA, model, effort)
 
 
 def build_follow_up_body(goal: str, last_say: str, image_data_url: str, state: str | None = None,
                          screen_changed: bool | None = None, model: str = MODEL,
-                         effort: str | None = EFFORT) -> dict:
-    text = build_follow_up_prompt(goal, last_say, state, screen_changed)
-    return _body(text, image_data_url, "tutor_follow_up", FOLLOW_SCHEMA, model, effort)
+                         effort: str | None = EFFORT, task: bool = True, plan: list[str] | None = None,
+                         part: int | None = None, notes: str = "") -> dict:
+    text = build_follow_up_prompt(goal, last_say, state, screen_changed, task, plan, part, notes)
+    return _body(text, image_data_url, "tutor_follow_up", FOLLOW_SCHEMA_V2 if task else FOLLOW_SCHEMA, model, effort)
 
 
 def _body(text: str, image_data_url: str, name: str, schema: dict, model: str, effort: str | None) -> dict:
@@ -151,10 +239,23 @@ class Reply:
     caution: bool = False          # the click sends something or replaces a file
     step_done: bool | None = None  # later turns only
     goal_done: bool | None = None
+    mode: str = ""                 # B1: "answer" or "guide" (first turn); "" from a v1 prompt
+    plan: list[str] = field(default_factory=list)
+    part: int | None = None        # later turns: the part (from 1) the next step belongs to
+    target: str = ""               # "click", "read", "scroll" or "none"; "" from a v1 prompt
+    box: tuple[float, float, float, float] | None = None  # target "read": x1, y1, x2, y2 on the grid
+    notes: str = ""
     latency_s: float = 0.0
     usage: dict = field(default_factory=lambda: {"input": 0, "output": 0, "cached": 0, "reasoning": 0})
     raw: dict | None = None
     error: str | None = None
+
+    def box_px(self, size: tuple[int, int]) -> tuple[int, int, int, int] | None:
+        if self.box is None:
+            return None
+        w, h = size
+        x1, y1, x2, y2 = self.box
+        return round(x1 * w / 1000), round(y1 * h / 1000), min(round(x2 * w / 1000), w - 1), min(round(y2 * h / 1000), h - 1)
 
     def point_px(self, size: tuple[int, int]) -> tuple[int, int] | None:
         """Pixel of the screenshot that was sent. Screenshot pixels are physical screen pixels."""
@@ -188,16 +289,59 @@ def parse_reply(resp: dict) -> Reply:
             setattr(res, key, bool(answer[key]))
     x, y = answer.get("x"), answer.get("y")
     if res.found and isinstance(x, (int, float)) and isinstance(y, (int, float)):
-        res.point = (min(max(float(x), 0.0), 1000.0), min(max(float(y), 0.0), 1000.0))
+        res.point = (_grid(x), _grid(y))
+    _parse_task(answer, res)
     return res
+
+
+def _grid(v) -> float:
+    return min(max(float(v), 0.0), 1000.0)
+
+
+def _parse_task(answer: dict, res: Reply) -> None:
+    """B1 fields, read defensively: a wrong value falls back to what the v1 fields already say."""
+    plan = answer.get("plan")
+    if isinstance(plan, list):
+        parts = [" ".join(str(p).split()[:MAX_PART_WORDS]) for p in plan if str(p).strip()]
+        res.plan = parts[:MAX_PARTS]
+    mode = answer.get("mode")
+    if mode is not None:
+        res.mode = mode if mode in MODES else ("guide" if res.plan else "answer")
+    if isinstance(answer.get("part"), (int, float)) and not isinstance(answer.get("part"), bool):
+        res.part = max(0, int(answer["part"]))  # 0: no parts yet (still reading)
+    res.notes = str(answer.get("notes") or "").strip()
+    box = answer.get("box")
+    if isinstance(box, dict) and all(isinstance(box.get(k), (int, float)) for k in ("x1", "y1", "x2", "y2")):
+        x1, x2 = sorted((_grid(box["x1"]), _grid(box["x2"])))
+        y1, y2 = sorted((_grid(box["y1"]), _grid(box["y2"])))
+        if x2 - x1 >= 5 and y2 - y1 >= 5:  # four zeros, or a sliver, is no box
+            res.box = (x1, y1, x2, y2)
+    target = answer.get("target")
+    if target is None:
+        return  # a v1 answer
+    if target not in TARGETS:
+        target = "click" if res.point else "none"
+    if target == "read":
+        if res.box is None:
+            target = "click" if res.point else "none"  # nothing to frame: a plain ring, or nothing
+        elif res.point is None:
+            res.found = True
+            res.point = ((res.box[0] + res.box[2]) / 2, (res.box[1] + res.box[3]) / 2)
+    if target != "read":
+        res.box = None
+    if target == "none":
+        res.point, res.found = None, False
+    elif res.point is None:
+        target = "none"  # a click or a scroll with nowhere to show it
+    res.target = target
 
 
 class Tutor:
     def __init__(self, api_key: str, model: str = MODEL, effort: str | None = EFFORT,
-                 base_url: str = BASE_URL, timeout: float = TIMEOUT_S):
+                 base_url: str = BASE_URL, timeout: float = TIMEOUT_S, task: bool = True):
         if not api_key:
             raise ValueError("MODEL_API_KEY is empty")
-        self.model, self.effort = model, effort
+        self.model, self.effort, self.task = model, effort, task
         self._http = httpx.Client(base_url=base_url, timeout=timeout,
                                   headers={"Authorization": f"Bearer {api_key}"})
 
@@ -211,14 +355,15 @@ class Tutor:
         except httpx.HTTPError:
             pass
 
-    def ask(self, question: str, image_data_url: str, state: str | None = None) -> Reply:
-        return self._call(build_body(question, image_data_url, state, self.model, self.effort))
+    def ask(self, question: str, image_data_url: str, state: str | None = None, pointer: str | None = None) -> Reply:
+        return self._call(build_body(question, image_data_url, state, self.model, self.effort, self.task, pointer))
 
     def follow_up(self, goal: str, last_say: str, image_data_url: str, state: str | None = None,
-                  screen_changed: bool | None = None) -> Reply:
+                  screen_changed: bool | None = None, plan: list[str] | None = None, part: int | None = None,
+                  notes: str = "") -> Reply:
         """After the user clicked and the screen settled: was the step done, is the task done, what next."""
         return self._call(build_follow_up_body(goal, last_say, image_data_url, state, screen_changed,
-                                               self.model, self.effort))
+                                               self.model, self.effort, self.task, plan, part, notes))
 
     def _call(self, body: dict) -> Reply:
         """One answer. A sentence without Vietnamese diacritics (4 of 104 so far, T4-T8a) would be read
