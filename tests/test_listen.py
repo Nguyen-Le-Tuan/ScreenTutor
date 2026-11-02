@@ -62,3 +62,16 @@ def test_t7a_replay_joins_turns_that_start_within_the_wait():
     assert replay(tl, 0.0, 1.0)[0] == "File báo cáo nằm ở đâu vậy."                     # the pause was 1.2 s: cut
     text, wait = replay(tl, 0.0, 1.5)
     assert text == "File báo cáo nằm ở đâu vậy. Sao mà mở lên không thấy." and abs(wait - (5.1 + 1.5 - 4.8)) < 1e-9
+
+
+def test_mic_queues_audio_and_meters_it():
+    import queue
+
+    from screentutor.levels import Meter
+    from screentutor.listen import Mic
+
+    mic = Mic.__new__(Mic)  # no sound card in the test: only the callback
+    mic._q, mic.meter = queue.Queue(), Meter()
+    loud = (b"\x00\x40" * 1920)  # a steady half-scale signal
+    mic._on_audio(loud)
+    assert mic._q.get_nowait() == loud and mic.meter.value > 0.5

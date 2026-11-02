@@ -164,3 +164,18 @@ def test_resizes_to_the_shape_and_paints(qt_app):
     assert isl.own_rect().width() == round(isl.morph.shape().w)
     img = isl.grab().toImage()
     assert img.pixelColor(isl.width() // 2, island.TOP + 10).alpha() > 200
+
+
+def test_sound_bars_read_the_level_source_only_while_sound_plays():
+    isl, fake = make()
+    level = [0.7]
+    isl.level_source = lambda: level[0]
+    isl.set_state("listening")
+    fake.t += 0.02
+    isl.tick()
+    assert isl.view.level == 0.7
+    isl.set_state("thinking")
+    level[0] = 0.1
+    fake.t += 0.02
+    isl.tick()
+    assert isl.view.level is None  # no bars while it thinks

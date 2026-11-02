@@ -1,8 +1,12 @@
-"""The "Hỏi" button and the dynamic island (MVP step 5, Decisions 4a-4c).
+"""The "Hỏi" button and the old transcript island (MVP step 5, Decisions 4a-4c).
 
-Button: a pill at the bottom right, just above the taskbar, always on top. Clicking
-it never takes the focus away from the app the user works in. Its colour and words
-say what the tutor is doing: Hỏi / Đang nghe / Đang xem màn hình / Đang nói.
+Button (A5, founder 02/11): a round microphone at the bottom right, just above the taskbar,
+always on top, with no words: the states moved to the dynamic island (island.py), and the
+button's ring only takes the island's colour. Black at 80%, fully black under the mouse.
+Clicking it never takes the focus away from the app she works in. settings.json can switch
+it off (show_button) without a code change; Ctrl+Alt still asks.
+
+The transcript island below is the MVP one; island.py replaces it when the app is rewired (A7).
 
 Island: a small dark pill at the top centre with the raw words the tutor heard
 (founder, 30/10: show the transcript as it is; tidy it up later). The mouse over it
@@ -23,6 +27,7 @@ from PySide6.QtCore import QElapsedTimer, QPointF, QRect, QRectF, QSize, Qt, QTi
 from PySide6.QtGui import QColor, QCursor, QFont, QFontMetrics, QGuiApplication, QPainter, QPen
 from PySide6.QtWidgets import QWidget
 
+from .island import STYLE
 from .overlay import _win_harden, _win_topmost
 
 STATES = {
@@ -32,7 +37,9 @@ STATES = {
     "speaking": ("Đang nói…", QColor(22, 163, 74)),
 }
 MARGIN = 16                 # logical px from the screen edge / taskbar
-BUTTON_H = 52
+BUTTON_D = 46               # the round button's diameter
+GLOW = 10                   # room around it for the listening halo
+BUTTON_H = BUTTON_D
 ISLAND_H = 34
 ISLAND_W_MIN, ISLAND_W_MAX, ISLAND_W_OPEN = 180, 420, 600
 FLAGS = Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WindowDoesNotAcceptFocus
@@ -55,6 +62,8 @@ class AskButton(QWidget):
         self.setCursor(Qt.PointingHandCursor)
         self._screen = screen or QGuiApplication.primaryScreen()
         self.state = "idle"
+        self.hover = False
+        self.level: float | None = None
         self._clock = QElapsedTimer()
         self._clock.start()
         self._timer = QTimer(self)
@@ -63,19 +72,30 @@ class AskButton(QWidget):
         self._place()
 
     def _place(self) -> None:
-        w = max(QFontMetrics(_font(20, True)).horizontalAdvance(label) for label, _ in STATES.values()) + 2 * 28
         area = self._screen.availableGeometry()  # above the taskbar
-        self.setFixedSize(QSize(w + 2 * 8, BUTTON_H + 2 * 8))  # room for the glow
-        self.move(area.right() - self.width() - MARGIN + 8, area.bottom() - self.height() - MARGIN + 8)
+        side = BUTTON_D + 2 * GLOW
+        self.setFixedSize(QSize(side, side))
+        self.move(area.right() - side - MARGIN + GLOW, area.bottom() - side - MARGIN + GLOW)
 
     def set_state(self, state: str) -> None:
-        self.state = state
-        self._timer.start() if state != "idle" else self._timer.stop()
+        self.state = state if state in STYLE else "idle"
+        self._timer.start() if self.state not in ("idle", "done") else self._timer.stop()
         self.update()
+
+    def set_level(self, level: float | None) -> None:
+        self.level = level
 
     def showEvent(self, event):
         super().showEvent(event)
         _win_harden(self, click_through=False)
+
+    def enterEvent(self, event):
+        self.hover = True
+        self.update()
+
+    def leaveEvent(self, event):
+        self.hover = False
+        self.update()
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -83,30 +103,55 @@ class AskButton(QWidget):
 
     def paintEvent(self, _event):
         p = QPainter(self)
-        paint_button(p, QRectF(self.rect()), self.state, self._clock.elapsed() / 1000)
+        paint_button(p, QRectF(self.rect()), self.state, self._clock.elapsed() / 1000, self.hover, self.level)
         p.end()
 
 
-def paint_button(p: QPainter, bounds: QRectF, state: str, t: float) -> None:
-    label, color = STATES[state]
+def paint_button(p: QPainter, bounds: QRectF, state: str, t: float, hover: bool = False,
+                 level: float | None = None) -> None:
+    color = STYLE.get(state, STYLE["idle"])[1]
+    p.save()
     p.setRenderHint(QPainter.Antialiasing)
-    pill = bounds.adjusted(8, 8, -8, -8)
-    r = pill.height() / 2
-    if state == "listening":  # a breathing glow while it listens
-        glow = QColor(color)
-        glow.setAlpha(round(60 + 60 * (0.5 + 0.5 * math.sin(t * 2 * math.pi / 1.2))))
+    c = bounds.center()
+    r = min(BUTTON_D, bounds.width() - 2, bounds.height() - 2) / 2
+    if state in ("listening", "speaking"):  # a halo that swells with the voice
+        swell = (0.5 + 0.5 * math.sin(t * 2 * math.pi / 1.2)) if level is None else max(0.0, min(1.0, level))
+        halo = QColor(color)
+        halo.setAlphaF(0.22 + 0.25 * swell)
         p.setPen(Qt.NoPen)
-        p.setBrush(glow)
-        p.drawRoundedRect(pill.adjusted(-6, -6, 6, 6), r + 6, r + 6)
+        p.setBrush(halo)
+        grow = 2 + (GLOW - 3) * swell
+        p.drawEllipse(c, r + grow, r + grow)
     p.setPen(Qt.NoPen)
-    p.setBrush(QColor(0, 0, 0, 70))
-    p.drawRoundedRect(pill.translated(0, 2), r, r)
-    p.setPen(QPen(QColor(255, 255, 255), 3))
+    p.setBrush(QColor(0, 0, 0, 255 if hover else 204))  # 80% like the closed island
+    p.drawEllipse(c, r, r)
+    ring = QColor(255, 255, 255, 64) if state in ("idle", "done") else QColor(color)
+    if state in ("thinking", "loading"):
+        ring.setAlphaF(0.3)  # dim, so the running arc on it shows
+    p.setPen(QPen(ring, 2))
+    p.setBrush(Qt.NoBrush)
+    p.drawEllipse(c, r - 1, r - 1)
+    if state in ("thinking", "loading"):  # a short arc runs round while it works
+        pen = QPen(color, 2.4)
+        pen.setCapStyle(Qt.RoundCap)
+        p.setPen(pen)
+        p.drawArc(QRectF(c.x() - r + 1, c.y() - r + 1, 2 * r - 2, 2 * r - 2), int(-t * 300 * 16) % (360 * 16), 70 * 16)
+    paint_mic(p, c, QColor(255, 255, 255))
+    p.restore()
+
+
+def paint_mic(p: QPainter, c: QPointF, color: QColor, s: float = 1.0) -> None:
+    """A microphone: the capsule, the cradle under it, the stem and the foot."""
+    pen = QPen(color, 2 * s)
+    pen.setCapStyle(Qt.RoundCap)
+    p.setPen(Qt.NoPen)
     p.setBrush(color)
-    p.drawRoundedRect(pill, r, r)
-    p.setFont(_font(20, True))
-    p.setPen(QColor(255, 255, 255))
-    p.drawText(pill, Qt.AlignCenter, label)
+    p.drawRoundedRect(QRectF(c.x() - 4 * s, c.y() - 10 * s, 8 * s, 13 * s), 4 * s, 4 * s)
+    p.setPen(pen)
+    p.setBrush(Qt.NoBrush)
+    p.drawArc(QRectF(c.x() - 7 * s, c.y() - 6 * s, 14 * s, 12 * s), 180 * 16, 180 * 16)
+    p.drawLine(QPointF(c.x(), c.y() + 6 * s), QPointF(c.x(), c.y() + 9 * s))
+    p.drawLine(QPointF(c.x() - 4 * s, c.y() + 9.5 * s), QPointF(c.x() + 4 * s, c.y() + 9.5 * s))
 
 
 class Island(QWidget):
@@ -200,9 +245,9 @@ def render_preview(on: str, out: str, scale: float = 1.25) -> None:
     paint_island(p, QRectF((w - iw) / 2, 6, iw, ih), "thinking", sample, False)
     ow, oh = island_size(sample, True)
     paint_island(p, QRectF((w - ow) / 2, 60, ow, oh), "thinking", sample, True)
-    bw = 200
-    for i, state in enumerate(STATES):
-        paint_button(p, QRectF(w - bw - MARGIN, h - 48 - (BUTTON_H + 30) * (i + 1), bw, BUTTON_H + 16), state, 0.3)
+    side = BUTTON_D + 2 * GLOW
+    for i, state in enumerate(STYLE):
+        paint_button(p, QRectF(w - side - MARGIN, h - 48 - (side + 8) * (i + 1), side, side), state, 0.3)
     p.end()
     img.save(out)
 

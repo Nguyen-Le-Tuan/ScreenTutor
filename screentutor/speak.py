@@ -17,6 +17,8 @@ import sys
 import threading
 from pathlib import Path
 
+from .levels import Meter, blocks, level_of
+
 VOICE = "Hải Đăng"          # founder's choice, 30/10; backup "Quốc Tuấn"
 PRECISION = "int8"          # founder's choice, 30/10
 SAMPLE_RATE = 48_000
@@ -80,6 +82,7 @@ class Speaker:
         self._stop = threading.Event()
         self._lock = threading.Lock()
         self._load_lock = threading.Lock()
+        self.meter = Meter()  # A6: the island's bars follow the voice as it plays
 
     def load(self) -> None:
         """Takes about 2 s; call it once at start-up, off the UI thread."""
@@ -95,9 +98,19 @@ class Speaker:
         self.load()
         with self._lock:
             self._stop.clear()
-            chunks = self._engine.infer_stream(spoken, voice=self.voice)
-            (self._play or _play_sounddevice)(chunks, self._stop)
+            chunks = self._metered(self._engine.infer_stream(spoken, voice=self.voice))
+            try:
+                (self._play or _play_sounddevice)(chunks, self._stop)
+            finally:
+                self.meter.reset()
         return spoken
+
+    def _metered(self, chunks):
+        """Hands the audio on in 40 ms blocks and meters each one as the player takes it: the player
+        takes a block when there is room for it, so the level runs close to what is heard."""
+        for block in blocks(chunks, SAMPLE_RATE):
+            self.meter.feed(level_of(block))
+            yield block
 
     def stop(self) -> None:
         self._stop.set()

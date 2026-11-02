@@ -69,3 +69,17 @@ def test_stop_from_another_thread():
     spk.stop()
     t.join(2)
     assert stopped == [True]
+
+
+def test_the_meter_follows_the_voice_and_drops_to_zero_after():
+    import numpy as np
+
+    class LoudEngine:
+        def infer_stream(self, text, voice):
+            yield np.full(48000 // 10, 0.3, dtype=np.float32)  # 0.1 s at a steady loud level
+
+    seen = []
+    spk = Speaker(engine=LoudEngine(), play=lambda chunks, stop: [seen.append(spk.meter.value) for _ in chunks])
+    spk.speak("Bạn bấm File.")
+    assert len(seen) == 3 and seen[0] > 0.5 and seen[-1] >= seen[0]  # 40 ms blocks, metered as they go out
+    assert spk.meter.value == 0.0

@@ -29,6 +29,8 @@ import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .levels import Meter, level_of_int16
+
 URL = "wss://api.meta.ai/v1/asr/realtime"
 MODEL = "muse-voice-transcribe-1.0"
 RATE = 24_000
@@ -150,9 +152,14 @@ class Mic:
         import sounddevice as sd
 
         self._q: queue.Queue = queue.Queue()
+        self.meter = Meter()  # A6: the island's bars follow her voice
         self._stream = sd.RawInputStream(samplerate=RATE, channels=1, dtype="int16", blocksize=FRAME_BYTES // 2,
-                                         callback=lambda data, frames, t, status: self._q.put(bytes(data)))
+                                         callback=lambda data, frames, t, status: self._on_audio(bytes(data)))
         self._stream.start()
+
+    def _on_audio(self, data: bytes) -> None:
+        self._q.put(data)
+        self.meter.feed(level_of_int16(data))
 
     async def frames(self, stop: threading.Event):
         while not stop.is_set():

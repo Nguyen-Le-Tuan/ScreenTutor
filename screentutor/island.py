@@ -466,6 +466,7 @@ class Island(QWidget):
         self._outside_since: float | None = None
         self._avoid: QPointF | None = None
         self.hidden_for_target = False     # the ring points under the closed island: get out of the way
+        self.level_source = None           # A6: a callable giving the mic or voice level 0..1 (Meter.value)
         self.no_hover = False              # the ring points under where the open island would be
         self.morph = Morph(self._target())
         self._frame = QTimer(self)
@@ -611,6 +612,8 @@ class Island(QWidget):
         now = self._clock()
         dt, self._last = now - self._last, now
         self.morph.step(dt)
+        if self.level_source is not None and self.view.state in ("listening", "speaking"):
+            self.view.level = self.level_source()
         if self.view.state == "done" and now - self._state_at >= DONE_HOLD_S:
             self.set_state("idle")
         if not self.morph.moving():
