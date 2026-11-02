@@ -30,31 +30,55 @@ Với mỗi tình huống, ghi theo mẫu:
 
 P. CÁC TÌNH HUỐNG (đóng vai mẹ, nói như mẹ nói)
 -----------------------------------------------
-[ ] P-1. Nút "Hỏi". Word đang mở giáo án.
+[x] P-1. Nút "Hỏi". Word đang mở giáo án.
          Nói: "Mẹ muốn xuất cái giáo án này ra PDF để gửi cho tiệm in thì làm sao"
-         Ghi: ____________________________________________________________
-[ ] P-2. Giữ Ctrl+Alt. Dựng lại case_04 (Brave mở trang Sheet nhưng đang ở tab khác, Zalo ở trước).
+         Ghi: Nghe được "mẹ muốn xuất cái file này ra làm sao"; mất khoảng 10 s từ lúc ngừng
+         nói tới câu tutor đầu tiên. Dù mất chi tiết "PDF/tiệm in", tutor hiểu đúng ý.
+         Bước 1 File (38,81), 8.8 s; bước 2 Export (61,611), 4.0 s; bước 3 Create PDF/XPS
+         (728,328), 4.6 s; bước 4 Publish (989,723), 3.8 s; bước 5 Yes để thay file cũ
+         (1020,525), 5.9 s; bước 6 báo đã xuất xong, goal_done=True, 4.1 s.
+         Vòng chỉ đúng và câu nói dễ hiểu ở mọi bước; báo "xong" đúng lúc.
+[x] P-2. Giữ Ctrl+Alt. Dựng lại case_04 (Brave mở trang Sheet nhưng đang ở tab khác, Zalo ở trước).
          Nói: "Cái link cô tổ trưởng gửi mẹ ấn hoài mà không chịu mở lên"
-         Ghi: ____________________________________________________________
-[ ] P-3. Chuyện "bản trắng" (me_01): sửa giáo án hôm qua, hôm nay mở lại từ Zalo thấy bản cũ.
+         Ghi: Nghe được "cái đường link mà cô tổ trưởng gửi cho mẹ mẹ ấn hoài mà nó không có chịu lên".
+         Từ lúc thả Ctrl+Alt đến âm thanh đầu tiên: khoảng 6.03 s. Bước 1 chỉ đúng link docs.google.com
+         trong Zalo tại (1171,567), 4.9 s. Bước 2 nói chờ bảng hiện, settled, step_done=True,
+         goal_done=False, không có điểm bấm tiếp theo, 4.5 s. Sheet tải xong trong lúc câu "chờ một lát"
+         đang phát. Tutor không nói xong quá sớm, nhưng cũng không tự kiểm tra lại và báo xong;
+         người thử phải Ctrl+C để tắt app sau khi file đã mở.
+[x] P-3. Chuyện "bản trắng" (me_01): sửa giáo án hôm qua, hôm nay mở lại từ Zalo thấy bản cũ.
          Dựng như mẹ hay gặp, rồi hỏi: "Cái giáo án mẹ sửa hôm qua nó nằm ở đâu, sao mở lên không thấy"
-         Ghi: ____________________________________________________________
-[ ] P-4. Hỏi câu mới giữa chừng: đang làm P-1, tới bước 2 thì bấm "Hỏi" và hỏi chuyện khác.
-         Mong đợi: vòng cũ biến mất, giọng cũ tắt, tutor trả lời câu mới.  Ghi: ______________
-[ ] P-5. Bấm khi tutor đang nói: giọng có tắt ngay không? ______
-[ ] P-6. Tập quay video demo: bật Win+Alt+R, làm lại P-1 từ đầu tới cuối, tắt quay.
-         Video có thấy vòng đỏ, nút, ô chữ, và nghe được giọng tutor không? ______
-[ ] P-7. Cảm nhận khi đóng vai mẹ: chờ 6-8 giây sau khi hỏi có lâu quá không? Có cần tutor nói
-         ngay một câu ngắn kiểu "Để mình xem nhé" trong lúc chờ không? ______
+         Ghi: Nghe được "giao án mẹ sữa Hung Va bây giờ nó nằm ở đâu vậy sao mẹ mở lên không thấy".
+         Tutor vẫn hiểu đúng tình huống và chỉ: File (38,81), Info (52,361), Open file location
+         (868,227), rồi bấm đúp Giáo án mẫu Âm nhạc 8 (445,255). Phản hồi lần lượt 3.9 / 3.9 /
+         3.3 / 3.8 s. Sau 2.3 s tutor báo giáo án đã mở, goal_done=True; người thử xác nhận mở đúng bản.
+[x] P-4. Hỏi câu mới giữa chừng: đang làm P-1, tới bước 2 thì bấm "Hỏi" và hỏi chuyện khác.
+         Mong đợi: vòng cũ biến mất, giọng cũ tắt, tutor trả lời câu mới.
+         Ghi: Khi giữ Ctrl+Alt để hỏi câu mới ("bây giờ mẹ muốn cách xem giờ của máy tính thì làm sao?"),
+         vòng đỏ biến mất ngay lập tức, giọng nói cũ tắt ngay để chờ câu hỏi. Tutor nhận diện chính xác
+         câu hỏi mới: bước 1 chỉ đúng góc dưới phải chỗ hiện giờ (1811, 1049) sau 4.6 s; bước 2 báo
+         đã xem được giờ ở góc dưới bên phải, goal_done=True sau 3.7 s. Đúng như mong đợi.
+[x] P-5. Bấm khi tutor đang nói: giọng có tắt ngay không? Có, giọng tutor tắt ngay lập tức khi bấm theo chỉ dẫn.
+[x] P-6. Tập quay video demo: bật Win+Alt+R, làm lại P-1 từ đầu tới cuối, tắt quay.
+         Video có thấy vòng đỏ, nút, ô chữ, và nghe được giọng tutor không? Có; nghe rõ giọng tutor,
+         thấy rõ nút "Hỏi", ô chữ (island) và vòng đỏ chỉ dẫn trên màn hình.
+[x] P-7. Cảm nhận khi đóng vai mẹ: chờ 6-8 giây sau khi hỏi có lâu quá không? Có cần tutor nói
+         ngay một câu ngắn kiểu "Để mình xem nhé" trong lúc chờ không? Có cảm nhận độ trễ (delay)
+         nhưng không gây khó chịu; không cần tutor nói thêm câu đệm vì thanh trạng thái trên ô chữ
+         đã thể hiện điều đó; góp ý: nên thêm/đổi trạng thái cụ thể thành "Đang xem màn hình" hoặc "Đang suy nghĩ"
+         để người dùng nắm rõ hơn thay vì chỉ "Đang xem".
 
 
 X. HAI CHỖ T8a CẦN XEM TRÊN MÁY THẬT
 ------------------------------------
-[ ] X-2. Trong Word, tab Home, góc phải có nút "Create PDF" (hình tờ giấy đỏ). Bấm thử:
+[x] X-2. Trong Word, tab Home, góc phải có nút "Create PDF" (hình tờ giấy đỏ). Bấm thử:
          nó làm gì (hỏi chỗ lưu? bắt đăng nhập? quảng cáo?), có tạo được file PDF dùng được không?
-         Mẹ có nên đi đường này thay cho File > Export không? ______________________________
-[ ] X-3. Dựng case_04 (Brave nằm sau Zalo), bấm lại link Sheet trong Zalo: Brave có tự nhảy lên
-         trước để thấy bảng tính không? ______________________________
+         Mẹ có nên đi đường này thay cho File > Export không? Nút mở hộp WPS "Download complete"
+         với Install Now/Cancel, không hỏi chỗ lưu và không tạo PDF. Không nên dùng đường này;
+         dùng File > Export > Create PDF/XPS.
+[x] X-3. Dựng case_04 (Brave nằm sau Zalo), bấm lại link Sheet trong Zalo: Brave có tự nhảy lên
+         trước để thấy bảng tính không? Có; Brave tự lên trước, ban đầu hiện trang trắng Loading,
+         sau đó tải đúng bảng tính Google Sheet.
 
 
 Xong thì lưu file này, commit và push riêng file này lên nhánh mvp.
