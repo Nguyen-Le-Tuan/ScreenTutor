@@ -252,3 +252,18 @@ def test_footer_fits_inside_the_pinned_shape_and_paints():
     sw = box["swatch1"].center()
     c = img.pixelColor(round(sw.x()), round(sw.y()))
     assert c.blue() > c.red()  # the navy swatch is drawn
+
+
+def test_a_box_under_the_closed_island_moves_it_even_when_its_centre_is_far(qt_app):
+    from PySide6.QtCore import QPointF, QRectF
+
+    island = Island()
+    island.show()
+    w = island.width()
+    center = island.geometry().center()
+    island.set_avoid(QPointF(center.x(), 500), QRectF(center.x() - w, 0, 2 * w, 1000))
+    assert island.hidden_for_target
+    island.set_avoid(QPointF(center.x(), 500), QRectF(center.x() - w, 450, 2 * w, 100))
+    assert not island.hidden_for_target
+    island.set_avoid(None)
+    island.hide()

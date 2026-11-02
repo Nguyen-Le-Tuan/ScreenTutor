@@ -20,6 +20,7 @@ PATH = ROOT / "settings.json"
 class Settings:
     show_button: bool = True        # the round microphone button at the bottom right
     island_color: str = "#000000"   # the island's base colour; 80% of it when closed
+    edge_glow: bool = True          # the light around the screen while the tutor looks; off on a slow machine
 
 
 def load(path: Path = PATH) -> Settings:

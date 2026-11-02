@@ -28,7 +28,7 @@ from PySide6.QtGui import QColor, QCursor, QFont, QFontMetrics, QGuiApplication,
 from PySide6.QtWidgets import QWidget
 
 from . import conversation as conv
-from .overlay import CAUTION_COLOR, COLOR, _win_harden, _win_topmost
+from .overlay import CAUTION_COLOR, COLOR, READ_COLOR, _win_harden, _win_topmost
 
 TOP = 6                      # logical px below the top edge of the screen
 COLLAPSED_H = 34
@@ -62,12 +62,14 @@ STYLE = {  # state: (words, colour)
     "thinking": ("Đang xem màn hình", QColor(191, 90, 242)),
     "speaking": ("Đang nói", QColor(10, 132, 255)),
     "turn": ("Đến lượt bạn bấm", QColor(COLOR)),            # the same red as the ring
+    "reading": ("Bạn đọc vùng sáng nhé", QColor(READ_COLOR)),  # the same mint as the frame
     "caution": ("Cẩn thận trước khi bấm", QColor(CAUTION_COLOR)),  # the same amber as the ring
     "loading": ("Chờ trang tải", QColor(191, 90, 242)),
     "done": ("Xong rồi", QColor(48, 209, 88)),
     "error": ("Chưa nghe rõ", QColor(142, 142, 147)),
 }
 TURN_PULSE_S, CAUTION_PULSE_S = 1.2, 1.8   # 1.2 s matches the ring on the screen (overlay.PULSE_S)
+READ_PULSE_S = 2.4
 
 
 @dataclass(frozen=True)
@@ -230,6 +232,13 @@ def paint_icon(p: QPainter, state: str, c: QPointF, t: float, since: float = 1.0
         ring(4.5, 2.2, color)
         if state == "caution":
             bang(0.85)
+    elif state == "reading":
+        p.setPen(Qt.NoPen)
+        phase = (t % READ_PULSE_S) / READ_PULSE_S
+        for i, width in enumerate((14, 14, 9)):  # three lines of text, the eye going down them
+            strength = max(0.35, 1 - abs(phase * 3 - i - 0.5) / 1.4)
+            p.setBrush(_with_alpha(color, strength))
+            p.drawRoundedRect(QRectF(c.x() - 7, c.y() - 6.5 + i * 5, width, 3), 1.5, 1.5)
     elif state == "loading":
         ring(6.5, 2.2, _with_alpha(color, 0.22))
         pen = QPen(color, 2.2)
@@ -565,16 +574,21 @@ class Island(QWidget):
             self.view.title = self.view.task.question
         self._relayout()
 
-    def set_avoid(self, point: QPointF | None) -> None:
-        """The ring's target in logical screen coordinates, or None when there is no ring."""
+    def set_avoid(self, point: QPointF | None, box: QRectF | None = None) -> None:
+        """The ring's target in logical screen coordinates, or None when there is no ring. With a box to read,
+        the island gets out of the way of all of it, not only of its centre."""
         self._avoid = point
         self.hidden_for_target = self.no_hover = False
         if point is not None:
             closed = self._screen_rect(target_shape("collapsed", *self._screen_wh(), *self._sizes("collapsed")[:1]))
             opened = self._screen_rect(target_shape("hover", *self._screen_wh(), 0, *self._sizes("hover")[1:]))
-            if closed.adjusted(-AVOID_MARGIN, -AVOID_MARGIN, AVOID_MARGIN, AVOID_MARGIN).contains(point.toPoint()):
+            def under(rect: QRect) -> bool:
+                rect = rect.adjusted(-AVOID_MARGIN, -AVOID_MARGIN, AVOID_MARGIN, AVOID_MARGIN)
+                return rect.contains(point.toPoint()) or (box is not None and rect.toRectF().intersects(box))
+
+            if under(closed):
                 self.hidden_for_target = True
-            elif opened.adjusted(-AVOID_MARGIN, -AVOID_MARGIN, AVOID_MARGIN, AVOID_MARGIN).contains(point.toPoint()):
+            elif under(opened):
                 self.no_hover = True
             covered = self.mode != "collapsed" and self.own_rect().contains(point.toPoint())
             if self.mode != "collapsed" and (self.hidden_for_target or self.no_hover or covered):

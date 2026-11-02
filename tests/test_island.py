@@ -80,7 +80,8 @@ def test_morph_reports_progress_and_stops_moving():
 
 
 def test_states_have_their_own_colours_and_match_the_ring():
-    assert set(island.STYLE) == {"idle", "listening", "thinking", "speaking", "turn", "caution", "loading", "done", "error"}
+    assert set(island.STYLE) == {"idle", "listening", "thinking", "speaking", "turn", "reading", "caution", "loading",
+                                 "done", "error"}
     assert island.STYLE["turn"][1] == QColor(COLOR)
     assert island.STYLE["caution"][1] == QColor(CAUTION_COLOR)
     working = ["listening", "thinking", "speaking", "turn", "caution", "done", "error"]

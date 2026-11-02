@@ -146,3 +146,23 @@ def test_feed_hands_the_recent_tasks_to_the_island():
     isl = Isl()
     Feed(isl).recent([("hôm qua", "Mở link bảng tính")])
     assert isl.recent == [("hôm qua", "Mở link bảng tính")] and isl.updated
+
+
+def test_the_glow_never_outlasts_the_looking(qt_app):
+    isl, glows = FakeIsland(), []
+    feed = Feed(isl)
+    feed.glow = glows.append
+    feed.status("thinking")
+    assert glows == []         # look() turns it on, after the screenshot
+    feed.say_start("Bạn bấm File.", 1)
+    assert glows == [False]
+
+
+def test_a_frame_keeps_the_island_off_the_whole_box(qt_app):
+    class Isl(FakeIsland):
+        def set_avoid(self, point, box=None):
+            self.seen = (point.x(), point.y(), box.x(), box.width())
+
+    isl = Isl()
+    Feed(isl, dpr=1.25).frame(125, 250, 625, 750)
+    assert isl.seen == (300.0, 400.0, 100.0, 400.0)
