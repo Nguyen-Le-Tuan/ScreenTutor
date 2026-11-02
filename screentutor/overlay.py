@@ -169,7 +169,7 @@ def _win_harden(widget, click_through: bool = True) -> None:
     hwnd = ctypes.c_void_p(int(widget.winId()))
     WS_EX_APPWINDOW = 0x40000  # T5 (02/11): the ring showed up in Alt+Tab; an app-window flag overrides the tool flag
     style = (user32.GetWindowLongW(hwnd, GWL_EXSTYLE) | WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_NOACTIVATE) \
-        & ~WS_EX_APPWINDOW
+        & ~WS_EX_APPWINDOW & ~WS_EX_TRANSPARENT  # the island takes clicks again once it opens (02/11)
     user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style | WS_EX_TRANSPARENT if click_through else style)
     _win_topmost(widget)
 

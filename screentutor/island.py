@@ -6,10 +6,12 @@ so Word's toolbar stays in sight), the lower edge curved like an upward parabola
 talk inside. A click: a plain rectangle with all of the task. While the tutor works, an icon
 and a colour say what it is doing, each with its own movement.
 
-A1 is the shape and the spring between shapes, A2 the states, icons and painting. The window
-itself (hover, clicks, click-through) comes in A4.
+A1 is the shape and the spring between shapes, A2 the states, icons and painting, A4 the
+window: it opens after the mouse rests on it, takes clicks only while open, and steps aside
+when the ring points at something underneath.
 
   python -m screentutor.island --preview OUT_DIR [--on SCREENSHOT.png]   # PNG sheet and GIFs
+  python -m screentutor.island --demo                                    # the real window, cycling states
 """
 
 from __future__ import annotations
@@ -17,14 +19,16 @@ from __future__ import annotations
 import argparse
 import math
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from PySide6.QtCore import QPointF, QRectF, Qt
-from PySide6.QtGui import QColor, QFont, QFontMetrics, QPainter, QPainterPath, QPen
+from PySide6.QtCore import QPoint, QPointF, QRect, QRectF, Qt, QTimer
+from PySide6.QtGui import QColor, QCursor, QFont, QFontMetrics, QGuiApplication, QPainter, QPainterPath, QPen
+from PySide6.QtWidgets import QWidget
 
 from . import conversation as conv
-from .overlay import CAUTION_COLOR, COLOR
+from .overlay import CAUTION_COLOR, COLOR, _win_harden, _win_topmost
 
 TOP = 6                      # logical px below the top edge of the screen
 COLLAPSED_H = 34
@@ -280,6 +284,17 @@ class View:
     level: float | None = None
     content_alpha: float = 1.0
     layout_w: float = 0.0     # the width the open island is heading to, so text does not re-wrap while it grows
+    scroll: float = 0.0       # pinned: how far the talk has been scrolled up
+
+
+def header_rect(shape: Shape, cx: float, top: float = TOP) -> QRectF:
+    return QRectF(cx - shape.w / 2 + SIDE + 28, top + 6, shape.w - 2 * SIDE - 28, HEADER_H)
+
+
+def close_center(shape: Shape, cx: float, top: float = TOP) -> QPointF:
+    """Where the × of the pinned island sits; the window tests clicks against it."""
+    head = header_rect(shape, cx, top)
+    return QPointF(head.right() - 8, head.center().y())
 
 
 def hover_messages(task: conv.Task | None) -> list[conv.Message]:
@@ -332,14 +347,14 @@ def paint_island(p: QPainter, shape: Shape, cx: float, view: View, t: float,
     else:
         p.setOpacity(view.content_alpha)
         paint_icon(p, view.state, QPointF(x0 + SIDE + 10, top + 6 + HEADER_H / 2), t, view.since, view.level)
-        head = QRectF(x0 + SIDE + 28, top + 6, shape.w - 2 * SIDE - 28, HEADER_H)
+        head = header_rect(shape, cx, top)
         if view.mode == "pinned":
             p.setFont(font(BODY_PX, bold=True))
             p.setPen(TEXT)
             p.drawText(head.adjusted(0, 0, -24, 0), Qt.AlignVCenter | Qt.AlignLeft,
                        QFontMetrics(font(BODY_PX, True)).elidedText(view.title or label, Qt.ElideRight, int(head.width() - 24)))
             p.setPen(QPen(_with_alpha(TEXT, 0.6), 1.8))  # close: a small ×
-            xc, yc = head.right() - 8, head.center().y()
+            xc, yc = close_center(shape, cx, top).x(), close_center(shape, cx, top).y()
             p.drawLine(QPointF(xc - 4.5, yc - 4.5), QPointF(xc + 4.5, yc + 4.5))
             p.drawLine(QPointF(xc - 4.5, yc + 4.5), QPointF(xc + 4.5, yc - 4.5))
         else:
@@ -358,6 +373,9 @@ def paint_island(p: QPainter, shape: Shape, cx: float, view: View, t: float,
         if view.mode == "hover":
             bubbles, _ = conv.newest_that_fit(bubbles, shape.h - HEADER_H - 14, keep_first=True)
         y0 = top + 6 + HEADER_H + (4 if view.mode == "hover" else 10)
+        if view.mode == "pinned":  # the talk scrolls under a fixed header
+            p.setClipRect(QRectF(x0, y0 - 4, shape.w, shape.h - (y0 - 4 - top)), Qt.IntersectClip)
+            y0 -= view.scroll
         for b in bubbles:
             paint_bubble(p, b, bx0 + SIDE, y0, color)
     p.restore()
@@ -415,6 +433,233 @@ def paint_bubble(p: QPainter, b: conv.Bubble, ox: float, oy: float, accent: QCol
             p.drawText(QRectF(rect.left() + conv.PAD_X + conv.INDENT, y, inner, conv.LINE_H),
                        Qt.AlignVCenter | Qt.AlignLeft, line)
             y += conv.LINE_H
+
+
+# --- A4: the window ---------------------------------------------------------------------
+
+HOVER_DWELL_S = 0.25     # the mouse rests this long on the closed island before it opens
+LEAVE_S = 0.30           # and leaves for this long before it closes again
+DONE_HOLD_S = 3.0        # "done" shows this long, then the island rests
+POLL_MS, FRAME_MS = 60, 16
+AVOID_MARGIN = 20        # logical px around the island where the ring's target counts as underneath
+SCROLL_STEP = 42         # px per wheel notch in the pinned island
+FLAGS = Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WindowDoesNotAcceptFocus
+
+
+class Island(QWidget):
+    """The island on the screen. Never takes the focus; takes clicks only while open or pinned."""
+
+    def __init__(self, screen=None, clock=time.monotonic, cursor=None):
+        super().__init__(None, FLAGS)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_ShowWithoutActivating)
+        self._screen = screen or QGuiApplication.primaryScreen()
+        self._clock = clock
+        self._cursor = cursor or (lambda: QCursor.pos(self._screen))
+        self.view = View()
+        self.base = QColor(0, 0, 0)
+        self.mode = "collapsed"
+        self.click_through = True
+        self.scroll = 0.0
+        self._state_at = self._last = clock()
+        self._inside_since: float | None = None
+        self._outside_since: float | None = None
+        self._avoid: QPointF | None = None
+        self.hidden_for_target = False     # the ring points under the closed island: get out of the way
+        self.no_hover = False              # the ring points under where the open island would be
+        self.morph = Morph(self._target())
+        self._frame = QTimer(self)
+        self._frame.setInterval(FRAME_MS)
+        self._frame.timeout.connect(self.tick)
+        self._poll = QTimer(self)
+        self._poll.setInterval(POLL_MS)
+        self._poll.timeout.connect(self.poll)
+        self._fit()
+        self._apply_click_through()
+
+    # what the tutor is doing -------------------------------------------------------------
+
+    def set_state(self, state: str, task: conv.Task | None = None, level: float | None = None) -> None:
+        if state != self.view.state:
+            self._state_at = self._clock()
+        self.view.state = state
+        if task is not None:
+            self.view.task = task
+            self.view.title = task.question
+        self.view.level = level
+        self._relayout()
+
+    def set_level(self, level: float | None) -> None:
+        self.view.level = level
+
+    def task_changed(self) -> None:
+        """Call after adding to the current task: the open island may need to grow."""
+        if self.view.task is not None:
+            self.view.title = self.view.task.question
+        self._relayout()
+
+    def set_avoid(self, point: QPointF | None) -> None:
+        """The ring's target in logical screen coordinates, or None when there is no ring."""
+        self._avoid = point
+        self.hidden_for_target = self.no_hover = False
+        if point is not None:
+            closed = self._screen_rect(target_shape("collapsed", *self._screen_wh(), *self._sizes("collapsed")[:1]))
+            opened = self._screen_rect(target_shape("hover", *self._screen_wh(), 0, *self._sizes("hover")[1:]))
+            if closed.adjusted(-AVOID_MARGIN, -AVOID_MARGIN, AVOID_MARGIN, AVOID_MARGIN).contains(point.toPoint()):
+                self.hidden_for_target = True
+            elif opened.adjusted(-AVOID_MARGIN, -AVOID_MARGIN, AVOID_MARGIN, AVOID_MARGIN).contains(point.toPoint()):
+                self.no_hover = True
+            if (self.hidden_for_target or self.no_hover) and self.mode == "hover":
+                self.set_mode("collapsed")
+        self._apply_click_through()
+        self.update()
+
+    # opening and closing -----------------------------------------------------------------
+
+    def set_mode(self, mode: str) -> None:
+        self.mode = self.view.mode = mode
+        self.scroll = 0.0
+        self._inside_since = self._outside_since = None
+        self._apply_click_through()
+        self._relayout()
+
+    def poll(self) -> None:
+        """Every 60 ms: where the mouse is. A click-through window gets no mouse events of its own."""
+        now = self._clock()
+        inside = self.contains_global(QPointF(self._cursor()))
+        if self.mode == "collapsed":
+            if inside and not (self.hidden_for_target or self.no_hover):
+                self._inside_since = self._inside_since if self._inside_since is not None else now
+                if now - self._inside_since >= HOVER_DWELL_S:
+                    self.set_mode("hover")
+            else:
+                self._inside_since = None
+        elif self.mode == "hover":
+            if not inside:
+                self._outside_since = self._outside_since if self._outside_since is not None else now
+                if now - self._outside_since >= LEAVE_S:
+                    self.set_mode("collapsed")
+            else:
+                self._outside_since = None
+        if self.isVisible():
+            _win_topmost(self)
+
+    def global_click(self, pos: QPointF) -> bool:
+        """A click anywhere on the screen, from the app's click watcher. True when it was on the island,
+        so the session does not take it as her step. A click outside closes the pinned island."""
+        on = self.contains_global(pos)
+        if self.mode == "pinned" and not on:
+            self.set_mode("collapsed")
+        return on and not self.click_through
+
+    def contains_global(self, pos: QPointF) -> bool:
+        if self.hidden_for_target:
+            return False
+        local = QPointF(pos) - QPointF(self.geometry().topLeft())
+        return outline(self.morph.shape(), self.width() / 2).contains(local)
+
+    def own_rect(self) -> QRect:
+        """Logical screen rectangle the island covers now; the app greys it out of screenshots."""
+        return self._screen_rect(self.morph.shape())
+
+    # Qt events -----------------------------------------------------------------------------
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._apply_click_through()
+        self._poll.start()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() != Qt.LeftButton:
+            return
+        if self.mode == "hover":
+            self.set_mode("pinned")
+        elif self.mode == "pinned":
+            x = close_center(self.morph.shape(), self.width() / 2)
+            if math.dist((event.position().x(), event.position().y()), (x.x(), x.y())) <= 12:
+                self.set_mode("collapsed")
+
+    def wheelEvent(self, event):
+        if self.mode != "pinned":
+            return
+        self.scroll = _clamp(self.scroll - event.angleDelta().y() / 120 * SCROLL_STEP, 0, self.max_scroll())
+        self.view.scroll = self.scroll
+        self.update()
+
+    def max_scroll(self) -> float:
+        shape = self.morph.target
+        _, _, needed = self._sizes("pinned")
+        return max(0.0, needed - shape.h)
+
+    def paintEvent(self, _event):
+        if self.hidden_for_target:
+            return
+        now = self._clock()
+        v = self.view
+        v.since = now - self._state_at
+        v.scroll = self.scroll
+        v.layout_w = self.morph.target.w if self.mode != "collapsed" else 0.0
+        prog = self.morph.progress()
+        v.content_alpha = _clamp((prog - 0.55) / 0.45, 0, 1) if self.mode != "collapsed" else _clamp((prog - 0.4) / 0.6, 0, 1)
+        p = QPainter(self)
+        paint_island(p, self.morph.shape(), self.width() / 2, v, now, base=self.base)
+        p.end()
+
+    # animation -----------------------------------------------------------------------------
+
+    def tick(self) -> None:
+        now = self._clock()
+        dt, self._last = now - self._last, now
+        self.morph.step(dt)
+        if self.view.state == "done" and now - self._state_at >= DONE_HOLD_S:
+            self.set_state("idle")
+        if not self.morph.moving():
+            self._fit()
+        self.update()
+        if not self.morph.moving() and self.view.state == "idle":
+            self._frame.stop()  # nothing moves: no CPU spent while she works
+
+    def _relayout(self) -> None:
+        self.morph.set_target(self._target())
+        self._fit()
+        self._last = self._clock()
+        if not self._frame.isActive():
+            self._frame.start()
+        self.update()
+
+    def _sizes(self, mode: str) -> tuple[float, float, float]:
+        v = View(mode, self.view.state, self.view.task, self.view.title)
+        return content_size(v, *self._screen_wh())
+
+    def _target(self) -> Shape:
+        tw, w, h = self._sizes(self.mode)
+        return target_shape(self.mode, *self._screen_wh(), tw, w, h)
+
+    def _screen_wh(self) -> tuple[float, float]:
+        g = self._screen.geometry()
+        return float(g.width()), float(g.height())
+
+    def _screen_rect(self, shape: Shape) -> QRect:
+        g = self._screen.geometry()
+        return QRect(round(g.x() + g.width() / 2 - shape.w / 2), g.y() + TOP, round(shape.w), round(shape.full_h))
+
+    def _fit(self) -> None:
+        """Window = the larger of the shape now and the shape it is heading to, so it resizes twice per change."""
+        now, goal = self.morph.shape(), self.morph.target
+        w = math.ceil(max(now.w, goal.w)) + 4
+        h = math.ceil(TOP + max(now.full_h, goal.full_h)) + 4
+        g = self._screen.geometry()
+        rect = QRect(g.x() + (g.width() - w) // 2, g.y(), w, h)
+        if rect != self.geometry():
+            self.setGeometry(rect)
+            if self.isVisible():
+                self._apply_click_through()  # T7 (02/11): Windows forgot the click-through after a resize
+
+    def _apply_click_through(self) -> None:
+        self.click_through = self.mode == "collapsed" or self.hidden_for_target
+        self.setAttribute(Qt.WA_TransparentForMouseEvents, self.click_through)
+        if self.isVisible():
+            _win_harden(self, click_through=self.click_through)
 
 
 # --- previews for the founder -----------------------------------------------------------
@@ -544,13 +789,57 @@ def render_preview(out_dir: str, on: str | None = None, scale: float = 1.25) -> 
     return files
 
 
+def demo() -> None:
+    """The real window cycling through a made-up task; rest the mouse on it to open, click to pin."""
+    import signal
+
+    from PySide6.QtWidgets import QApplication
+
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    app = QApplication(sys.argv[:1])
+    isl = Island()
+    isl.show()
+    full = _demo_task(3)
+    script = [("listening", 0), ("listening", 1), ("thinking", 2), ("speaking", 3), ("turn", 3), ("loading", 3),
+              ("caution", 4), ("done", 5), ("idle", 5)]
+    step = [0]
+
+    def next_state():
+        state, k = script[step[0] % len(script)]
+        task = conv.Task()
+        words = full.question.split()
+        task.hear(" ".join(words[:4]) if k == 0 else full.question)
+        if k >= 2:
+            task.plan(["Xuất giáo án ra PDF", "Mở chat tiệm in trong Zalo", "Gửi file PDF"])
+        if k >= 3:
+            for m in full.messages[2:]:
+                task.say(m.text)
+        if k >= 4:
+            task.say("Bấm Yes thì file PDF cũ cùng tên sẽ bị thay bằng file mới.")
+        if k >= 5:
+            task.say("Xong phần một: đã có bản PDF. Giờ sang phần hai, mở Zalo.")
+        isl.set_state(state, task)
+        step[0] += 1
+
+    timer = QTimer()
+    timer.timeout.connect(next_state)
+    timer.start(2200)
+    next_state()
+    print("Island đang chạy ở giữa mép trên. Rê chuột lên ô để mở, bấm vào để ghim, bấm × để đóng. Ctrl+C để tắt.")
+    app.exec()
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(prog="python -m screentutor.island")
-    ap.add_argument("--preview", metavar="THƯ_MỤC", required=True)
+    ap.add_argument("--preview", metavar="THƯ_MỤC")
     ap.add_argument("--on", metavar="ẢNH", help="ảnh màn hình làm nền")
+    ap.add_argument("--demo", action="store_true")
     args = ap.parse_args(argv)
-    from PySide6.QtGui import QGuiApplication
-
+    if args.demo:
+        demo()
+        return
+    if not args.preview:
+        ap.error("cần --preview hoặc --demo")
     app = QGuiApplication.instance() or QGuiApplication(sys.argv[:1])
     for f in render_preview(args.preview, args.on):
         print(f"Đã lưu {f}")
