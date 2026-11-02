@@ -11,7 +11,7 @@ types. Each step is kept in tutor_runs/<time>-app/ (gitignored).
 
 What it is doing shows in the dynamic island at the top centre (A7, founder 02/11): its
 colour and icon, her words and the tutor's as a chat, and the sound bars of her voice and
-its own.
+its own. A big task shows its parts there too (B2).
 """
 
 from __future__ import annotations
@@ -132,6 +132,13 @@ class Feed:
             self.speaking = 0
             self._show()
 
+    def plan(self, parts: list[str], part: int) -> None:
+        """The parts of a big task and the one being done, from 1: the island's card and "Phần k/n"."""
+        if self.task is None:
+            self.task = conv.Task()
+        self.task.plan(parts, max(part - 1, 0))
+        self.island.task_changed()
+
     def ring(self, x: int, y: int, caution: bool) -> None:
         from PySide6.QtCore import QPointF
 
@@ -187,7 +194,7 @@ def main(argv=None) -> None:
     from .session import ClickBox, Session
     from .speak import Speaker
     from .state import format_vi, take_snapshot
-    from .still import wait_until_settled
+    from .still import wait_change, wait_until_settled
     from .tutor import Tutor
     from .ui import AskButton
 
@@ -363,6 +370,10 @@ def main(argv=None) -> None:
             history.add_step(rec, reply.say, reply.element, reply.step_done, reply.goal_done, reply.caution,
                              reply.latency_s)
 
+        def on_plan(plan, part):
+            post("plan", plan, part)
+            history.set_plan(rec, plan, part)
+
         def wait_click(since, timeout_s):
             click = clicks.wait(since, timeout_s, cancel=cancel, ignore=on_own_widget)
             if click is not None:
@@ -375,12 +386,13 @@ def main(argv=None) -> None:
             wait_click=wait_click,
             settle=lambda c: wait_until_settled(c.t, grab_own_masked)[0],
             wait_screen=lambda: wait_until_settled(time.monotonic(), grab_own_masked, grace_s=WAIT_GRACE_S)[0],
-            save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer)
+            wait_change=lambda timeout_s, min_change, stop: wait_change(grab_own_masked, timeout_s, min_change, stop),
+            save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer, on_plan=on_plan)
         steps = session.run(heard.text)
         history.finish(rec, outcome_of(steps, cancel.is_set()))
         post("recent", recent_items())
         for s in steps:
-            print(f"  bước {s.n}: {s.say} | trỏ {s.point_px} | sau cú bấm {s.settle or '—'} | "
+            print(f"  bước {s.n} ({s.target or 'click'}): {s.say} | trỏ {s.point_px} | sau cú bấm {s.settle or '—'} | "
                   f"bước xong {s.step_done} | việc xong {s.goal_done} | {s.latency_s:.1f} s", flush=True)
 
     def ask(mode: str) -> None:

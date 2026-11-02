@@ -15,6 +15,9 @@ school's message is the task), what the next step is (click, read a region, scro
 a box around what to read, and notes that carry a long message across screens. With
 task_rules=False the prompt is exactly the one T4 measured, for comparison.
 
+B2 (02/11): a later turn says what she did. After a click the sentence is the measured
+one; after a read step or a scroll it must not claim she clicked (founder's decision).
+
   python -m screentutor.tutor --image case_04.png --state-file state.txt "Mẹ bấm vào đâu?"
   py -m screentutor.tutor --live --delay 5 "Mẹ muốn mở file giáo án thì bấm vào đâu?"   # Windows
   py -m screentutor.tutor --live --delay 5 --show 15 "Bấm vào đâu để tạo file PDF?"     # + vòng chỉ trên màn hình
@@ -130,13 +133,19 @@ REPLY_SCHEMA = {
 # Later turns of the same task (step 4): the screenshot is taken after the user clicked and the screen settled.
 FOLLOW_BLOCK = (
     "\n\nĐây là lượt tiếp theo của cùng việc đó. Lượt trước, tutor đã nói: \"{last_say}\" "
-    "Sau đó người dùng đã bấm chuột; ảnh trên được chụp khi màn hình đã đứng yên.{changed}\n"
+    "{acted}{changed}\n"
     "- step_done: true nếu màn hình cho thấy bước vừa hướng dẫn đã làm xong.\n"
     "- goal_done: true nếu điều người dùng hỏi đã làm xong hẳn. Khi đó đặt found=false và trong say "
     "chỉ báo ngắn là đã xong (thay cho quy tắc found=false bên dưới).\n"
     "- Nếu bước vừa rồi chưa xong, chỉ lại chỗ cần bấm và nói nhẹ nhàng để người dùng thử lại.\n"
     "- Nếu bước đã xong mà việc chưa xong, chỉ bước tiếp theo."
 )
+FOLLOW_ACTED = {
+    "click": "Sau đó người dùng đã bấm chuột; ảnh trên được chụp khi màn hình đã đứng yên.",
+    "read": "Sau đó người dùng bấm chuột để báo đã đọc xong; ảnh trên được chụp khi màn hình đã đứng yên.",
+    "moved": "Sau đó màn hình đã thay đổi mà không có cú bấm nào, thường là người dùng đã kéo xuống; "
+             "ảnh trên được chụp sau đó.",
+}
 SCREEN_CHANGED = {True: " Chương trình đo được: sau cú bấm, màn hình đã thay đổi.",
                   False: " Chương trình đo được: sau cú bấm, màn hình không thay đổi.",
                   None: ""}
@@ -195,9 +204,11 @@ def build_prompt(question: str, state: str | None = None, task: bool = True, poi
 
 def build_follow_up_prompt(goal: str, last_say: str, state: str | None = None,
                            screen_changed: bool | None = None, task: bool = True,
-                           plan: list[str] | None = None, part: int | None = None, notes: str = "") -> str:
+                           plan: list[str] | None = None, part: int | None = None, notes: str = "",
+                           acted: str = "click") -> str:
+    changed = "" if acted == "moved" else SCREEN_CHANGED[screen_changed]  # no click to talk about
     text = (point_prompt(goal, state)
-            + FOLLOW_BLOCK.format(last_say=last_say, changed=SCREEN_CHANGED[screen_changed]) + SAY_RULES)
+            + FOLLOW_BLOCK.format(last_say=last_say, acted=FOLLOW_ACTED[acted], changed=changed) + SAY_RULES)
     return text + follow_task_rules(plan, part, notes) if task else text
 
 
@@ -211,8 +222,8 @@ def build_body(question: str, image_data_url: str, state: str | None = None,
 def build_follow_up_body(goal: str, last_say: str, image_data_url: str, state: str | None = None,
                          screen_changed: bool | None = None, model: str = MODEL,
                          effort: str | None = EFFORT, task: bool = True, plan: list[str] | None = None,
-                         part: int | None = None, notes: str = "") -> dict:
-    text = build_follow_up_prompt(goal, last_say, state, screen_changed, task, plan, part, notes)
+                         part: int | None = None, notes: str = "", acted: str = "click") -> dict:
+    text = build_follow_up_prompt(goal, last_say, state, screen_changed, task, plan, part, notes, acted)
     return _body(text, image_data_url, "tutor_follow_up", FOLLOW_SCHEMA_V2 if task else FOLLOW_SCHEMA, model, effort)
 
 
@@ -360,10 +371,10 @@ class Tutor:
 
     def follow_up(self, goal: str, last_say: str, image_data_url: str, state: str | None = None,
                   screen_changed: bool | None = None, plan: list[str] | None = None, part: int | None = None,
-                  notes: str = "") -> Reply:
-        """After the user clicked and the screen settled: was the step done, is the task done, what next."""
+                  notes: str = "", acted: str = "click") -> Reply:
+        """After the user acted and the screen settled: was the step done, is the task done, what next."""
         return self._call(build_follow_up_body(goal, last_say, image_data_url, state, screen_changed,
-                                               self.model, self.effort, self.task, plan, part, notes))
+                                               self.model, self.effort, self.task, plan, part, notes, acted))
 
     def _call(self, body: dict) -> Reply:
         """One answer. A sentence without Vietnamese diacritics (4 of 104 so far, T4-T8a) would be read

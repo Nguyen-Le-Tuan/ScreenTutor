@@ -76,6 +76,10 @@ class History:
         rec.steps.append(StepRecord(say, element, step_done, goal_done, caution, round(latency_s, 2), self._clock()))
         self.write(rec)
 
+    def set_plan(self, rec: TaskRecord, plan: list[str], part: int) -> None:
+        rec.plan, rec.part = list(plan), part
+        self.write(rec)
+
     def finish(self, rec: TaskRecord, outcome: str) -> None:
         rec.outcome = outcome if outcome in OUTCOMES else "stopped"
         rec.ended_at = self._clock()

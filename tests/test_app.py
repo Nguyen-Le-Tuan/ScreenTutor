@@ -125,6 +125,19 @@ def test_outcome_of_a_task():
     assert outcome_of([], False) == "stopped"
 
 
+def test_feed_shows_the_parts_of_a_big_task():
+    isl = FakeIsland()
+    feed = Feed(isl)
+    feed.listen()
+    feed.hear("Học cái trong Zalo")
+    feed.plan(["Đăng nhập", "Xem video", "Làm bài"], 0)   # no part yet: still the first
+    assert conv.plan_progress(feed.task) == "Phần 1/3" and isl.changed == 2
+    feed.plan(["Đăng nhập", "Xem video", "Làm bài"], 2)
+    assert conv.plan_progress(feed.task) == "Phần 2/3" and isl.changed == 3
+    assert len([m for m in feed.task.messages if m.plan]) == 1
+    Feed(FakeIsland()).plan(["A", "B"], 1)                  # no task yet: does not fail
+
+
 def test_feed_hands_the_recent_tasks_to_the_island():
     class Isl(FakeIsland):
         def update(self):

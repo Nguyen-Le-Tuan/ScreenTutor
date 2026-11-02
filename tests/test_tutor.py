@@ -66,6 +66,20 @@ def test_follow_up_keeps_the_pointing_text_and_adds_the_last_step():
     assert "Chương trình đo được" not in build_follow_up_prompt("x", last)  # no measurement claimed when unknown
 
 
+def test_a_later_turn_says_what_she_did_and_the_click_sentence_stays_as_measured():
+    click = "Sau đó người dùng đã bấm chuột; ảnh trên được chụp khi màn hình đã đứng yên."
+    measured = click + " Chương trình đo được: sau cú bấm, màn hình đã thay đổi.\n"
+    assert measured in build_follow_up_prompt("x", "Bạn bấm File.", screen_changed=True, task=False)
+    assert measured in build_follow_up_prompt("x", "Bạn bấm File.", screen_changed=True)
+    read = build_follow_up_prompt("x", "Bạn đọc đoạn này.", screen_changed=False, acted="read")
+    assert click not in read and "báo đã đọc xong" in read and "màn hình không thay đổi" in read
+    moved = build_follow_up_prompt("x", "Bạn kéo xuống nhé.", screen_changed=True, acted="moved")
+    assert "bấm chuột" not in moved.split("Lượt trước")[1].split("step_done")[0]
+    assert "cú bấm nào" in moved and "Chương trình đo được" not in moved
+    body = build_follow_up_body("x", "y", "data:image/png;base64,AAAA", screen_changed=True, acted="moved")
+    assert "cú bấm nào" in body["messages"][0]["content"][0]["text"]
+
+
 def test_follow_up_body_asks_for_step_and_goal():
     body = build_follow_up_body("Mẹ muốn xuất ra PDF", "Bạn bấm File.", "data:image/png;base64,AAAA")
     schema = body["response_format"]["json_schema"]["schema"]

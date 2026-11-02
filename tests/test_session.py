@@ -1,27 +1,35 @@
 from PIL import Image
 
 from screentutor.inputs import Click
-from screentutor.session import ClickBox, Session
+from screentutor.session import (MAX_PART_STEPS, MAX_PLAN_STEPS, READ_DONE, READ_WAIT_S, RING_FLIGHT_S, SCROLL_WAIT_S,
+                                 ClickBox, Session)
+from screentutor.still import BIG_CHANGE, CHANGE_MIN
 from screentutor.tutor import Reply
 
 
 class FakeTutor:
     def __init__(self, replies):
-        self.replies, self.calls = list(replies), []
+        self.replies, self.calls, self.turns = list(replies), [], []
 
     def ask(self, question, data_url, state, pointer=None):
         self.pointer = pointer
         self.calls.append(("ask", question, None, None))
         return self.replies.pop(0)
 
-    def follow_up(self, goal, last_say, data_url, state, changed):
+    def follow_up(self, goal, last_say, data_url, state, changed, plan=None, part=None, notes="", acted="click"):
         self.calls.append(("follow_up", goal, last_say, changed))
+        self.turns.append({"plan": plan, "part": part, "notes": notes, "acted": acted})
         return self.replies.pop(0)
 
 
-def _session(tutor, clicks, outcomes, waits=()):
+def _session(tutor, clicks, outcomes, waits=(), changes=()):
     log = []
-    clicks, outcomes, waits = list(clicks), list(outcomes), list(waits)
+    clicks, outcomes, waits, changes = list(clicks), list(outcomes), list(waits), list(changes)
+
+    def wait_change(timeout_s, min_change, stop):
+        log.append(("change", timeout_s, min_change))
+        return "stopped" if stop() else changes.pop(0)
+
     s = Session(
         tutor=tutor, look=lambda: (Image.new("RGB", (1920, 1080)), "state"), encode=lambda img: "data:",
         show=lambda x, y, caution=False: log.append(("show", x, y) if not caution else ("show!", x, y)),
@@ -29,7 +37,7 @@ def _session(tutor, clicks, outcomes, waits=()):
         say=lambda text: log.append(("say", text)),
         wait_click=lambda since, timeout: clicks.pop(0) if clicks else None,
         settle=lambda click: outcomes.pop(0), pause=lambda s: None,
-        wait_screen=lambda: (log.append(("wait",)), waits.pop(0))[1])
+        wait_screen=lambda: (log.append(("wait",)), waits.pop(0))[1], wait_change=wait_change)
     return s, log
 
 
@@ -175,3 +183,231 @@ def test_an_unfinished_task_ends_idle_and_an_error_says_so():
     s.status = seen.append
     s.run("Gửi file")
     assert seen == ["thinking", "error"]
+
+
+# B2: the plan, the parts, reading and scrolling
+
+def _go(say, part=None, plan=(), notes="", target="click", point=(100, 100), **kw):
+    return Reply(say=say, found=True, point=point, part=part, plan=list(plan), notes=notes, target=target,
+                 step_done=True, goal_done=False, **kw)
+
+
+CLICK = Click(1.0, 1, 1, "left")
+
+
+def test_says_the_plan_on_the_first_turn_and_walks_through_the_parts():
+    plans, seen = [], []
+    tutor = FakeTutor([
+        Reply(say="Việc này có hai phần. Bạn bấm File.", found=True, point=(15, 74), mode="guide", target="click",
+              plan=["Xuất PDF", "Gửi cho tiệm in"]),
+        _go("Bạn bấm Export.", part=1),
+        _go("Xong phần một. Bạn mở Zalo.", part=2),
+        Reply(say="Xong rồi bạn nhé.", found=False, target="none", part=2, step_done=True, goal_done=True)])
+    s, log = _session(tutor, [CLICK, CLICK, CLICK], ["settled"] * 3)
+    s.on_plan = lambda plan, part: plans.append((list(plan), part))
+    s.status = seen.append
+    steps = s.run("Xuất PDF rồi gửi tiệm in")
+    assert plans == [(["Xuất PDF", "Gửi cho tiệm in"], 1), (["Xuất PDF", "Gửi cho tiệm in"], 2)]  # only when it changes
+    assert s.mode == "guide" and steps[-1].goal_done and seen[-1] == "done"
+    assert [t["part"] for t in tutor.turns] == [1, 1, 2]
+    assert all(t["plan"] == ["Xuất PDF", "Gửi cho tiệm in"] and t["acted"] == "click" for t in tutor.turns)
+
+
+def test_a_new_plan_or_new_notes_replace_the_old_ones_and_empty_ones_do_not():
+    tutor = FakeTutor([
+        Reply(say="Bạn bấm A.", found=True, point=(1, 1), plan=["A", "B"], target="click", notes="Ghi chú một."),
+        _go("Bạn bấm B.", part=2),
+        _go("Bạn bấm C.", part=3, plan=["A", "B", "C"], notes="Ghi chú hai."),
+        _go("Bạn bấm D.", part=9)])  # a part past the end stays on the last one
+    s, _ = _session(tutor, [CLICK] * 3, ["settled"] * 3)
+    s.run("x")
+    assert [(t["plan"], t["part"], t["notes"]) for t in tutor.turns] == [
+        (["A", "B"], 1, "Ghi chú một."), (["A", "B"], 2, "Ghi chú một."), (["A", "B", "C"], 3, "Ghi chú hai.")]
+    assert s.part == 3
+
+
+def test_a_read_step_shows_the_box_and_adds_how_to_say_she_is_done():
+    boxes = []
+    tutor = FakeTutor([
+        Reply(say="Bạn đọc tin này nhé.", found=True, point=(500, 500), target="read", box=(250, 250, 750, 750)),
+        Reply(say="Xong rồi.", found=False, target="none", step_done=True, goal_done=True)])
+    s, log = _session(tutor, [CLICK], ["settled"])
+    s.show_box = lambda box, caution: boxes.append((box, caution))
+    s.run("Đọc tin này")
+    assert boxes == [((480, 270, 1440, 810), False)] and not [x for x in log if x[0] == "show"]
+    assert ("say", f"Bạn đọc tin này nhé. {READ_DONE}") in log
+    assert ("change", READ_WAIT_S, BIG_CHANGE) in log
+    assert tutor.calls[1][2] == "Bạn đọc tin này nhé." and tutor.turns[0]["acted"] == "read"  # her words stay the model's
+
+
+def test_until_the_real_box_exists_a_read_step_draws_a_ring_at_its_centre():
+    tutor = FakeTutor([Reply(say="Bạn đọc tin này.", found=True, point=(500, 500), target="read",
+                             box=(250, 250, 750, 750))])
+    s, log = _session(tutor, [], [], changes=["unchanged"])
+    s.run("Đọc tin này")
+    assert ("show", 960, 540) in log and log[-1] == ("hide",)
+
+
+def test_a_click_ends_the_read_and_a_big_change_that_stood_still_ends_it_too():
+    read = Reply(say="Bạn đọc tin này.", found=True, point=(500, 500), target="read", box=(250, 250, 750, 750))
+    done = Reply(say="Xong.", found=False, target="none", step_done=True, goal_done=True)
+    tutor = FakeTutor([read, done])
+    s, _ = _session(tutor, [CLICK], ["unchanged"])
+    s.run("x")
+    assert tutor.turns[0]["acted"] == "read" and tutor.calls[1][3] is False   # she clicked, the screen stayed
+    tutor = FakeTutor([read, done])
+    s, _ = _session(tutor, [], [], changes=["settled"])
+    s.run("x")
+    assert tutor.turns[0]["acted"] == "moved" and tutor.calls[1][3] is True    # she scrolled on by herself
+
+
+def test_nothing_happening_ends_a_read_or_a_scroll_quietly():
+    for reply in (Reply(say="Bạn đọc tin này.", found=True, point=(500, 500), target="read", box=(250, 250, 750, 750)),
+                  Reply(say="Bạn kéo xuống nhé.", found=True, point=(500, 500), target="scroll")):
+        seen = []
+        tutor = FakeTutor([reply])
+        s, log = _session(tutor, [], [], changes=["unchanged"])
+        s.status = seen.append
+        s.run("x")
+        assert len(tutor.calls) == 1 and log[-1] == ("hide",) and seen[-1] == "idle"
+
+
+def test_scroll_waits_for_the_screen_and_the_notes_go_to_the_next_turn():
+    tutor = FakeTutor([
+        Reply(say="Bạn kéo xuống nhé.", found=True, point=(500, 500), mode="guide", target="scroll",
+              notes="Bước một đăng nhập."),
+        Reply(say="Xong rồi.", found=False, target="none", step_done=True, goal_done=True)])
+    s, log = _session(tutor, [], [], changes=["settled"])
+    s.run("Học cái này")
+    assert ("change", SCROLL_WAIT_S, CHANGE_MIN) in log
+    assert tutor.turns == [{"plan": None, "part": None, "notes": "Bước một đăng nhập.", "acted": "moved"}]
+    assert tutor.calls[1][3] is True
+
+
+def test_the_scroll_point_goes_to_its_own_callback_when_there_is_one():
+    points = []
+    tutor = FakeTutor([Reply(say="Bạn kéo xuống nhé.", found=True, point=(500, 500), target="scroll")])
+    s, log = _session(tutor, [], [], changes=["unchanged"])
+    s.show_scroll = points.append
+    s.run("x")
+    assert points == [(960, 540)] and not [x for x in log if x[0] == "show"]
+
+
+def test_nothing_watches_the_screen_until_the_ring_has_landed():
+    # measured 02/11: the ring's flight alone crosses CHANGE_MIN, so the scroll step would end by itself
+    order = []
+    tutor = FakeTutor([Reply(say="Bạn kéo xuống nhé.", found=True, point=(500, 500), target="scroll")])
+    s, _ = _session(tutor, [], [])
+    s.pause = lambda seconds: order.append(seconds)
+    s.wait_change = lambda timeout_s, min_change, stop: (order.append("watch"), "unchanged")[1]
+    s.run("x")
+    assert order == [RING_FLIGHT_S, "watch"]
+
+
+def test_the_plan_is_made_after_reading_to_the_end():
+    plans = []
+    tutor = FakeTutor([
+        Reply(say="Bạn kéo xuống nhé.", found=True, point=(500, 900), mode="guide", target="scroll", notes="Phần đầu."),
+        _go("Bạn kéo tiếp nhé.", part=0, notes="Phần đầu. Phần giữa.", target="scroll"),
+        _go("Việc này có hai phần. Bạn bấm Đăng nhập.", part=1, plan=["Đăng nhập", "Làm bài"]),
+        Reply(say="Xong rồi.", found=False, target="none", part=2, step_done=True, goal_done=True)])
+    s, _ = _session(tutor, [CLICK], ["settled"], changes=["settled", "settled"])
+    s.on_plan = lambda plan, part: plans.append((list(plan), part))
+    s.run("Học cái trong Zalo")
+    assert plans == [(["Đăng nhập", "Làm bài"], 1), (["Đăng nhập", "Làm bài"], 2)]
+    assert [t["plan"] for t in tutor.turns] == [None, None, ["Đăng nhập", "Làm bài"]]
+    assert [t["notes"] for t in tutor.turns] == ["Phần đầu.", "Phần đầu. Phần giữa.", "Phần đầu. Phần giữa."]
+
+
+def test_a_task_with_a_plan_stops_at_30_steps():
+    parts = ["A", "B", "C", "D", "E", "F"]
+    first = Reply(say="Bạn bấm.", found=True, point=(1, 1), plan=parts, target="click")
+    tutor = FakeTutor([first] + [_go("Bạn bấm.", part=min(i // 6 + 1, 6)) for i in range(1, 60)])
+    s, _ = _session(tutor, [CLICK] * 60, ["settled"] * 60)
+    assert len(s.run("x")) == MAX_PLAN_STEPS == 30
+
+
+def test_one_part_stops_at_12_steps_and_a_new_part_starts_counting_again():
+    first = Reply(say="Bạn bấm.", found=True, point=(1, 1), plan=["A", "B"], target="click")
+    tutor = FakeTutor([first] + [_go("Bạn bấm.", part=1) for _ in range(40)])
+    s, _ = _session(tutor, [CLICK] * 40, ["settled"] * 40)
+    assert len(s.run("x")) == MAX_PART_STEPS == 12
+    tutor = FakeTutor([first] + [_go("Bạn bấm.", part=1) for _ in range(10)] + [_go("Bạn bấm.", part=2) for _ in range(40)])
+    s, _ = _session(tutor, [CLICK] * 40, ["settled"] * 40)
+    assert len(s.run("x")) == 11 + 12
+
+
+def test_a_task_without_a_plan_keeps_the_old_limit():
+    tutor = FakeTutor([Reply(say="Bạn bấm.", found=True, point=(1, 1), target="click")]
+                      + [_go("Bạn bấm.") for _ in range(40)])
+    s, _ = _session(tutor, [CLICK] * 40, ["settled"] * 40)
+    assert len(s.run("x")) == 12
+
+
+def test_a_task_that_ends_exactly_at_the_limit_still_says_so():
+    tutor = FakeTutor([Reply(say="Bạn bấm.", found=True, point=(1, 1), target="click")]
+                      + [_go("Bạn bấm.") for _ in range(11)]
+                      + [Reply(say="Xong rồi bạn nhé.", target="none", step_done=True, goal_done=True)])
+    s, log = _session(tutor, [CLICK] * 12, ["settled"] * 12)
+    steps = s.run("x")
+    assert steps[-1].goal_done and log[-1] == ("say", "Xong rồi bạn nhé.")
+
+
+def test_a_video_is_not_a_failure():
+    seen = []
+    tutor = FakeTutor([
+        Reply(say="Bạn bấm nút phát video.", found=True, point=(500, 500), target="click"),
+        _go("Bạn xem hết video nhé.", target="read", box=(100, 100, 900, 900), point=(500, 500)),
+        _go("Bạn kéo xuống nhé.", target="scroll", point=(500, 500)),
+        Reply(say="Xong rồi.", found=False, target="none", step_done=True, goal_done=True)])
+    s, _ = _session(tutor, [CLICK], ["timeout"], changes=["timeout", "timeout"])
+    s.status = seen.append
+    steps = s.run("Xem video bài giảng")
+    assert "error" not in seen and seen[-1] == "done" and all(st.error is None for st in steps)
+    assert [st.settle for st in steps] == [None, "timeout", "timeout", "timeout"]
+    assert [c[3] for c in tutor.calls[1:]] == [True, True, True]  # the next turn looks at it all the same
+
+
+def test_a_new_question_cancels_a_read_or_a_scroll_without_another_call():
+    import threading
+
+    for reply in (Reply(say="Bạn đọc.", found=True, point=(500, 500), target="read", box=(250, 250, 750, 750)),
+                  Reply(say="Bạn kéo.", found=True, point=(500, 500), target="scroll")):
+        cancel = threading.Event()
+        tutor = FakeTutor([reply])
+        s, log = _session(tutor, [], [])
+        s.cancel = cancel
+        s.wait_change = lambda timeout_s, min_change, stop: (cancel.set(), "stopped" if stop() else "?")[1]
+        s.run("x")
+        assert len(tutor.calls) == 1 and log[-1] == ("hide",)
+
+
+def test_the_states_sent_to_the_island():
+    seen = []
+    tutor = FakeTutor([
+        Reply(say="Bạn kéo xuống.", found=True, point=(500, 500), target="scroll"),
+        _go("Bạn đọc tin này.", target="read", box=(250, 250, 750, 750), point=(500, 500)),
+        _go("Bấm Gửi thì tin sẽ đi.", caution=True),
+        Reply(say="Trang đang tải.", target="none", step_done=True, goal_done=False),
+        Reply(say="Xong rồi.", found=False, target="none", step_done=True, goal_done=True)])
+    s, _ = _session(tutor, [CLICK, CLICK], ["settled", "settled"], waits=["settled"], changes=["settled"])
+    s.status = seen.append
+    s.run("x")
+    assert seen == ["thinking", "loading", "thinking", "turn", "thinking", "caution", "thinking", "loading", "thinking",
+                    "done"]
+
+
+def test_a_v1_answer_without_a_target_walks_as_before():
+    tutor = FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(15, 74)),
+                       Reply(say="Xong.", step_done=True, goal_done=True)])
+    s, log = _session(tutor, [CLICK], ["settled"])
+    s.run("x")
+    assert log[0] == ("show", 29, 80) and tutor.turns[0]["acted"] == "click"
+
+
+def test_without_a_screen_watcher_a_read_or_scroll_step_falls_back_to_the_ring():
+    tutor = FakeTutor([Reply(say="Bạn kéo xuống.", found=True, point=(500, 500), target="scroll")])
+    s, log = _session(tutor, [], [])
+    s.wait_change = None
+    s.run("x")
+    assert log[0] == ("show", 960, 540) and log[-1] == ("hide",)

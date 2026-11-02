@@ -81,3 +81,11 @@ def test_when_label():
 
 def test_history_lives_next_to_the_app():
     assert history.DIR.name == "history" and history.DIR.parent == history.ROOT
+
+
+def test_the_plan_and_the_part_are_kept(tmp_path):
+    h = History(tmp_path)
+    rec = h.start("Học cái trong Zalo")
+    h.set_plan(rec, ["Đăng nhập", "Xem video", "Làm bài"], 2)
+    back = h.tasks()[0]
+    assert back.plan == ["Đăng nhập", "Xem video", "Làm bài"] and back.part == 2
