@@ -41,6 +41,9 @@ HOVER_H = (130, 220)
 HOVER_DEPTH = 16             # the middle of the lower edge hangs this much lower than the sides
 PINNED_W = 560
 PINNED_H_MIN, PINNED_MAX_SHARE = 200, 0.55
+FOOTER_H = 72               # pinned: her earlier tasks, the colours, the button switch, clear history (A9)
+SWATCHES = ["#000000", "#121C3A", "#083028", "#30143C", "#2C2C32"]  # black, navy, green, plum, graphite
+CONFIRM_S = 4.0             # "Xoá lịch sử" asks again; a second click within this long deletes
 ALPHA_CLOSED = 0.8           # founder, 02/11: 20% of the app below shows through
 STIFFNESS, DAMPING = 190.0, 21.0   # damping ratio 0.76: settles in about 0.35 s with a small bounce
 ALPHA_RATE = 10.0
@@ -285,6 +288,10 @@ class View:
     content_alpha: float = 1.0
     layout_w: float = 0.0     # the width the open island is heading to, so text does not re-wrap while it grows
     scroll: float = 0.0       # pinned: how far the talk has been scrolled up
+    recent: tuple[tuple[str, str], ...] = ()   # pinned: (when, title) of her latest earlier tasks
+    show_button: bool = True
+    color: str = "#000000"
+    confirm_clear: bool = False
 
 
 def header_rect(shape: Shape, cx: float, top: float = TOP) -> QRectF:
@@ -318,7 +325,7 @@ def content_size(view: View, screen_w: float, screen_h: float) -> tuple[float, f
         return 0.0, w, HEADER_H + h + 14
     w = min(PINNED_W, screen_w - 48)
     _, h = conv.layout(messages, w - 2 * SIDE, measure, current=True)
-    return 0.0, w, HEADER_H + 10 + h + 16
+    return 0.0, w, HEADER_H + 10 + h + 16 + FOOTER_H
 
 
 def paint_island(p: QPainter, shape: Shape, cx: float, view: View, t: float,
@@ -374,11 +381,61 @@ def paint_island(p: QPainter, shape: Shape, cx: float, view: View, t: float,
             bubbles, _ = conv.newest_that_fit(bubbles, shape.h - HEADER_H - 14, keep_first=True)
         y0 = top + 6 + HEADER_H + (4 if view.mode == "hover" else 10)
         if view.mode == "pinned":  # the talk scrolls under a fixed header
-            p.setClipRect(QRectF(x0, y0 - 4, shape.w, shape.h - (y0 - 4 - top)), Qt.IntersectClip)
+            p.setClipRect(QRectF(x0, y0 - 4, shape.w, shape.h - FOOTER_H - (y0 - 4 - top)), Qt.IntersectClip)
             y0 -= view.scroll
         for b in bubbles:
             paint_bubble(p, b, bx0 + SIDE, y0, color)
+        if view.mode == "pinned":
+            p.setClipPath(path)
+            paint_footer(p, shape, cx, view, top)
     p.restore()
+
+
+def footer_layout(shape: Shape, cx: float, top: float = TOP) -> dict[str, QRectF]:
+    """Where the parts of the pinned island's bottom row sit; painting and clicks share it."""
+    x0, y0 = cx - shape.w / 2 + SIDE, top + shape.h - FOOTER_H
+    out = {"line": QRectF(x0, y0, shape.w - 2 * SIDE, 1), "recent": QRectF(x0, y0 + 8, shape.w - 2 * SIDE, 20)}
+    y = y0 + 38
+    for i in range(len(SWATCHES)):
+        out[f"swatch{i}"] = QRectF(x0 + i * 26, y, 18, 18)
+    out["button"] = QRectF(x0 + len(SWATCHES) * 26 + 14, y - 3, 128, 24)
+    out["clear"] = QRectF(cx + shape.w / 2 - SIDE - 168, y - 3, 168, 24)
+    return out
+
+
+def paint_footer(p: QPainter, shape: Shape, cx: float, view: View, top: float = TOP) -> None:
+    box = footer_layout(shape, cx, top)
+    p.setPen(QPen(_with_alpha(TEXT, 0.12), 1))
+    p.drawLine(box["line"].topLeft(), box["line"].topRight())
+    p.setFont(font(LABEL_PX))
+    dim = _with_alpha(TEXT, 0.6)
+    p.setPen(dim)
+    items = " · ".join(f"{title} ({when})" for when, title in view.recent) or "chưa có"
+    p.drawText(box["recent"], Qt.AlignVCenter | Qt.AlignLeft,
+               QFontMetrics(font(LABEL_PX)).elidedText(f"Việc trước: {items}", Qt.ElideRight, int(box["recent"].width())))
+    for i, hexcolor in enumerate(SWATCHES):  # the island's colour (founder, 02/11: last, but there)
+        r = box[f"swatch{i}"]
+        chosen = hexcolor.lower() == view.color.lower()
+        p.setPen(QPen(QColor(255, 255, 255) if chosen else _with_alpha(TEXT, 0.35), 2 if chosen else 1.2))
+        p.setBrush(QColor(hexcolor) if hexcolor != "#000000" else QColor(20, 20, 22))
+        p.drawEllipse(r.center(), 9, 9)
+    b = box["button"]  # a small switch: the round button on or off
+    track = QRectF(b.left(), b.center().y() - 8, 30, 16)
+    on = view.show_button
+    p.setPen(Qt.NoPen)
+    p.setBrush(STYLE["done"][1] if on else _with_alpha(TEXT, 0.25))
+    p.drawRoundedRect(track, 8, 8)
+    p.setBrush(QColor(255, 255, 255))
+    p.drawEllipse(QPointF(track.right() - 8 if on else track.left() + 8, track.center().y()), 6, 6)
+    p.setPen(dim)
+    p.drawText(QRectF(track.right() + 8, b.top(), b.width() - 38, b.height()), Qt.AlignVCenter | Qt.AlignLeft, "Nút tròn")
+    c = box["clear"]
+    red = STYLE["turn"][1]
+    p.setPen(QPen(red if view.confirm_clear else _with_alpha(TEXT, 0.3), 1.2))
+    p.setBrush(_with_alpha(red, 0.18) if view.confirm_clear else Qt.NoBrush)
+    p.drawRoundedRect(c, 12, 12)
+    p.setPen(red if view.confirm_clear else dim)
+    p.drawText(c, Qt.AlignCenter, "Bấm lần nữa để xoá" if view.confirm_clear else "Xoá lịch sử")
 
 
 def _bubble_path(r: QRectF, tail_right: bool) -> QPainterPath:
@@ -467,6 +524,12 @@ class Island(QWidget):
         self._avoid: QPointF | None = None
         self.hidden_for_target = False     # the ring points under the closed island: get out of the way
         self.level_source = None           # A6: a callable giving the mic or voice level 0..1 (Meter.value)
+        # A9: the pinned island's bottom row. The app sets these and saves what she picks.
+        self.recent: list[tuple[str, str]] = []
+        self.show_button = True
+        self.color = "#000000"
+        self.on_color = self.on_button_toggle = self.on_clear = None
+        self._confirm_until = 0.0
         # A7: read from worker threads, so plain tuples swapped whole (logical x, y, w, h), or None
         self.cover: tuple[int, int, int, int] | None = None        # what to grey out for the stillness check
         self.takes_clicks: tuple[int, int, int, int] | None = None  # where a click lands on the island, not her app
@@ -584,9 +647,35 @@ class Island(QWidget):
         if self.mode == "hover":
             self.set_mode("pinned")
         elif self.mode == "pinned":
+            pos = event.position()
             x = close_center(self.morph.shape(), self.width() / 2)
-            if math.dist((event.position().x(), event.position().y()), (x.x(), x.y())) <= 12:
+            if math.dist((pos.x(), pos.y()), (x.x(), x.y())) <= 12:
                 self.set_mode("collapsed")
+                return
+            self.footer_click(pos)
+
+    def footer_click(self, pos: QPointF) -> None:
+        box = footer_layout(self.morph.shape(), self.width() / 2)
+        for i, hexcolor in enumerate(SWATCHES):
+            if box[f"swatch{i}"].adjusted(-3, -3, 3, 3).contains(pos):
+                self.color, self.base = hexcolor, QColor(hexcolor)
+                if self.on_color:
+                    self.on_color(hexcolor)
+        if box["button"].contains(pos):
+            self.show_button = not self.show_button
+            if self.on_button_toggle:
+                self.on_button_toggle(self.show_button)
+        if box["clear"].contains(pos):
+            now = self._clock()
+            if now <= self._confirm_until:  # the second click: delete
+                self._confirm_until = 0.0
+                self.recent = []
+                if self.on_clear:
+                    self.on_clear()
+            else:
+                self._confirm_until = now + CONFIRM_S
+                QTimer.singleShot(int(CONFIRM_S * 1000) + 50, self.update)  # the question goes away by itself
+        self.update()
 
     def wheelEvent(self, event):
         if self.mode != "pinned":
@@ -607,6 +696,8 @@ class Island(QWidget):
         v = self.view
         v.since = now - self._state_at
         v.scroll = self.scroll
+        v.recent, v.show_button, v.color = tuple(self.recent), self.show_button, self.color
+        v.confirm_clear = now <= self._confirm_until
         v.layout_w = self.morph.target.w if self.mode != "collapsed" else 0.0
         prog = self.morph.progress()
         v.content_alpha = _clamp((prog - 0.55) / 0.45, 0, 1) if self.mode != "collapsed" else _clamp((prog - 0.4) / 0.6, 0, 1)

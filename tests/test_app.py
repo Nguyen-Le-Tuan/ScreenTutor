@@ -100,3 +100,25 @@ def test_boxes_turn_physical_and_catch_clicks():
     assert to_physical(None, 1.25) is None
     assert inside((125, 12, 175, 38), 150, 20) and not inside((125, 12, 175, 38), 200, 20)
     assert not inside(None, 1, 1)
+
+
+def test_outcome_of_a_task():
+    from screentutor.app import outcome_of
+    from screentutor.session import Step
+
+    done = [Step(1, "File", (1, 1)), Step(2, "Xong", None, True, True)]
+    assert outcome_of(done, cancelled=False) == "done"
+    assert outcome_of(done, cancelled=True) == "interrupted"  # a new question cut it off
+    assert outcome_of([Step(1, "", None, error="timeout")], False) == "error"
+    assert outcome_of([Step(1, "Bạn mở Zalo trước nhé.", None)], False) == "stopped"
+    assert outcome_of([], False) == "stopped"
+
+
+def test_feed_hands_the_recent_tasks_to_the_island():
+    class Isl(FakeIsland):
+        def update(self):
+            self.updated = True
+
+    isl = Isl()
+    Feed(isl).recent([("hôm qua", "Mở link bảng tính")])
+    assert isl.recent == [("hôm qua", "Mở link bảng tính")] and isl.updated

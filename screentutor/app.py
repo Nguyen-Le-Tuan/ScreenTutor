@@ -68,6 +68,17 @@ def inside(box: tuple[int, int, int, int] | None, x: int, y: int) -> bool:
     return box is not None and box[0] <= x <= box[2] and box[1] <= y <= box[3]
 
 
+def outcome_of(steps, cancelled: bool) -> str:
+    """How a task ended, for the history: a new question cut it off, the tutor failed, or it is done."""
+    if cancelled:
+        return "interrupted"
+    if steps and steps[-1].error:
+        return "error"
+    if steps and steps[-1].goal_done:
+        return "done"
+    return "stopped"
+
+
 class Feed:
     """What the tutor does, turned into what the island and the button show (A7). Qt thread only.
 
@@ -121,6 +132,11 @@ class Feed:
     def unring(self) -> None:
         self.island.set_avoid(None)
 
+    def recent(self, items: list[tuple[str, str]]) -> None:
+        """Her latest earlier tasks, (when, title), for the pinned island's bottom row."""
+        self.island.recent = list(items)
+        self.island.update()
+
     def collapse(self) -> None:
         """A new question: a pinned island closes so it does not cover what she asks about."""
         if self.island.mode != "collapsed":
@@ -155,6 +171,7 @@ def main(argv=None) -> None:
 
     from . import screen
     from . import settings as settings_mod
+    from .history import History, when_label
     from .inputs import Click, Hold, watch
     from .island import Island
     from .listen import Mic, _api_key, listen
@@ -178,6 +195,7 @@ def main(argv=None) -> None:
 
     prefs = settings_mod.load()
     island.base = colour(prefs.island_color)
+    island.color, island.show_button = prefs.island_color, prefs.show_button
     button.setVisible(prefs.show_button)
     island.show()
 
@@ -189,6 +207,13 @@ def main(argv=None) -> None:
     out = Path("tutor_runs") / (datetime.now().strftime("%Y%m%d-%H%M%S") + "-app")
     out.mkdir(parents=True, exist_ok=True)
     feed = Feed(island, button, speaker.meter, dpr)
+    history = History()  # A8: C:\ScreenTutor\history, one file per task, no pictures or sound
+
+    def recent_items() -> list[tuple[str, str]]:
+        now = time.time()
+        return [(when_label(r.started_at, now), r.title) for r in history.recent(2)]
+
+    feed.recent(recent_items())
 
     class Bridge(QObject):  # worker threads talk to the widgets only through these
         point = Signal(int, int, bool)
@@ -218,7 +243,28 @@ def main(argv=None) -> None:
             button.setVisible(new.show_button)
             button_box[0] = physical(button)
             island.base = colour(new.island_color)
+            island.color, island.show_button = new.island_color, new.show_button
             island.update()
+
+    def save_prefs(**change) -> None:
+        """What she picked in the pinned island goes into settings.json, as if typed there."""
+        current = settings_mod.load()
+        for k, v in change.items():
+            setattr(current, k, v)
+        settings_mod.save(current)
+
+    def on_button_toggle(show: bool) -> None:
+        save_prefs(show_button=show)
+        button.setVisible(show)
+        button_box[0] = physical(button)
+
+    def on_clear() -> None:
+        n = history.clear()
+        print(f"Đã xoá {n} việc trong lịch sử.", flush=True)
+
+    island.on_color = lambda c: save_prefs(island_color=c)
+    island.on_button_toggle = on_button_toggle
+    island.on_clear = on_clear
 
     prefs_timer = QTimer()
     prefs_timer.timeout.connect(reload_prefs)
@@ -253,12 +299,12 @@ def main(argv=None) -> None:
         token = said[0]
 
         def run():
-            post("say_start", text, token)
             try:
                 speaker.speak(text)
             finally:
                 post("say_end", token)
         speaker.stop()
+        post("say_start", text, token)  # before the session's next state, so the island never flickers
         threading.Thread(target=run, daemon=True).start()
 
     def save(n, img, reply):
@@ -298,6 +344,12 @@ def main(argv=None) -> None:
             say(NOT_HEARD)
             return
         post("hear", heard.text)
+        rec = history.start(heard.text)
+
+        def save_step(n, img, reply):
+            save(n, img, reply)
+            history.add_step(rec, reply.say, reply.element, reply.step_done, reply.goal_done, reply.caution,
+                             reply.latency_s)
 
         def wait_click(since, timeout_s):
             click = clicks.wait(since, timeout_s, cancel=cancel, ignore=on_own_widget)
@@ -311,8 +363,10 @@ def main(argv=None) -> None:
             wait_click=wait_click,
             settle=lambda c: wait_until_settled(c.t, grab_own_masked)[0],
             wait_screen=lambda: wait_until_settled(time.monotonic(), grab_own_masked, grace_s=WAIT_GRACE_S)[0],
-            save=save, status=lambda st: post("status", st), cancel=cancel)
+            save=save_step, status=lambda st: post("status", st), cancel=cancel)
         steps = session.run(heard.text)
+        history.finish(rec, outcome_of(steps, cancel.is_set()))
+        post("recent", recent_items())
         for s in steps:
             print(f"  bước {s.n}: {s.say} | trỏ {s.point_px} | sau cú bấm {s.settle or '—'} | "
                   f"bước xong {s.step_done} | việc xong {s.goal_done} | {s.latency_s:.1f} s", flush=True)

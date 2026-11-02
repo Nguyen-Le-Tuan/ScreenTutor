@@ -205,3 +205,50 @@ def test_a_pinned_island_over_the_target_closes_and_an_error_rests():
     isl.set_state("error")
     settle(isl, fake, island.DONE_HOLD_S + 0.5)
     assert isl.view.state == "idle"
+
+
+def _pinned_with_footer():
+    isl, fake = make()
+    isl.recent = [("hôm qua", "Mở link bảng tính của tổ")]
+    picked, toggled, cleared = [], [], []
+    isl.on_color, isl.on_button_toggle, isl.on_clear = picked.append, toggled.append, lambda: cleared.append(1)
+    isl.set_mode("pinned")
+    settle(isl, fake)
+    box = island.footer_layout(isl.morph.shape(), isl.width() / 2)
+    return isl, fake, box, picked, toggled, cleared
+
+
+def test_pinned_footer_picks_a_colour_and_switches_the_button():
+    isl, fake, box, picked, toggled, _ = _pinned_with_footer()
+    click(isl, box["swatch1"].center())
+    assert picked == [island.SWATCHES[1]] and isl.color == island.SWATCHES[1]
+    assert isl.base.name().lower() == island.SWATCHES[1].lower()
+    click(isl, box["button"].center())
+    click(isl, box["button"].center())
+    assert toggled == [False, True] and isl.show_button
+    assert isl.mode == "pinned"  # footer clicks keep it open
+
+
+def test_clearing_history_needs_a_second_click_soon_after():
+    isl, fake, box, _, _, cleared = _pinned_with_footer()
+    click(isl, box["clear"].center())
+    assert cleared == [] and isl.recent
+    fake.t += island.CONFIRM_S + 1  # too late: it asks again
+    click(isl, box["clear"].center())
+    assert cleared == []
+    fake.t += 1
+    click(isl, box["clear"].center())
+    assert cleared == [1] and isl.recent == []
+
+
+def test_footer_fits_inside_the_pinned_shape_and_paints():
+    isl, fake, box, *_ = _pinned_with_footer()
+    shape = isl.morph.shape()
+    path = island.outline(shape, isl.width() / 2)
+    for name in ("recent", "swatch0", "swatch4", "button", "clear"):
+        assert path.contains(box[name].center()), name
+    assert not box["button"].intersects(box["clear"])
+    img = isl.grab().toImage()
+    sw = box["swatch1"].center()
+    c = img.pixelColor(round(sw.x()), round(sw.y()))
+    assert c.blue() > c.red()  # the navy swatch is drawn
