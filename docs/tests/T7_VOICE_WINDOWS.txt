@@ -23,29 +23,34 @@ Luật chấm (ghi trước khi chạy):
 
 A. CHUẨN BỊ THÊM (một lần)
 --------------------------
-[ ] A5. Cài thêm thư viện giọng nói (vieneu, sounddevice, websockets):
+[x] A5. Cài thêm thư viện giọng nói (vieneu, sounddevice, websockets):
               py -m pip install -r requirements.txt
-[ ] A6. Lần đầu chạy giọng đọc sẽ tải model khoảng 250 MB vào tts_eval\models. Làm khi mạng ổn.
-[ ] A7. Cho phép micro: Settings > Privacy & security > Microphone > bật "Let desktop apps
+        Kết quả: cài đặt thành công; không có lỗi, typing-extensions được cập nhật lên 4.16.0.
+[x] A6. Lần đầu chạy giọng đọc sẽ tải model khoảng 250 MB vào tts_eval\models. Làm khi mạng ổn.
+        Kết quả: model đã tải và phát được âm thanh qua loa laptop.
+[x] A7. Cho phép micro: Settings > Privacy & security > Microphone > bật "Let desktop apps
         access your microphone". Bật loa vừa nghe (như mẹ hay để).
+        Kết quả: quyền dùng micro cho desktop apps đang On trong Windows Settings.
 
 
 B. GIỌNG ĐỌC (không tốn tiền)
 -----------------------------
-[ ] V-1.     py -m screentutor.speak "Bạn bấm đúp vào file Giáo án mẫu Âm nhạc 8 (1).docx rồi bấm nút OK nhé."
+[x] V-1.     py -m screentutor.speak "Bạn bấm đúp vào file Giáo án mẫu Âm nhạc 8 (1).docx rồi bấm nút OK nhé."
        (Lần đầu chờ tải model.) Dòng "Đọc:" cho thấy câu sau khi sửa cách đọc. Nghe qua loa laptop:
-         - Có nghe ra "số một, bản Word" và "ô kê" không? ______
-         - Giọng có bị rè, vấp, ngắt quãng không? ______
-         - Từ lúc Enter tới lúc có tiếng (lần chạy thứ 2, model đã tải): nhanh / hơi chậm / chậm ______
-[ ] V-2. Đo tốc độ trên Windows (khoảng 3 phút, đo cả fp32 và int8):
+         - Có nghe ra "số một, bản Word" và "ô kê" không? Có, nghe rõ.
+         - Giọng có bị rè, vấp, ngắt quãng không? Không; chất lượng âm thanh hoàn hảo.
+         - Từ lúc Enter tới lúc có tiếng (lần chạy thứ 2, model đã tải): chậm — khoảng 6.65 s
+           (đo thủ công bằng đồng hồ bấm giờ).
+[x] V-2. Đo tốc độ trên Windows (khoảng 3 phút, đo cả fp32 và int8):
               py tts_eval\bench.py speed
          Mở file tts_eval\results\speed_<giờ>.md, chép dòng int8 của bảng đầu:
-         int8: nạp model ____ s, âm thanh đầu tiên (trung vị / lớn nhất) ____ / ____ s, RTF ____
+         int8: nạp model 2.8 s, âm thanh đầu tiên (trung vị / lớn nhất) 0.15 / 0.17 s, RTF 0.29
+         Kết luận: đạt (trung vị <= 0.5 s và RTF <= 0.8).
 
 
 C. NGHE TỪ MICRO (mỗi lần vài xu)
 ---------------------------------
-[ ] M-1. Nút "Hỏi" (máy tự biết khi nói xong):
+[x] M-1. Nút "Hỏi" (máy tự biết khi nói xong):
               py -m screentutor.listen --mic
          Đóng vai mẹ, đọc to từng câu dưới đây, ngừng thật ở chỗ "//" khoảng nửa giây đến một giây,
          như mẹ ngập ngừng. Mỗi câu chạy lệnh một lần.
@@ -53,27 +58,34 @@ C. NGHE TỪ MICRO (mỗi lần vài xu)
            b) "Bây giờ mẹ muốn gửi file PDF cho tiệm in // thì ấn vào đâu vậy"
            c) "Sao mẹ đặt cái tên kiểu này không được vậy con"
          Ghi dòng "Nghe được" và "số đoạn nói":
-           a) ________________________________________________ đoạn: __
-           b) ________________________________________________ đoạn: __
-           c) ________________________________________________ đoạn: __
-         Thử thêm một câu ngừng LÂU (khoảng 2 giây) ở giữa: nghe trọn hay mất nửa sau? ______
-[ ] M-2. Giữ phím (thay cho Ctrl+Alt, ở đây bấm Enter khi nói xong):
+           a) "Ủa cái giáo án mẹ sửa hôm qua nó nằm ở đâu vậy, sao mở lên không thấy gì hết"
+              đoạn: 2 — nghe trọn và chính xác khi nói rõ; người thử xác nhận.
+           b) "Bây giờ mẹ muốn gửi file PDF cho tiệm in, thì ấn vào đâu vậy"
+              đoạn: 2 — nghe trọn và chính xác khi nói rõ; người thử xác nhận.
+           c) "sao mẹ đặt cái tên kiểu này không được vậy con"
+              đoạn: 1 — log nhận dạng chính xác.
+         Thử thêm một câu ngừng LÂU (khoảng 2 giây) ở giữa: nghe trọn cả hai nửa, 2 đoạn;
+         nhận diện chính xác. Kết luận M-1: đạt.
+[x] M-2. Giữ phím (thay cho Ctrl+Alt, ở đây bấm Enter khi nói xong):
               py -m screentutor.listen --mic --mode PUSH_TO_TALK
-         Đọc câu a) ở trên, nói xong bấm Enter. Ghi: ______________________________________
+         Đọc câu a) ở trên, nói xong bấm Enter. Ghi: nghe trọn và nhận diện chính xác toàn bộ
+         câu người thử đã nói. Kết quả ra sau 0.08 s; số đoạn nói 0 (bình thường với PUSH_TO_TALK).
 
 
 D. NÚT "HỎI" VÀ Ô CHỮ (không tốn tiền)
 --------------------------------------
-[ ] U-1.     py -m screentutor.ui --demo
+[x] U-1.     py -m screentutor.ui --demo
          Nút ở góc dưới bên phải (trên taskbar), ô chữ ở giữa mép trên. Cứ 2,5 giây chúng đổi
          trạng thái: Đang nghe -> Đang xem -> Đang nói -> Hỏi.
            - Mở Word, gõ vài chữ, bấm nút "Hỏi" (PowerShell in "Đã bấm nút Hỏi"), rồi gõ tiếp
-             KHÔNG bấm lại vào Word: chữ có vào Word không? ______
-           - Rê chuột lên ô chữ: ô có mở rộng ra cả câu không? ______
+             KHÔNG bấm lại vào Word: chữ có vào Word không? Có — đạt, nút không làm mất focus Word.
+           - Rê chuột lên ô chữ: ô có mở rộng ra cả câu không? Có.
            - Mở Brave có nhiều tab, kéo cho một tab nằm dưới ô chữ, bấm vào chỗ ô chữ:
-             tab có chuyển không? ______  Ô chữ có che mất thứ gì quan trọng không? ______
+             tab có chuyển không? Không — không đạt click-through.
+             Ô chữ có che mất thứ gì quan trọng không? Có, che tên tab Sheet đang mở trên Brave.
            - Đóng vai mẹ: nút có dễ thấy, chữ có dễ đọc, màu trạng thái có dễ hiểu không? Ghi chú:
-             ______________________________________________________________
+             Chữ và nút dễ thấy; màu trạng thái dễ hiểu.
+         Kết luận U-1: chưa đạt vì không bấm xuyên qua ô chữ được, dù nút Hỏi giữ đúng focus Word.
 
 
 Xong thì lưu file này, commit và push riêng file này lên nhánh mvp.
