@@ -9,7 +9,8 @@ class FakeTutor:
     def __init__(self, replies):
         self.replies, self.calls = list(replies), []
 
-    def ask(self, question, data_url, state):
+    def ask(self, question, data_url, state, pointer=None):
+        self.pointer = pointer
         self.calls.append(("ask", question, None, None))
         return self.replies.pop(0)
 
@@ -54,6 +55,14 @@ def test_unchanged_screen_is_reported_to_the_check_turn():
     s, _ = _session(tutor, [Click(1.0, 1, 1, "left"), Click(2.0, 1114, 526, "left")], ["unchanged", "settled"])
     s.run("Tắt bảng lỗi")
     assert [c[3] for c in tutor.calls] == [None, False, True]
+
+
+def test_the_first_turn_gets_what_her_mouse_pointed_at():
+    tutor = FakeTutor([Reply(say="Bạn mở Zalo trước nhé.", found=False)])
+    s, _ = _session(tutor, [], [])
+    s.pointer = "khoanh quanh vùng (250, 278)-(750, 556) trên lưới 0-1000"
+    s.run("Học cái này")
+    assert tutor.pointer == s.pointer
 
 
 def test_stops_when_nothing_to_point_at_or_no_click():

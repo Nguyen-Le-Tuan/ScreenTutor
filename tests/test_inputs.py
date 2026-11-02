@@ -1,6 +1,6 @@
 import threading
 
-from screentutor.inputs import HOLD_S, Click, Hold, InputTracker, Sample, watch
+from screentutor.inputs import HOLD_S, Click, Hold, InputTracker, Sample, Trail, watch
 
 
 def _run(steps):
@@ -63,3 +63,51 @@ def test_watch_polls_until_stopped():
 
     watch(seen.append, stop, read=read, poll_s=0)
     assert seen == [Click(0.0, 5, 5, "left")]
+
+
+def test_trail_gives_the_samples_of_a_time_span():
+    trail = Trail()
+    for i in range(10):
+        trail.add(float(i), i * 10, i * 20)
+    assert trail.between(2.0, 4.0) == [(2.0, 20, 40), (3.0, 30, 60), (4.0, 40, 80)]
+    assert trail.between(20.0, 30.0) == []
+
+
+def test_trail_forgets_what_is_older_than_it_keeps():
+    trail = Trail(keep_s=1.0, poll_s=0.25)   # room for 4 samples
+    for i in range(6):
+        trail.add(float(i), i, i)
+    assert [p[0] for p in trail.between(0.0, 10.0)] == [2.0, 3.0, 4.0, 5.0]
+
+
+def test_trail_can_be_read_while_the_input_thread_writes():
+    trail, stop, seen = Trail(keep_s=1.0, poll_s=0.001), threading.Event(), []
+
+    def write():
+        i = 0
+        while not stop.is_set():
+            trail.add(float(i), i, i)
+            i += 1
+
+    writer = threading.Thread(target=write)
+    writer.start()
+    for _ in range(200):
+        seen.append(len(trail.between(0.0, 1e12)))
+    stop.set()
+    writer.join()
+    assert max(seen) <= 1000
+
+
+def test_watch_writes_the_trail_only_when_given_one():
+    samples = iter([Sample(0.0, False, False, False, False, 5, 6), Sample(0.1, False, False, False, False, 7, 8)])
+    stop, trail = threading.Event(), Trail()
+
+    def read():
+        try:
+            return next(samples)
+        except StopIteration:
+            stop.set()
+            return Sample(0.2, False, False, False, False, 9, 9)
+
+    watch(lambda e: None, stop, read=read, poll_s=0, trail=trail)
+    assert trail.between(0.0, 0.1) == [(0.0, 5, 6), (0.1, 7, 8)]

@@ -41,7 +41,7 @@ class Step:
 @dataclass
 class Session:
     """Wiring for one task. Every side effect is injected, so the loop runs the same with fakes."""
-    tutor: object                  # .ask(question, data_url, state) / .follow_up(goal, last_say, data_url, state, changed)
+    tutor: object                  # .ask(question, data_url, state, pointer) / .follow_up(goal, last_say, data_url, state, changed)
     look: object                   # () -> (PIL image, state text or None)
     encode: object                 # PIL image -> data URL
     show: object                   # (x, y, caution) physical px -> None
@@ -54,6 +54,7 @@ class Session:
     pause: object = time.sleep
     status: object = None          # (state) -> None for the island: thinking, turn, caution, loading, error, done, idle
     cancel: object = None          # threading.Event: the user asked something new
+    pointer: str | None = None     # B1b: what her mouse pointed at or circled while she asked, for the first turn
     steps: list[Step] = field(default_factory=list)
 
     @staticmethod
@@ -71,7 +72,7 @@ class Session:
     def run(self, question: str, max_steps: int = MAX_STEPS) -> list[Step]:
         self._status("thinking")
         img, state = self.look()
-        reply = self.tutor.ask(question, self.encode(img), state)
+        reply = self.tutor.ask(question, self.encode(img), state, self.pointer)
         outcome = None
         waits = 0
         for n in range(1, max_steps + 1):

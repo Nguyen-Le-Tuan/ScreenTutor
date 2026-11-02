@@ -28,6 +28,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from . import conversation as conv
+from .gesture import describe
 
 # Facts about this machine sent with the state text. WPS: T6/T8 (02/11), the "Create PDF" button only asked to
 # install WPS; founder: use File > Export > Create PDF/XPS. Zalo Temp: T5 X-1 (02/11), founder's observation.
@@ -40,6 +41,7 @@ MACHINE_NOTES = "\n".join([
     "sửa trên bản đó sẽ không vào file thật.",
 ])
 WAIT_GRACE_S = 5.0    # a loading page may stay blank this long before anything changes
+PRE_ASK_S = 3.0       # B1b: she may point just before she presses the button or holds Ctrl+Alt
 NOT_HEARD = "Mình chưa nghe rõ. Bạn hỏi lại nhé."
 NO_MIC = "Mình chưa nghe được micro. Bạn kiểm tra lại micro nhé."
 SETTINGS_POLL_MS = 2000
@@ -66,6 +68,12 @@ def to_physical(box: tuple[int, int, int, int] | None, dpr: float) -> tuple[int,
 
 def inside(box: tuple[int, int, int, int] | None, x: int, y: int) -> bool:
     return box is not None and box[0] <= x <= box[2] and box[1] <= y <= box[3]
+
+
+def pointing(samples, size: tuple[int, int], own: list[tuple[int, int, int, int]]) -> str | None:
+    """What her mouse said while she asked (B1b). The path over our own button and island does not count:
+    with the round button the mouse rests there all the time she talks, and that points at nothing."""
+    return describe([s for s in samples if not any(inside(r, s[1], s[2]) for r in own)], size)
 
 
 def outcome_of(steps, cancelled: bool) -> str:
@@ -172,7 +180,7 @@ def main(argv=None) -> None:
     from . import screen
     from . import settings as settings_mod
     from .history import History, when_label
-    from .inputs import Click, Hold, watch
+    from .inputs import Click, Hold, Trail, watch
     from .island import Island
     from .listen import Mic, _api_key, listen
     from .overlay import Overlay
@@ -187,6 +195,7 @@ def main(argv=None) -> None:
     app = QApplication(sys.argv[:1])
     qscreen = QGuiApplication.primaryScreen()
     dpr = qscreen.devicePixelRatio()
+    screen_size = to_physical((0, 0, qscreen.geometry().width(), qscreen.geometry().height()), dpr)[2:]
     overlay, button, island = Overlay(), AskButton(), Island()
 
     def colour(text: str) -> QColor:
@@ -316,8 +325,9 @@ def main(argv=None) -> None:
 
     current = {"cancel": None, "stop": None, "mode": None, "listening": False}
     clicks = ClickBox()
+    trail = Trail()
 
-    def question(mode: str, stop: threading.Event, cancel: threading.Event) -> None:
+    def question(mode: str, stop: threading.Event, cancel: threading.Event, asked_at: float) -> None:
         current["listening"] = True
         try:
             mic = Mic()
@@ -344,6 +354,8 @@ def main(argv=None) -> None:
             say(NOT_HEARD)
             return
         post("hear", heard.text)
+        pointer = pointing(trail.between(asked_at - PRE_ASK_S, time.monotonic()), screen_size, own_rects())
+        print(f"Chuột lúc hỏi: {pointer or 'không chỉ vào đâu'}", flush=True)
         rec = history.start(heard.text)
 
         def save_step(n, img, reply):
@@ -363,7 +375,7 @@ def main(argv=None) -> None:
             wait_click=wait_click,
             settle=lambda c: wait_until_settled(c.t, grab_own_masked)[0],
             wait_screen=lambda: wait_until_settled(time.monotonic(), grab_own_masked, grace_s=WAIT_GRACE_S)[0],
-            save=save_step, status=lambda st: post("status", st), cancel=cancel)
+            save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer)
         steps = session.run(heard.text)
         history.finish(rec, outcome_of(steps, cancel.is_set()))
         post("recent", recent_items())
@@ -382,7 +394,8 @@ def main(argv=None) -> None:
         bridge.clear.emit()
         post("collapse")  # ask() also runs on the input thread (Ctrl+Alt): widgets only via the bridge
         current.update(cancel=threading.Event(), stop=threading.Event(), mode=mode)
-        threading.Thread(target=question, args=(mode, current["stop"], current["cancel"]), daemon=True).start()
+        threading.Thread(target=question, args=(mode, current["stop"], current["cancel"], time.monotonic()),
+                         daemon=True).start()
 
     def on_click_qt(x: int, y: int) -> None:
         button_box[0] = physical(button)
@@ -406,7 +419,7 @@ def main(argv=None) -> None:
 
     button.clicked.connect(lambda: ask("ENDPOINTING"))
     stop_inputs = threading.Event()
-    threading.Thread(target=watch, args=(on_input, stop_inputs), daemon=True).start()
+    threading.Thread(target=watch, args=(on_input, stop_inputs), kwargs={"trail": trail}, daemon=True).start()
     print("ScreenTutor đang chạy. Bấm nút tròn hoặc giữ Ctrl+Alt rồi nói. Ctrl+C ở đây để tắt.", flush=True)
     try:
         app.exec()

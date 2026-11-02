@@ -8,6 +8,9 @@ instead of installing a global hook: nothing keylogger-like for antivirus tools
 to flag, and a slow moment in Python cannot make Windows drop a hook. A click
 lasts 50-150 ms, so a 15 ms poll does not miss it.
 
+B1b (founder 02/11): the same poll keeps the last seconds of the mouse path, so
+gesture.py can tell what she was pointing at when she asked. Nothing is drawn.
+
   py -m screentutor.inputs --seconds 30     # Windows: print every click and Ctrl+Alt hold
 """
 
@@ -18,12 +21,14 @@ import math
 import sys
 import threading
 import time
+from collections import deque
 from dataclasses import dataclass
 
 POLL_S = 0.015
 DOUBLE_CLICK_S = 0.5     # Windows default double-click time
 DOUBLE_CLICK_PX = 10     # physical px between the two clicks of a double click
 HOLD_S = 0.3             # Ctrl+Alt must stay down this long, so quick shortcuts are not mistaken for it
+TRAIL_S = 60.0           # mouse path kept: a question lasts at most 45 s (listen.MAX_TURN_S), plus the 3 s before it
 
 
 @dataclass
@@ -94,6 +99,22 @@ class InputTracker:
         return events
 
 
+class Trail:
+    """The mouse path of the last TRAIL_S, (t, x, y) in physical pixels. The input thread writes, others read."""
+
+    def __init__(self, keep_s: float = TRAIL_S, poll_s: float = POLL_S):
+        self._points: deque[tuple[float, int, int]] = deque(maxlen=round(keep_s / poll_s))
+        self._lock = threading.Lock()
+
+    def add(self, t: float, x: int, y: int) -> None:
+        with self._lock:
+            self._points.append((t, x, y))
+
+    def between(self, t0: float, t1: float) -> list[tuple[float, int, int]]:
+        with self._lock:
+            return [p for p in self._points if t0 <= p[0] <= t1]
+
+
 def read_sample() -> Sample:
     """One reading of the real mouse and keyboard (Windows). Coordinates are physical pixels
     once the process is DPI aware (Qt makes it so; screen.grab() does too)."""
@@ -107,11 +128,14 @@ def read_sample() -> Sample:
     return Sample(time.monotonic(), down(0x01), down(0x02), down(0x11), down(0x12), pt.x, pt.y)
 
 
-def watch(on_event, stop: threading.Event, read=read_sample, poll_s: float = POLL_S) -> None:
+def watch(on_event, stop: threading.Event, read=read_sample, poll_s: float = POLL_S, trail: Trail | None = None) -> None:
     """Poll until stop is set, calling on_event(event) for each click or hold. Run it in a thread."""
     tracker = InputTracker()
     while not stop.is_set():
-        for event in tracker.feed(read()):
+        sample = read()
+        if trail is not None:
+            trail.add(sample.t, sample.x, sample.y)
+        for event in tracker.feed(sample):
             on_event(event)
         time.sleep(poll_s)
 

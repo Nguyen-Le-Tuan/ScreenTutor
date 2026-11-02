@@ -102,6 +102,17 @@ def test_boxes_turn_physical_and_catch_clicks():
     assert not inside(None, 1, 1)
 
 
+def test_the_path_over_our_own_button_points_at_nothing():
+    from screentutor.app import pointing
+
+    size, button = (1920, 1080), (1800, 960, 1890, 1050)
+    at_content = [(i * 0.015, 900, 500) for i in range(60)]
+    on_button = [(1 + i * 0.015, 1850, 1000) for i in range(400)]        # she talks with the mouse on the button
+    assert pointing(at_content + on_button, size, [button]) == "dừng ở (469, 463) trên lưới 0-1000"
+    assert pointing(on_button, size, [button]) is None
+    assert pointing(on_button, size, []) == "dừng ở (964, 926) trên lưới 0-1000"  # what the filter is there for
+
+
 def test_outcome_of_a_task():
     from screentutor.app import outcome_of
     from screentutor.session import Step
