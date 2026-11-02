@@ -118,8 +118,26 @@ python -m tutor_eval.e2e run                # T8b, needs her recordings (not in 
 | `grounding_test/`, `tutor_eval/`, `stt_eval/`, `tts_eval/` | The tests above, each with its pre-registered rule |
 | `docs/tests/` | Checklists and results of the hands-on Windows runs (T2–T10) |
 
+## Built during the hackathon
+
+Everything in this repository was written during the event: the first commit is 27 Oct 2026, and the work runs from 28 Oct to 4 Nov 2026. The commit history shows each step and each test rule, committed before its run. ScreenTutor did not exist before the hackathon.
+
+Not ours, used as-is through their public packages or APIs:
+
+- Meta's Muse Spark 1.3 and Muse Voice Transcribe, through the Meta Model API.
+- VieNeu-TTS v3 Turbo, a Vietnamese voice model under Apache-2.0, run locally.
+- Qt for Python (PySide6, LGPL), Pillow, httpx, websockets and sounddevice.
+
+HeyClicky, an existing screen tutor, was only *used* as a user, for a side-by-side comparison (`docs/heyclicky_comparison/`). None of its code is used.
+
+The Word file under `docs/heyclicky_comparison/test_files/` is a made-up test document.
+
 ## Limitations
 
 - **Latency.** About 7.5 s from the end of her question to the first word; most of it is Spark's reasoning. The status pill shows what the tutor is doing in the meantime.
 - **Start menu.** Windows draws the Start menu above every normal window, so it can hide the ring.
 - **Tested on one setup.** That setup is hers: 1920×1080 at 125%, English UI, Zalo, Word and Brave. Other setups have not been tested.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
