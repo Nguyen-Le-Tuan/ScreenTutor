@@ -253,3 +253,7 @@ stt_eval/audio_synth/
 # Tutor runs hold real screenshots, window titles and raw answers
 tutor_runs/
 tutor_eval/results/
+
+# Her task history, memory and settings stay on her machine (founder, 02/11)
+history/
+settings.json
