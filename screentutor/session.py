@@ -172,7 +172,7 @@ class Session:
         else:
             self.show(px[0], px[1], reply.caution)
         self.say(reply.say)
-        self._status("loading")
+        self._status("caution" if reply.caution else "turn")  # her turn, not "Chờ trang tải" (founder 02/11)
         self.pause(RING_FLIGHT_S)
         outcome = self.wait_change(SCROLL_WAIT_S, CHANGE_MIN, self._cancelled)
         self.hide()

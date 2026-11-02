@@ -393,7 +393,7 @@ def test_the_states_sent_to_the_island():
     s, _ = _session(tutor, [CLICK, CLICK], ["settled", "settled"], waits=["settled"], changes=["settled"])
     s.status = seen.append
     s.run("x")
-    assert seen == ["thinking", "loading", "thinking", "turn", "thinking", "caution", "thinking", "loading", "thinking",
+    assert seen == ["thinking", "turn", "thinking", "turn", "thinking", "caution", "thinking", "loading", "thinking",
                     "done"]
 
 
