@@ -49,11 +49,24 @@ replaces a file), and (3) gained a "nói về mình" check. The pointing text is
 unchanged. Thresholds (1)-(3) unchanged; added (4): caution=true in at most
 1/24 calls, since no step in these 12 cases sends or replaces anything. If (1)
 or (2) fail, the three new rules are taken out again.
+
+Fifth rule, fixed before the 02/11 evening run: the part of T12 that needs no new
+data, R5 and R6 of the plan's section 7.2, on the task prompt of B1 (tutor.ask with
+task rules). The founder allowed paid tests on 02/11. Same 12 cases, 2 runs, same
+states; MACHINE_NOTES stay out, as in every earlier T4.
+- R5a pointing: at least 10/12 hits in each run.
+- R5b speech: 24/24 calls pass every automatic check.
+- R5c latency: median at most 6.4 s (5.0 s measured 4.9 s before B1).
+- R6: caution=true in 0 of 24 calls.
+Reported, not scored: mode, target, plan, box, output and reasoning tokens.
+If R5a fails the B1 block is shortened or taken out. If only R5c fails the block is
+shortened and the run repeated as a new attempt, reported as such. Thresholds stay.
 """
 
 from __future__ import annotations
 
 import argparse
+import collections
 import json
 import re
 import statistics
@@ -75,7 +88,8 @@ LATENCY_LIMIT_S = gconfig.LATENCY_LIMIT_S
 MIN_SAY_OK = 22
 MAX_SENTENCES = 2
 MAX_SYLLABLES = 40
-EST_COST_PER_CALL = 0.006
+EST_COST_PER_CALL = 0.008
+T12_SAY_OK, T12_LATENCY_S = 24, 6.4   # R5b, R5c of the plan's T12
 
 # Hits out of 2 for the pointing-only prompt, effort low, 29/10 (with state where state_t1.json has it).
 BASELINE_HITS = {"case_01": 2, "case_02": 2, "case_03": 0, "case_04": 2, "case_05": 2, "case_06": 2,
@@ -167,6 +181,8 @@ def cmd_run(args) -> None:
                         "found": reply.found, "point": reply.point, "element": reply.element,
                         "say": reply.say, "say_problems": say_problems(reply.say), "caution": reply.caution,
                         "result": scores["norm1000"]["result"], "distance_px": scores["norm1000"].get("distance_px"),
+                        "mode": reply.mode, "target": reply.target, "plan": reply.plan, "box": reply.box,
+                        "notes": reply.notes,
                         "latency_s": round(reply.latency_s, 3), "usage": reply.usage, "error": reply.error,
                         "raw_file": raw_file,
                     }
@@ -206,6 +222,16 @@ def summarize(out: Path) -> Path:
         f"| Câu có chữ \"mình\" (không chấm) | {sum(bool(SELF.search(r['say'])) for r in rows)}/{len(rows)} | | |",
         f"| (4) caution bật (từ 02/11) | {sum(bool(r.get('caution')) for r in rows)}/{len(rows)} | ≤ 1/24 | |",
         "", f"**Theo luật đặt trước: {'đạt cả ba' if ok1 and ok2 and ok3 else 'chưa đạt'}.**", "",
+        f"T12 (02/11): R5a {' / '.join(str(hits[k]) for k in runs)} (≥ {MIN_HITS}) {mark[ok1]}; "
+        f"R5b {say_ok}/{len(rows)} (cần {T12_SAY_OK}) {mark[say_ok >= T12_SAY_OK]}; "
+        f"R5c {med:.2f} s (≤ {T12_LATENCY_S}) {mark[med <= T12_LATENCY_S]}; "
+        f"R6 {sum(bool(r.get('caution')) for r in rows)} cờ (cần 0) "
+        f"{mark[not any(r.get('caution') for r in rows)]}.",
+        f"Không chấm: mode {sorted(collections.Counter(r.get('mode') or '?' for r in rows).items())}, "
+        f"target {sorted(collections.Counter(r.get('target') or '?' for r in rows).items())}, "
+        f"có plan {sum(bool(r.get('plan')) for r in rows)}, có box {sum(bool(r.get('box')) for r in rows)}, "
+        f"token ra trung vị {statistics.median(r['usage']['output'] for r in rows):.0f}, "
+        f"suy luận {statistics.median(r['usage']['reasoning'] for r in rows):.0f}.", "",
         "| Ca | Trạng thái | Mốc 29/10 | " + " | ".join(f"Lần {k}" for k in runs) + " | Trễ | Chỉ vào |",
         "|---|---|---|" + "---|" * len(runs) + "---|---|",
     ]
