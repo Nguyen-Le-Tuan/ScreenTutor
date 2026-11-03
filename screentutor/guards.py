@@ -29,7 +29,7 @@ FRESH_S = 120.0     # Claude's estimate: a click in Zalo and Word opening fall w
 MIN_NAME = 3        # a shorter name would match almost any title
 READ_ONLY_MARKS = ("read-only", "read only", "chỉ đọc", "protected view", "dạng xem được bảo vệ")  # to check in T13b
 
-SAY = "File này là bản tạm của Zalo, sửa ở đây sẽ không vào file thật. "   # awaiting the founder's approval
+SAY = "File này là bản tạm của Zalo, sửa ở đây sẽ không vào file thật. "   # approved by the founder, 02/11
 HOW_BUTTON = "Bạn bấm nút tròn rồi nói tải file về để được chỉ từng bước nhé."
 HOW_KEYS = "Bạn giữ Ctrl và Alt rồi nói tải file về để được chỉ từng bước nhé."
 
