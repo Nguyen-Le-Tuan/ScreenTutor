@@ -305,6 +305,11 @@ def test_the_state_rule_and_the_rule_against_talking_about_itself_are_in_every_t
     assert "đã bấm rồi mà không thấy" not in build_prompt("x", task=False)  # the prompt T4 measured stays as it was
 
 
+def test_a_cut_message_is_scrolled_first_and_file_names_are_spoken_plainly():
+    text = build_prompt("x")
+    assert "phải kéo xuống đọc hết trước khi read hay click" in text and "bỏ đuôi file" in text
+
+
 def test_a_failed_stream_is_an_error_not_a_crash():
     import httpx
 

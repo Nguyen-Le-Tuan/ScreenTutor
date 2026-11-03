@@ -81,6 +81,12 @@ cases, 2 runs, thresholds unchanged. Added before this run:
 - R5e: 5 more calls on case_04 hit at least 4/5, what low reached.
 Run 20261102-190252 of this rule is void, not a result: from the 4th call on this machine
 could not resolve the API's name (21 of 24 calls, 0 tokens). The rule is unchanged.
+Run 20261102-190505 passed all: R5a 11/11, R5b 24/24, R5c 5.98 s, R5d 3.83 s, R5e 5/5, R6 0.
+
+Eighth rule, fixed before the next run. The big-task test found two real faults: a message
+cut at the bottom was framed instead of scrolled, and file names were spoken with their
+underscores. The prompt gained one clause for each. Any change to the prompt repeats this
+test: same 12 cases, 2 runs, all of R5a-e and R6 unchanged.
 """
 
 from __future__ import annotations

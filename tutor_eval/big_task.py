@@ -27,6 +27,13 @@ where the message that gives the task was fully in view and only other messages 
 reading it was right, so P4 counted the wrong thing. P4 now means: the message that gives
 the task is cut off at the bottom of the view. Thresholds unchanged. Reported, not
 scored: seconds until she saw each step.
+
+Third attempt, rule fixed before it ran. The second (20261102-190812-big, kept) got P2 6/6,
+P3 5/5, no errors, and failed P4 with 1/5 and P5 with 10/12. Both are real: a cut message was
+framed instead of scrolled, and file names were spoken with underscores. The prompt gained
+one clause for each. A third task is added, the founder's first example in earnest: the
+same message further down the chat, so most of its steps start below the edge. So 3 tasks
+of 3 runs, P2 needs at least 8/9, the other thresholds unchanged.
 """
 
 from __future__ import annotations
@@ -45,7 +52,7 @@ from screentutor.gesture import describe
 from screentutor.inputs import Click
 from screentutor.session import Session
 from screentutor.tutor import Tutor, _api_key
-from tutor_eval.fake_zalo import H, HEADER_H, INPUT_H, PRINCIPAL, STUDY, TASKBAR_H, W, view
+from tutor_eval.fake_zalo import H, HEADER_H, INPUT_H, LONG_CHAT, PRINCIPAL, STUDY, TASKBAR_H, W, view
 from tutor_eval.run import say_problems
 
 HERE = Path(__file__).parent
@@ -55,6 +62,8 @@ STATE = ("- Cửa sổ đang ở trước mặt: Zalo (Zalo.exe), tiêu đề \"
 TASKS = {
     "study": {"chat": STUDY, "message": 2, "question": "Học cái này trong Zalo",
               "parts": [("đăng nhập",), ("mô đun",), ("video",), ("kiểm tra",), ("chứng nhận",), ("gửi", "nộp")]},
+    "study_long": {"chat": LONG_CHAT, "message": 5, "question": "Học cái này trong Zalo",
+                   "parts": [("đăng nhập",), ("mô đun",), ("video",), ("kiểm tra",), ("chứng nhận",), ("gửi", "nộp")]},
     "principal": {"chat": PRINCIPAL, "message": 1, "question": "Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?",
                   "parts": [("dự thảo", "quy chế"), ("phiếu", "ý kiến"), ("biểu mẫu", "link", "trực tuyến"), ("tổ trưởng", "nộp")]},
 }
@@ -166,7 +175,7 @@ def summarize(out: Path) -> str:
             ok_says += not problems
     p3 = sum(x >= 0.5 for x in ious)
     lines = [f"# Việc lớn trên màn hình giả ({out.name})", "",
-             f"P2 kế hoạch đủ phần: {plans_ok}/{len(rows)} (cần ≥ 5/6)",
+             f"P2 kế hoạch đủ phần: {plans_ok}/{len(rows)} (cần ≥ {len(rows) - 1}/{len(rows)})",
              f"P3 khung đọc IoU ≥ 0,5: {p3}/{len(ious)} (cần ≥ 80%), IoU {[round(x, 2) for x in ious]}",
              f"P4 bảo kéo khi còn tiếp: {did}/{should} (cần ≥ 80%); bảo kéo khi đã hết: {extra} (tối đa 1)",
              f"P5 câu nói qua kiểm tra: {ok_says}/{says} (cần ≥ 90%)",

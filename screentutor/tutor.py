@@ -90,7 +90,8 @@ POINTER_LINE = ("- Lúc hỏi, chuột của người dùng {pointer}; nếu ng�
 # minimal 1/5, with this line 5/5. Without its first clause it also took her away from a link she had not clicked yet.
 STATE_RULE = ("- Nếu người dùng nói đã bấm rồi mà không thấy, đối chiếu với trạng thái Windows: nếu thứ đó đã mở ở một cửa "
               "sổ nằm phía sau, chỉ vào biểu tượng của cửa sổ đó trên thanh tác vụ, không chỉ lại chỗ đã bấm.\n")
-SAY_SELF_RULE = "- Trong say không nói về việc mình làm, ví dụ không viết \"để mình hướng dẫn\".\n"
+SAY_SELF_RULE = ("- Trong say không nói về việc mình làm, ví dụ không viết \"để mình hướng dẫn\". Tên file viết như lời "
+                 "nói: bỏ đuôi file, thay dấu gạch bằng dấu cách.\n")
 MODE_RULE = "- mode: \"answer\" nếu chỉ hỏi một điều; \"guide\" nếu là việc nhiều bước.\n"
 PLAN_RULE = ("- task_plan: với guide, 2-6 phần theo thứ tự, mỗi phần tối đa 8 chữ; việc ghi trong tin nhắn đang hiện thì "
              "lấy từ chính tin đó; tin còn tiếp ở dưới thì để rỗng. Với answer để rỗng. Có task_plan thì say mở đầu "
@@ -98,8 +99,8 @@ PLAN_RULE = ("- task_plan: với guide, 2-6 phần theo thứ tự, mỗi phần
 PLAN_FOLLOW = ("- task_plan: rỗng nếu kế hoạch không đổi. Chỉ điền khi vừa đọc hết nội dung giao việc: 2-6 phần, mỗi phần "
                "tối đa 8 chữ, lấy từ chính nội dung đó.\n")
 TARGET_RULES = ("- Target: \"click\" (X, Y là tâm chỗ bấm); \"read\" (đọc một vùng; Box là khung vùng đó, X, Y là tâm); "
-                "\"scroll\" (nội dung còn tiếp ở dưới; say bảo kéo xuống, X, Y là giữa vùng cần kéo); \"none\" "
-                "(found=false). Không phải read thì Box bốn số 0.\n")
+                "\"scroll\" (nội dung cần đọc bị cắt ở mép dưới; phải kéo xuống đọc hết trước khi read hay click; say bảo "
+                "kéo xuống, X, Y là giữa vùng cần kéo); \"none\" (found=false). Không phải read thì Box bốn số 0.\n")
 NOTES_RULE = "- task_notes: khi đọc nội dung dài, ghi tối đa 80 chữ điều cần nhớ; còn lại để rỗng.\n"
 NOTES_FOLLOW = "- task_notes: nếu vừa đọc thêm, viết lại đủ ghi chú cũ cộng phần mới (tối đa 80 chữ); nếu không thì rỗng.\n"
 PART_RULE = "- task_part: số thứ tự (từ 1) của phần chứa bước tiếp theo; xong hết thì bằng số phần; chưa có phần nào thì 0.\n"

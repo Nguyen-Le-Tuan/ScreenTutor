@@ -195,6 +195,14 @@ STUDY = draw_chat(Chat("Tổ Khoa Học (tên giả)", [
             "Thầy cô nào gặp khó khăn khi đăng nhập thì báo lại cho tổ trưởng trước ngày 10 tháng 11 để được cấp lại mật "
             "khẩu. Những thầy cô đã hoàn thành rồi thì không cần làm lại. Trân trọng cảm ơn quý thầy cô."),
 ]))
+LONG_CHAT = draw_chat(Chat("Tổ Khoa Học (tên giả)", [
+    Message("Cô Lan (tên giả)", "Chào cả tổ, cuối tuần này nhớ họp tổ nhé."),
+    Message("Thầy Minh (tên giả)", "Vâng ạ, em đã nhận được thông báo."),
+    Message("Cô Hà (tên giả)", "Tổ mình họp ở phòng nào vậy cô? Em sợ nhầm phòng như lần trước."),
+    Message("Cô Lan (tên giả)", "Phòng 204 nhé cô, tầng hai dãy nhà mới."),
+    Message("Thầy Minh (tên giả)", "Dạ, em sẽ có mặt sớm để chuẩn bị máy chiếu."),
+    STUDY.messages[2],
+]))
 STUDY_PARTS = ["đăng nhập trang bồi dưỡng", "chọn mô đun 3", "xem hết video", "làm bài kiểm tra",
                "tải giấy chứng nhận PDF", "gửi vào nhóm Zalo của tổ"]
 
