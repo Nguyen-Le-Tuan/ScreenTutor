@@ -13,10 +13,16 @@ C3b. "LÀM TIẾP" CHỈ HIỆN SAU CÂU HỎI PHỤ (sửa 03/11)
 ----------------------------------------------------
 [x] C3b-1. Làm xong trọn một việc (ví dụ hỏi "Mở thư mục Downloads ở đâu", bấm theo tới khi tutor
            báo xong): ô có tự về nghỉ, và KHÔNG hiện "Làm tiếp" hay hỏi lại việc cũ không? Có.
-[ ] C3b-2. Bỏ dở một việc lớn (không bấm gì 3 phút), rồi hỏi một câu khác tới khi xong:
-           có bị mời làm tiếp việc đã bỏ không (KHÔNG được mời)? ______
-[ ] C3b-3. Đang giữa việc lớn, hỏi một câu phụ tới khi xong: "Làm tiếp: ..." có hiện đúng MỘT lần? ______
-           Hỏi thêm một câu nữa tới khi xong: có bị mời lại không (KHÔNG được mời)? ______
+[x] C3b-2. Bỏ dở một việc lớn (không bấm gì 3 phút), rồi hỏi một câu khác tới khi xong:
+           có bị mời làm tiếp việc đã bỏ không (KHÔNG được mời)? Không bị mời làm tiếp file cũ.
+[x] C3b-3. Đang giữa việc lớn, hỏi một câu phụ tới khi xong: "Làm tiếp: ..." có hiện đúng MỘT lần? Không hiện (0 lần).
+           Hỏi thêm một câu nữa tới khi xong: có bị mời lại không (KHÔNG được mời)? Không bị mời lại.
+           Log lượt việc lớn: hỏi "file dự thảo này về làm sao?"; tutor nói "Việc này có 2 phần"
+           nhưng in ba bước: tải xuống Dự thảo quy chế GIA (trỏ 1866,619; 6,9 s), Save
+           (trỏ 1304,748; 5,3 s), rồi "Mở thư mục" (trỏ 405,974; 7,3 s). Khi hỏi câu phụ
+           "cái nút micro này là để làm gì", tutor nói nút micro là của phần hướng dẫn, không
+           phải Zalo, và bảo để yên (10,7 s); sau đó không hiện/lời mời "Làm tiếp" và không
+           tiếp tục từ bước 4.
 
 
 G. DÒ CÂY TRỢ NĂNG CỦA WINDOWS (10-15 phút, làm khi đã xong A-E của T13)
