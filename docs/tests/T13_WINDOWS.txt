@@ -20,11 +20,16 @@ Luật chấm (ghi trước khi chạy). Trượt luật nào thì ghi lại, kh
 
 A. CHUẨN BỊ (10 phút)
 ---------------------
-[ ] A1. Lấy bản mới:      git switch mvp      git pull --ff-only
+[ ] A1. Lấy bản mới, trong PowerShell ở C:\ScreenTutor (hay thư mục repo trên Windows):
+          git fetch
+          git status          (có file đang sửa dở thì DỪNG, chụp lại, nhắn Claude; đừng xoá)
+          git switch mvp
+          git pull --ff-only
         git log --oneline -1   (phải là commit mới nhất Claude báo): ______
 [ ] A2.  py -m pip install -r requirements.txt      rồi      py -m pytest -q      (toàn bộ passed): ______
 [ ] A3. Bấm đúp ScreenTutor.bat. Thấy ô đen nhỏ giữa mép trên và nút tròn micro góc dưới phải? ______
 [ ] A4. Mở Task Manager, tab Performance hoặc Details, để xem CPU của python trong các mục dưới.
+[ ] A5. Làm luôn E1 (dán nội dung giả vào chat "Cloud của tôi") ngay bây giờ, vì phần C dùng nó.
 
 
 B. T13a: ISLAND VÀ LỚP PHỦ (40 phút)
@@ -43,12 +48,14 @@ B. T13a: ISLAND VÀ LỚP PHỦ (40 phút)
         sáng trong ảnh không? ______
 [ ] B9. (W-3) Bật Win+Alt+R quay 20 giây một câu hỏi có vòng đỏ: video có thấy vòng và viền sáng? ______
 [ ] B10. Ô ghim: đổi màu ô, tắt bật "Nút tròn", "Xoá lịch sử" (bấm 2 lần) chạy đúng? ______
+[ ] B11. Zalo phóng to: nút tròn micro có đè lên nút Gửi hay các biểu tượng ở đầu phải ô nhập tin không?
+         ______  Nếu có, chụp màn hình lại (che tên chat thật nếu cần).
          (Xoá lịch sử sẽ xoá cả kho kiến thức; làm mục này SAU phần C và E nếu muốn giữ lịch sử thử.)
 
 
 C. T13b: VIỆC LỚN, GÁC ZALO, LÀM TIẾP, ĐƯỜNG CHUỘT (40 phút)
 ------------------------------------------------------------
-Dùng nội dung giả trong docs/tests/T12_TIN_NHAN_GIA.txt, đã dán vào "Cloud của tôi" (phần E1).
+Dùng nội dung giả trong docs/tests/T12_TIN_NHAN_GIA.txt, đã dán vào "Cloud của tôi" ở A5 (phần E1).
 [ ] C1. Việc 1. Mở chat Cloud của tôi, để tin dài bị cắt ở mép dưới. Đưa chuột vào tin dài, bấm nút
         tròn: "Học cái này trong Zalo". Tutor có bảo kéo xuống (hình con chuột) không? ______
         Khi kéo xong, có khung xanh ngọc và lớp tối không? ______  (W-4) Ô và nút tròn có sáng không? ______
