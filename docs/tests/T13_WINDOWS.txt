@@ -20,36 +20,42 @@ Luật chấm (ghi trước khi chạy). Trượt luật nào thì ghi lại, kh
 
 A. CHUẨN BỊ (10 phút)
 ---------------------
-[ ] A1. Lấy bản mới, trong PowerShell ở C:\ScreenTutor (hay thư mục repo trên Windows):
+[x] A1. Lấy bản mới, trong PowerShell ở C:\ScreenTutor (hay thư mục repo trên Windows):
           git fetch
           git status          (có file đang sửa dở thì DỪNG, chụp lại, nhắn Claude; đừng xoá)
           git switch mvp
           git pull --ff-only
         git log --oneline -1   (phải là commit mới nhất Claude báo): ______
-[ ] A2.  py -m pip install -r requirements.txt      rồi      py -m pytest -q      (toàn bộ passed): ______
-[ ] A3. Bấm đúp ScreenTutor.bat. Thấy ô đen nhỏ giữa mép trên và nút tròn micro góc dưới phải? ______
-[ ] A4. Mở Task Manager, tab Performance hoặc Details, để xem CPU của python trong các mục dưới.
-[ ] A5. Làm luôn E1 (dán nội dung giả vào chat "Cloud của tôi") ngay bây giờ, vì phần C dùng nó.
+[x] A2.  py -m pip install -r requirements.txt      rồi      py -m pytest -q      (toàn bộ passed): ______
+[x] A3. Bấm đúp ScreenTutor.bat. Thấy ô đen nhỏ giữa mép trên và nút tròn micro góc dưới phải? ______
+[x] A4. Mở Task Manager, tab Performance hoặc Details, để xem CPU của python trong các mục dưới.
+[x] A5. Làm luôn E1 (dán nội dung giả vào chat "Cloud của tôi") ngay bây giờ, vì phần C dùng nó.
 
 
 B. T13a: ISLAND VÀ LỚP PHỦ (40 phút)
 ------------------------------------
-[ ] B1. Ô ở 125%: hình, cỡ, cạnh dưới cong khi rê chuột, giãn vừa đủ không che thanh công cụ Word? ______
-[ ] B2. Rê chuột lên ô khoảng 1/4 giây: ô mở; rời chuột: ô thu lại? ______  Bấm vào ô đang mở: ô ghim
-        (to ra, cuộn được bằng bánh xe)? ______  Bấm ra ngoài: ô đóng? ______
-[ ] B3. (W-1) Ô thu gọn nằm trên một tab Brave hoặc ô Search của Word: bấm vào đó, tab có chuyển /
-        ô Search có nhận không? ______
-[ ] B4. Đang gõ trong Word, rê chuột qua ô: chữ vẫn gõ vào Word bình thường (ô không giành focus)? ______
-[ ] B5. Alt+Tab khi vòng đang hiện: có thấy cửa sổ của vòng hay ô trong danh sách không? ______
-[ ] B6. Sóng âm trong ô nhảy theo giọng mình khi nói, theo giọng tutor khi tutor nói? ______
-[ ] B7. CPU của python lúc nghỉ (không hỏi gì 1 phút): ____ %. Lúc tutor đang xem màn hình (có viền
-        sáng): ____ %. Nếu máy giật, đặt "edge_glow": false trong settings.json, đo lại: ____ %
-[ ] B8. (W-2) Sau vài câu hỏi, mở vài ảnh mới nhất trong tutor_runs: có vòng, khung, lớp tối, viền
-        sáng trong ảnh không? ______
-[ ] B9. (W-3) Bật Win+Alt+R quay 20 giây một câu hỏi có vòng đỏ: video có thấy vòng và viền sáng? ______
-[ ] B10. Ô ghim: đổi màu ô, tắt bật "Nút tròn", "Xoá lịch sử" (bấm 2 lần) chạy đúng? ______
-[ ] B11. Zalo phóng to: nút tròn micro có đè lên nút Gửi hay các biểu tượng ở đầu phải ô nhập tin không?
-         ______  Nếu có, chụp màn hình lại (che tên chat thật nếu cần).
+[x] B1. Ô ở 125%: ô thu gọn gọn; cạnh dưới cong rõ khi rê chuột. Khi mở rộng, ô che ô Search
+        và một phần thanh công cụ Word; khi ghim che nhiều hơn.
+[x] B2. Rê chuột lên ô khoảng 1/4 giây: ô mở: Có. Rời chuột: ô thu lại: Có. Bấm vào ô đang mở:
+        ô ghim (to ra): Có. Cuộn bằng bánh xe trong ô ghim: Nội dung không bị cuộn. Bấm ra ngoài: ô đóng:
+        Có.
+[x] B3. (W-1) Ô thu gọn nằm trên ô Search của Word: bấm vào chỗ ô làm ô phình to, không tới
+        ô Search.
+[x] B4. Đang gõ trong Word, rê chuột qua ô: chữ vẫn tiếp tục gõ bình thường trong Word.
+[x] B5. Alt+Tab khi vòng đang hiện: vòng đỏ vẫn nhìn thấy ở góc trên trái phía sau giao diện
+        Alt+Tab. Danh sách Alt+Tab có Word, ChatGPT, Zalo và VS Code; không có ô thu nhỏ riêng
+        cho vòng đỏ hoặc ô đen. Đã chụp ảnh.
+[x] B6. Sóng âm trong ô thay đổi khi người dùng nói và cũng thay đổi khi tutor đang nói.
+[x] B7. CPU của python lúc nghỉ (không hỏi gì 1 phút): tab Details hiển thị 0; tab Processes hiển thị
+        0,2 %. Lúc tutor đang xem màn hình (có viền sáng): 0,5–0,8 %. Ảnh chụp lúc tutor đang nói
+        hiển thị Python 5,1 % CPU. Không đổi "edge_glow".
+[x] B8. (W-2) Đã xem cục bộ ba ảnh mới nhất trong tutor_runs: không thấy vòng đỏ, khung xanh ngọc,
+        lớp tối hoặc viền sáng. Ô đen và nút micro vẫn xuất hiện trong một số ảnh.
+[x] B9. (W-3) Video quay khoảng 20 giây có thấy đầy đủ vòng đỏ và viền sáng.
+[x] B10. Ô ghim: đổi màu ô ghim bình thường, mượt; tắt và bật "Nút tròn" được. Bấm xoá lịch sử có hỏi xác nhận và xoá thành công sau khi xác nhận.
+[x] B11. Zalo phóng to có hai bố cục: khi có panel bên phải, nút tròn micro nằm trong vùng panel,
+         ngoài ô nhập tin. Khi không có panel bên phải, nút tròn nằm trên phần cuối bên phải của
+         ô nhập tin, sát và che vùng biểu tượng ở đó. Đã chụp cả hai trường hợp.
          (Xoá lịch sử sẽ xoá cả kho kiến thức; làm mục này SAU phần C và E nếu muốn giữ lịch sử thử.)
 
 
@@ -57,7 +63,10 @@ C. T13b: VIỆC LỚN, GÁC ZALO, LÀM TIẾP, ĐƯỜNG CHUỘT (40 phút)
 ------------------------------------------------------------
 Dùng nội dung giả trong docs/tests/T12_TIN_NHAN_GIA.txt, đã dán vào "Cloud của tôi" ở A5 (phần E1).
 [ ] C1. Việc 1. Mở chat Cloud của tôi, để tin dài bị cắt ở mép dưới. Đưa chuột vào tin dài, bấm nút
-        tròn: "Học cái này trong Zalo". Tutor có bảo kéo xuống (hình con chuột) không? ______
+        tròn: "Học cái này trong Zalo". Tutor không bảo kéo xuống; nó chỉ tới đoạn chữ
+        "boiduong-thunghiem.example" và yêu cầu bấm. Trong ảnh, chuỗi này hiển thị cùng màu với
+        chữ trong tin nhắn, không phải liên kết màu xanh. Người dùng bấm theo chỉ dẫn nhiều lần,
+        tutor tiếp tục yêu cầu bấm vào đó.
         Khi kéo xong, có khung xanh ngọc và lớp tối không? ______  (W-4) Ô và nút tròn có sáng không? ______
         Cuối cùng tutor có nói "Việc này có mấy phần" và ô tự mở cho xem các phần không? ______
         Các phần tutor đưa ra: ________________________________________________
@@ -67,12 +76,20 @@ Dùng nội dung giả trong docs/tests/T12_TIN_NHAN_GIA.txt, đã dán vào "Cl
         "Làm tiếp: ..." màu chàm và tutor có nói câu mời làm tiếp không? ______
         (W-6) Bấm vào ô đó: tutor có quay lại đúng phần 2 không? ______
         Làm lại, lần này nói "làm tiếp" thay vì bấm: ______
-[ ] C4. Việc 2 (tin hiệu trưởng): "Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?"
-        Tutor có lập kế hoạch 4 phần không? ______  Có chỉ file dự thảo không? ______
+[x] C4. Việc 2 (tin hiệu trưởng): "Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?"
+        Tutor lập kế hoạch 4 phần và chỉ tới file Du_thao_quy_che_GIA.docx (file thứ 2). Vòng đỏ
+        nằm giữa thẻ file, không nằm trên biểu tượng tải xuống. Sau khi mở file, tutor nói: "Tốt rồi,
+        bạn đã mở đúng file"; sau đó hiện khung xanh và nói: "Bạn hãy đọc thật kĩ nội dung trong file,
+        đọc xong ấn vào khung màu xanh nhé". Khi bấm khung xanh, tutor nói file trống và yêu cầu cuộn.
+        Sau khi cuộn tới hết tài liệu trống, tutor tiếp tục yêu cầu cuộn. Ảnh minh họa cục bộ (không
+        commit): [c4_file_trong_1.png](../../tutor_eval/t12_data/c4_file_trong_1.png),
+        [c4_file_trong_2.png](../../tutor_eval/t12_data/c4_file_trong_2.png).
 [ ] C5. (W-5) Gác bản tạm Zalo: trong Zalo bấm THẲNG vào một file .docx bất kỳ.
-        Chép NGUYÊN CHỮ trên thanh tiêu đề Word: ________________________________________
-        Ô có chuyển màu vàng cam và tutor nói câu "File này là bản tạm của Zalo..." không? ______
-        Đứng yên 10 giây: tutor có nói lại không (không được nói lại)? ______
+        Thanh tiêu đề Word: Du_thao_quy_che_GIA.docx - Read-Only - Saved.
+        Tutor tự nói: "File này là bản tạm của Zalo..." (câu bị cắt trong ảnh). Ô có chuyển màu
+        vàng cam: Có. Đứng yên 10 giây: tutor không nói lại; ô tự thu gọn, nút micro chuyển vàng.
+        Ảnh: [t12_ban_tam_1.png](../../tutor_eval/t12_data/t12_ban_tam_1.png),
+        [t12_ban_tam_2.png](../../tutor_eval/t12_data/t12_ban_tam_2.png).
         Bấm nút tròn, nói "tải file về": tutor có dẫn về Zalo tải file không? ______
         Mở bản đã tải về (trong Downloads hay thư mục thật): tutor có im lặng không? ______
         Đường dẫn file tạm (File > Info), thay tên file bằng <tên file>: _______________________
@@ -96,7 +113,7 @@ D. CÁC MỤC CÒN HIỆU LỰC CỦA T9 (20 phút)
 
 E. DỮ LIỆU CHO T12 (20 phút, làm trước phần F)
 ----------------------------------------------
-[ ] E1. Dán nội dung trong docs/tests/T12_TIN_NHAN_GIA.txt vào chat "Cloud của tôi", đúng như hướng
+[x] E1. Dán nội dung trong docs/tests/T12_TIN_NHAN_GIA.txt vào chat "Cloud của tôi", đúng như hướng
         dẫn trong file đó.
 [ ] E2. Chụp toàn màn hình (Zalo phóng to, ô và nút tròn cứ để nguyên), mỗi vị trí kéo một ảnh:
         Việc 1: từ chỗ tin dài vừa bắt đầu, mỗi lần kéo khoảng nửa màn hình, tới khi thấy hết.
