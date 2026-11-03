@@ -47,8 +47,9 @@ TRAIL, TRAIL_DT = 6, 0.035           # ghost dots behind it in flight, this many
 LAND_POP, LAND_S = 1.5, 0.25         # it lands this much bigger and settles within LAND_S
 DOT_PULSE_MAX = 30.0                 # the pulses around it once landed (logical px)
 DOT_PULSE_ALPHA = 170
-BESIDE = (13.0, 15.0)                # style "beside": where the dot waits, from the target (founder to choose)
-DOT_STYLE = "on"                     # "on": the dot sits on the target; "beside": next to it, the pulses on it
+BESIDE = (13.0, 15.0)                # style "beside": where the dot rests, from the target
+DOT_STYLE = "on"                     # founder 03/11, from previews on T13 screens: the dot sits on the target;
+                                     # "beside" (next to it, the pulses on it) is kept to compare
 TOPMOST_EVERY_MS = 500
 READ_COLOR = QColor(102, 212, 207)   # mint: reading is neither a click (red) nor a warning (amber)
 TICK_COLOR = QColor(48, 209, 88)     # the island's "done" green

@@ -93,8 +93,8 @@ tutor bắt đầu nói (C1), chấm bay theo đường cong tới chỗ cần c
 nảy nhẹ rồi toả vòng. Bạn bấm xong thì chấm quay lại cạnh chuột. Việc xong thì chấm biến mất.
 Bước cẩn thận: chấm màu vàng. Khung đọc màu xanh ngọc và hình con chuột chỉ cuộn giữ như cũ.
 Lúc tutor chụp màn hình gửi model, chấm tắt thoáng khoảng 0,1 s để không lọt vào ảnh.
-Kiểu đáp: A (đáp lên chỗ chỉ) là mặc định. Nếu bạn chọn B (đứng cạnh, toả vòng trên chỗ chỉ),
-Claude đổi DOT_STYLE trong screentutor/overlay.py trước chuyến đi.
+Kiểu đáp: A, chấm đáp lên chỗ chỉ (founder chọn 03/11 từ ảnh xem trước). Kiểu B (đứng cạnh) vẫn
+giữ trong code để so, nếu A che mất chữ hay nút cần bấm (ghi ở D5).
 
 Luật chấm (ghi trước khi chạy; đề xuất của Claude):
   - P-1 đạt: KHÔNG ảnh nào trong tutor_runs\<lần chạy>\*_stepNN.png có chấm đỏ cạnh chuột.
