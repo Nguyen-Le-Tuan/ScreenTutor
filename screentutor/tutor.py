@@ -109,16 +109,17 @@ LOGIN_RULE = "- Ô đăng nhập: chỉ ô để người dùng tự gõ; không
 KNOWN_BLOCK = ("\n\nNhững gì đã biết về người dùng, từ các việc trước trên máy này. Chỉ để tham khảo, màn hình hiện tại "
                "quan trọng hơn; không nhắc lại với người dùng:\n{known}")
 LEARN_PROMPT = (
-    "Đây là biên bản một việc người dùng, một cô giáo lớn tuổi, vừa làm trên máy tính cùng tutor:\n\n{record}\n\n"
+    "Đây là biên bản một việc người dùng vừa làm trên máy tính cùng tutor:\n\n{record}\n\n"
     "Tóm lại thành ghi chú ngắn bằng tiếng Việt có dấu:\n"
     "- title: tên việc tối đa 10 chữ, viết như người ta gọi việc đó.\n"
     "- apps: các app đã đi qua.\n"
     "- path: tối đa 6 bước chính, mỗi bước tối đa 8 chữ.\n"
     "- result: một câu ngắn nói kết quả.\n"
     "- keywords: tối đa 8 từ khoá để tìm lại việc này, gồm cả cách nói khác của người dùng.\n"
-    "- facts: 0 đến 3 điều bền vững về công việc hay thói quen của người dùng mà biên bản này cho thấy, mỗi điều một câu "
-    "ngắn, ví dụ \"Hay nhận giáo án qua Zalo nhóm tổ\". Chỉ ghi điều có căn cứ trong biên bản. Không ghi mật khẩu, số "
-    "điện thoại hay tên người."
+    "- facts: 0 đến 3 điều giúp lần sau làm nhanh hơn: người dùng hay gửi gì cho ai, nhận file từ đâu, dùng app nào cho "
+    "việc nào. Mỗi điều một câu ngắn, ví dụ \"Hay nhận giáo án qua Zalo nhóm tổ\". Chỉ ghi điều có căn cứ trong biên bản; "
+    "không có thì để rỗng. Không ghi điều chung chung như người dùng là ai, bao nhiêu tuổi, hay việc nhờ tutor. Không ghi "
+    "mật khẩu, số điện thoại hay tên học sinh."
 )
 LEARN_SCHEMA = {
     "type": "object",
