@@ -10,6 +10,12 @@ still in front. The tutor has the plan, the part, the notes and its last sentenc
 - P3: the plan comes back empty or unchanged in at least 4/5 calls: no planning again.
 - P4: the sentence does not announce the number of parts in at least 4/5 calls: no starting over.
 Reported, not scored: what it points at, seconds until the step shows.
+
+First run: P1-P4 all 5/5, but in 2 of the 5 calls the sentence said to click the Brave icon with
+Target none, so no ring would show and the session would stop there. The rules had not looked
+at that. The prompt for this turn now says going back to another window is the next step.
+Second run, this rule fixed before it: P1-P4 as above, and
+- P5: Target is click with a point in at least 4/5 calls.
 """
 
 from __future__ import annotations
@@ -60,9 +66,10 @@ def main(argv=None) -> None:
     p2 = sum(r.part == 2 for r in rows)
     p3 = sum(not r.plan or r.plan == PLAN for r in rows)
     p4 = sum("phần." not in r.say.split(". ")[0] + "." for r in rows)
+    p5 = sum(r.target == "click" and r.point is not None for r in rows)
     print(f"P1 chưa báo xong: {p1}/{RUNS} {ok[p1 == RUNS]}; P2 giữ phần 2: {p2}/{RUNS} {ok[p2 >= 4]}; "
           f"P3 không lập lại kế hoạch: {p3}/{RUNS} {ok[p3 >= 4]}; P4 không đếm phần lại: {p4}/{RUNS} {ok[p4 >= 4]}; "
-          f"trễ trung vị {statistics.median(r.latency_s for r in rows):.1f} s")
+          f"P5 có chỗ chỉ: {p5}/{RUNS} {ok[p5 >= 4]}; trễ trung vị {statistics.median(r.latency_s for r in rows):.1f} s")
 
 
 if __name__ == "__main__":

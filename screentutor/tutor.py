@@ -172,7 +172,8 @@ FOLLOW_ACTED = {
     "moved": "Sau đó màn hình đã thay đổi mà không có cú bấm nào, thường là người dùng đã kéo xuống; "
              "ảnh trên được chụp sau đó.",
     "resume": "Sau đó người dùng đã làm việc khác và giờ quay lại làm tiếp việc này; ảnh trên là màn hình lúc này, có "
-              "thể không còn ở chỗ cũ.",
+              "thể không còn ở chỗ cũ. Nếu phải về một cửa sổ khác trước thì đó là bước tiếp theo: Target là click, X, Y "
+              "là biểu tượng của cửa sổ đó.",
 }
 SCREEN_CHANGED = {True: " Chương trình đo được: sau cú bấm, màn hình đã thay đổi.",
                   False: " Chương trình đo được: sau cú bấm, màn hình không thay đổi.",
