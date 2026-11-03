@@ -303,7 +303,21 @@ def _read_answer(answer: dict, res: Reply) -> Reply:
     if res.found and isinstance(x, (int, float)) and isinstance(y, (int, float)):
         res.point = (_grid(x), _grid(y))
     _parse_task(answer, res)
+    res.say = spoken(res.say, res.target)
     return res
+
+
+_PARTS_SAID = re.compile(r"^Việc này có [^.]*phần\.\s*")
+_ABOUT_ITSELF = re.compile(r"^(?:để )?mình\s+(?:nói|chỉ|nhắc|dặn|thấy|hướng dẫn|giải thích)\b", re.IGNORECASE)
+
+
+def spoken(say: str, target: str = "") -> str:
+    """What the voice says. Two things the prompt asks for and the model now and then forgets, so they are made
+    sure of here: no sentence about the tutor itself (1 in 24 calls, T12 R5b), and no count of parts while the
+    message has not been read to its end (said 2 parts, then 5, on the first big-task runs)."""
+    if target == "scroll":
+        say = _PARTS_SAID.sub("", say)
+    return " ".join(s for s in re.split(r"(?<=[.!?])\s+", say) if not _ABOUT_ITSELF.match(s)) or say
 
 
 def _grid(v) -> float:
@@ -345,6 +359,8 @@ def _parse_task(answer: dict, res: Reply) -> None:
         res.point, res.found = None, False
     elif res.point is None:
         target = "none"  # a click or a scroll with nowhere to show it
+    if target == "scroll":
+        res.plan = []    # the plan comes from the whole message, once it has been read
     res.target = target
 
 
@@ -359,6 +375,7 @@ class EarlyAnswer:
     def __init__(self, on_mark=None, on_say=None):
         self.on_mark, self.on_say = on_mark, on_say
         self.marked = self.said = False
+        self.target = ""
 
     def feed(self, text: str) -> None:
         if not self.marked and self.on_mark:
@@ -370,12 +387,13 @@ class EarlyAnswer:
                 except json.JSONDecodeError:
                     head = None
                 if head is not None:
-                    self.on_mark(_read_answer({**head, "found": head.get("Target") != "none"}, Reply()))
+                    self.target = str(head.get("Target") or "")
+                    self.on_mark(_read_answer({**head, "found": self.target != "none"}, Reply()))
         if not self.said and self.on_say:
             m = _KEY_SAY.search(text)
             if m:
                 self.said = True
-                self.on_say(json.loads(m.group(1)).strip())
+                self.on_say(spoken(json.loads(m.group(1)).strip(), self.target))
 
 
 class Tutor:

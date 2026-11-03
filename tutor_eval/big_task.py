@@ -34,6 +34,11 @@ framed instead of scrolled, and file names were spoken with underscores. The pro
 one clause for each. A third task is added, the founder's first example in earnest: the
 same message further down the chat, so most of its steps start below the edge. So 3 tasks
 of 3 runs, P2 needs at least 8/9, the other thresholds unchanged.
+
+Fourth attempt, same rule. The third (20261102-191531-big) passed all: P2 8/9, P3 3/3, P4
+9/9, P5 21/21, no errors. But the tutor said "two parts" before it had read to the end and
+then planned five, which was also the one plan that failed. The app now holds back the plan
+and the count on a scroll step; that is a change in behaviour, so the run is repeated.
 """
 
 from __future__ import annotations

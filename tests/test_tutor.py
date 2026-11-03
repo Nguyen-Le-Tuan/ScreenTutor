@@ -5,7 +5,7 @@ from PIL import Image
 from grounding_test.meta_api import vision_prompt
 from screentutor import screen
 from screentutor.tutor import (EFFORT, MODEL, SAY_RULES, EarlyAnswer, Reply, build_body, build_follow_up_body,
-                               build_follow_up_prompt, build_prompt, parse_reply, task_rules)
+                               build_follow_up_prompt, build_prompt, parse_reply, spoken, task_rules)
 from tutor_eval.run import say_problems
 
 STATE = "- Cửa sổ đang ở trước mặt: Zalo (Zalo.exe), tiêu đề \"Zalo\", đang phóng to toàn màn hình."
@@ -308,6 +308,25 @@ def test_the_state_rule_and_the_rule_against_talking_about_itself_are_in_every_t
 def test_a_cut_message_is_scrolled_first_and_file_names_are_spoken_plainly():
     text = build_prompt("x")
     assert "phải kéo xuống đọc hết trước khi read hay click" in text and "bỏ đuôi file" in text
+
+
+def test_a_sentence_about_the_tutor_never_reaches_the_voice():
+    say = "Bạn bấm vào thẻ tên Cô Mẫu ở thanh dưới cùng. Mình thấy thẻ đó nằm cạnh thẻ Tổng hợp."
+    assert spoken(say) == "Bạn bấm vào thẻ tên Cô Mẫu ở thanh dưới cùng."
+    assert spoken("Để mình hướng dẫn bước tiếp theo. Bạn bấm File.") == "Bạn bấm File."
+    assert spoken("Mình thấy nút OK.") == "Mình thấy nút OK."        # never leaves her with nothing to hear
+    assert spoken("Bạn bấm vào mình tượng.") == "Bạn bấm vào mình tượng."
+
+
+def test_no_count_of_parts_and_no_plan_before_the_message_has_been_read():
+    r = parse_reply(_resp({**ANSWER, "Target": "scroll", "say": "Việc này có 2 phần. Bạn kéo xuống nhé."}))
+    assert r.say == "Bạn kéo xuống nhé." and r.plan == []
+    r = parse_reply(_resp({**ANSWER, "say": "Việc này có 2 phần. Bạn bấm File."}))
+    assert r.say == "Việc này có 2 phần. Bạn bấm File." and r.plan == ["Mở File", "Xuất PDF"]
+    says = []
+    early = EarlyAnswer(lambda r: None, says.append)
+    early.feed(json.dumps({**ANSWER, "Target": "scroll", "say": "Việc này có ba phần. Bạn kéo xuống nhé."}, ensure_ascii=False))
+    assert says == ["Bạn kéo xuống nhé."]
 
 
 def test_a_failed_stream_is_an_error_not_a_crash():

@@ -87,6 +87,14 @@ Eighth rule, fixed before the next run. The big-task test found two real faults:
 cut at the bottom was framed instead of scrolled, and file names were spoken with their
 underscores. The prompt gained one clause for each. Any change to the prompt repeats this
 test: same 12 cases, 2 runs, all of R5a-e and R6 unchanged.
+Run 20261102-191125 got R5a 12/11, R5c 6.28 s, R5d 3.72 s, R5e 5/5, R6 0, and failed R5b
+with 23/24: one sentence about the tutor itself.
+
+Ninth rule, fixed before the next run. The prompt forbids those sentences and the model
+still writes one in about 24 calls, so tutor.spoken now drops them in code; it also holds
+back the count of parts and the plan on a scroll step. The prompt is unchanged. Same 12
+cases, 2 runs, R5a-e and R6 unchanged. This is the last attempt tonight whatever it
+shows: the runs so far are reported as they came, and thresholds were never moved.
 """
 
 from __future__ import annotations
