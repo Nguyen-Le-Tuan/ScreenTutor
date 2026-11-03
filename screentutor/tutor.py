@@ -85,6 +85,11 @@ SAY_RULES = (
 TASK_HEAD = "\n\nTrả lời thêm:\n"
 POINTER_LINE = ("- Lúc hỏi, chuột của người dùng {pointer}; nếu người dùng nói \"cái này\", \"chỗ này\", đó là chỗ "
                 "đang được chỉ.\n")
+# Measured 02/11 on case_04 (the link that opened behind Zalo): at effort low the state text alone gave 4/5, at
+# minimal 1/5, with this line 5/5. Without its first clause it also took her away from a link she had not clicked yet.
+STATE_RULE = ("- Nếu người dùng nói đã bấm rồi mà không thấy, đối chiếu với trạng thái Windows: nếu thứ đó đã mở ở một cửa "
+              "sổ nằm phía sau, chỉ vào biểu tượng của cửa sổ đó trên thanh tác vụ, không chỉ lại chỗ đã bấm.\n")
+SAY_SELF_RULE = "- Trong say không nói về việc mình làm, ví dụ không viết \"để mình hướng dẫn\".\n"
 MODE_RULE = "- mode: \"answer\" nếu chỉ hỏi một điều; \"guide\" nếu là việc nhiều bước.\n"
 PLAN_RULE = ("- task_plan: với guide, 2-6 phần theo thứ tự, mỗi phần tối đa 8 chữ; việc ghi trong tin nhắn đang hiện thì "
              "lấy từ chính tin đó; tin còn tiếp ở dưới thì để rỗng. Với answer để rỗng. Có task_plan thì say mở đầu "
@@ -173,7 +178,7 @@ def point_prompt(question: str, state: str | None = None) -> str:
 def task_rules(pointer: str | None = None) -> str:
     """The first turn: answer or guide, the parts, what the next step is, notes, logins."""
     head = TASK_HEAD + (POINTER_LINE.format(pointer=pointer) if pointer else "")
-    return head + MODE_RULE + PLAN_RULE + TARGET_RULES + NOTES_RULE + LOGIN_RULE
+    return head + STATE_RULE + SAY_SELF_RULE + MODE_RULE + PLAN_RULE + TARGET_RULES + NOTES_RULE + LOGIN_RULE
 
 
 def follow_task_rules(plan: list[str] | None, part: int | None, notes: str) -> str:
@@ -184,7 +189,7 @@ def follow_task_rules(plan: list[str] | None, part: int | None, notes: str) -> s
         text += FOLLOW_PLAN.format(parts=parts, part=min(max(part or 1, 1), len(plan)))
     if notes:
         text += FOLLOW_NOTES.format(notes=notes)
-    return text + TASK_HEAD + PART_RULE + PLAN_FOLLOW + TARGET_RULES + NOTES_FOLLOW + LOGIN_RULE
+    return text + TASK_HEAD + SAY_SELF_RULE + PART_RULE + PLAN_FOLLOW + TARGET_RULES + NOTES_FOLLOW + LOGIN_RULE
 
 
 def build_prompt(question: str, state: str | None = None, task: bool = True, pointer: str | None = None) -> str:
@@ -412,6 +417,8 @@ class Tutor:
                 resp, elapsed = self._stream("/chat/completions", body, early) if early else \
                     self._post("/chat/completions", body)
             except (httpx.HTTPError, RuntimeError, ValueError) as e:
+                if attempt == 0 and isinstance(e, httpx.TransportError):
+                    continue  # the line dropped (seen 02/11, and her line is longer than ours): once more
                 return Reply(error=str(e))
             total += elapsed
             res = parse_reply(resp)

@@ -70,6 +70,15 @@ rule unchanged, the failed attempt stays on record. Added before this run and sc
 on its own, not instead of R5c:
 - R5d: median time until X and Y are in, when the ring can show, at most 5.0 s, the
   founder's limit in the first rule above. Reported, not scored: until say is complete.
+
+Seventh rule, fixed before the third attempt of the same evening. The second attempt
+(20261102-185140) got R5a 10/11, R5b 23/24 (failed), R5c 6.21 s, R5d 3.90 s, R6 0, but
+case_04 missed twice, and 5 repeats showed why: minimal hit 1/5 where low hit 4/5. That
+case is the link that opened behind Zalo, the reason the Windows state exists, and a
+total over 12 cases hides it. So the prompt now says the rule in words, only for when she
+says she already clicked, and asks the sentences not to talk about the tutor. Same 12
+cases, 2 runs, thresholds unchanged. Added before this run:
+- R5e: 5 more calls on case_04 hit at least 4/5, what low reached.
 """
 
 from __future__ import annotations
@@ -88,7 +97,7 @@ from pathlib import Path
 from grounding_test import config as gconfig
 from grounding_test.datasets import CASES_DIR, load_cases, prepare_image
 from grounding_test.scoring import score_point
-from screentutor.tutor import MODEL, Tutor, _api_key
+from screentutor.tutor import EFFORT, MODEL, Tutor, _api_key
 
 HERE = Path(__file__).parent
 STATE_FILE = CASES_DIR / "state_t1.json"
@@ -101,6 +110,7 @@ MAX_SYLLABLES = 40
 EST_COST_PER_CALL = 0.008
 T12_SAY_OK, T12_LATENCY_S = 24, 6.4   # R5b, R5c of the plan's T12
 T12_RING_S = 5.0                      # R5d
+STATE_CASE, STATE_REPEATS, STATE_MIN = "case_04", 5, 4   # R5e
 
 # Hits out of 2 for the pointing-only prompt, effort low, 29/10 (with state where state_t1.json has it).
 BASELINE_HITS = {"case_01": 2, "case_02": 2, "case_03": 0, "case_04": 2, "case_05": 2, "case_06": 2,
@@ -205,6 +215,13 @@ def cmd_run(args) -> None:
                     log.flush()
                     print(f"[{n}/{len(items) * RUNS}] {it.item_id} lần {run}: {rec['result']} "
                           f"({reply.latency_s:.1f}s) {reply.error or ''}{reply.say}")
+            it = next(i for i in items if i.item_id == STATE_CASE)
+            data_url, sent_size, orig_size = prepare_image(it.image_path)
+            extra = []
+            for _ in range(STATE_REPEATS):
+                reply = tutor.ask(it.question_vi, data_url, states.get(STATE_CASE), on_mark=lambda _r: None)
+                extra.append(score_point(reply.point, sent_size, orig_size, it.boxes, gconfig.NEAR_PX)["norm1000"]["result"])
+            (out / "state_case.json").write_text(json.dumps(extra), encoding="utf-8")
     finally:
         tutor.close()
     print(f"Đã ghi: {summarize(out)}")
@@ -226,9 +243,10 @@ def summarize(out: Path) -> Path:
     ok2 = med <= LATENCY_LIMIT_S
     ok3 = say_ok >= MIN_SAY_OK
     mark = {True: "đạt", False: "KHÔNG đạt"}
+    extra = json.loads((out / "state_case.json").read_text()) if (out / "state_case.json").exists() else []
     lines = [
         f"# T4: một lần gọi vừa trỏ vừa soạn câu nói ({out.name})", "",
-        f"Model {MODEL}, effort low, {len(rows)} lần gọi, chi phí khoảng ${cost:.3f}.", "",
+        f"Model {MODEL}, effort {EFFORT}, {len(rows)} lần gọi, chi phí khoảng ${cost:.3f}.", "",
         "| Điều kiện | Kết quả | Ngưỡng | |", "|---|---|---|---|",
         f"| (1) Trúng mỗi lần chạy | {' / '.join(str(hits[k]) for k in runs)} trên {n_items} | ≥ {MIN_HITS}/12 "
         f"(mốc 29/10: 11) | {mark[ok1]} |",
@@ -245,6 +263,8 @@ def summarize(out: Path) -> Path:
         f"R5d vòng hiện: trung vị {statistics.median(r.get('ring_s', 99) for r in rows):.2f} s (≤ {T12_RING_S}) "
         f"{mark[statistics.median(r.get('ring_s', 99) for r in rows) <= T12_RING_S]}; "
         f"câu nói xong: trung vị {statistics.median(r.get('say_s', 99) for r in rows):.2f} s.",
+        f"R5e {STATE_CASE} lặp {len(extra)} lần: {extra.count('hit')} trúng (cần ≥ {STATE_MIN}) "
+        f"{mark[extra.count('hit') >= STATE_MIN]}.",
         f"Không chấm: mode {sorted(collections.Counter(r.get('mode') or '?' for r in rows).items())}, "
         f"target {sorted(collections.Counter(r.get('target') or '?' for r in rows).items())}, "
         f"có plan {sum(bool(r.get('plan')) for r in rows)}, có box {sum(bool(r.get('box')) for r in rows)}, "

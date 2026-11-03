@@ -507,3 +507,15 @@ def test_a_finished_task_shows_no_early_ring():
     _, s, log = _streaming([Reply(say="Xong rồi.", found=True, point=(10, 10), target="click", goal_done=True)], [], [])
     s.run("x")
     assert not [x for x in log if x[0] == "show"] and log[0] == ("say", "Xong rồi.")
+
+
+def test_the_tick_comes_with_the_next_ring_and_only_once():
+    ticks = []
+    _, s, log = _streaming([Reply(say="Bạn bấm File.", found=True, point=(15, 74), target="click"),
+                            _go("Bạn bấm Export."),
+                            Reply(say="Xong.", target="none", step_done=True, goal_done=True)],
+                           [Click(1.0, 30, 80, "left"), Click(2.0, 500, 600, "left")], ["settled", "settled"])
+    s.confirm = lambda x, y: (ticks.append((x, y)), log.append(("tick",)))
+    s.run("x")
+    assert ticks == [(30, 80), (500, 600)]
+    assert log.index(("tick",)) < log.index(("show", 192, 108))

@@ -59,6 +59,7 @@ class Step:
     latency_s: float = 0.0
     error: str | None = None
     target: str = ""               # what the step asked for: click, read, scroll or none
+    shown_s: float | None = None   # seconds from the screenshot until she saw the step
 
 
 @dataclass
@@ -94,6 +95,7 @@ class Session:
     spoken: bool = False           # this turn's sentence has been said
     screen_size: tuple = (0, 0)    # of the screenshot this turn looks at
     reading: bool = False          # this turn's step is a region to read
+    asked_at: float = 0.0
 
     @staticmethod
     def _is_waiting(reply) -> bool:
@@ -126,6 +128,7 @@ class Session:
 
     def _turn_starts(self, img) -> None:
         self.shown_at, self.spoken, self.screen_size = None, False, img.size
+        self.asked_at = time.monotonic()
 
     def _check(self, question: str, reply, changed: bool, acted: str = "click"):
         """Look again after she acted: the next turn, with all that is known about the task."""
@@ -138,6 +141,7 @@ class Session:
 
     def _early_mark(self, reply) -> None:
         """The answer is still arriving, but the place is known: she sees it seconds sooner."""
+        self._tick(reply)
         px = reply.point_px(self.screen_size)
         if px and reply.target != "none" and not reply.goal_done and not self._cancelled():
             self._show_step(reply, px, reply.box_px(self.screen_size))
@@ -145,6 +149,12 @@ class Session:
     def _early_say(self, text: str) -> None:
         if not text.isascii() and not self._cancelled():  # no diacritics: the tutor asks again, see Tutor._call
             self._speak(text)
+
+    def _tick(self, reply) -> None:
+        """The checking made visible, where she clicked, as the next step comes up."""
+        click, self.clicked = self.clicked, None
+        if self.confirm and click is not None and reply.step_done and not self._cancelled():
+            self.confirm(click.x, click.y)
 
     def _show_step(self, reply, px, box) -> None:
         """Once a turn: what she should look at, and the island's colour to match."""
@@ -166,7 +176,6 @@ class Session:
             self.say(f"{text} {READ_DONE}" if self.shown_at is not None and self.reading else text)
 
     def _settle(self, click) -> str:
-        self.clicked = click
         self.pause(HIDE_PAUSE_S)
         return self.settle(click)
 
@@ -178,6 +187,7 @@ class Session:
         self.hide()
         if click is None or self._cancelled():
             return None  # she stopped, or asked something new; she can ask again any time
+        self.clicked = click
         return self._settle(click)
 
     def _read(self, reply, px, box) -> tuple[str | None, str]:
@@ -231,7 +241,8 @@ class Session:
                 break
             px = reply.point_px(img.size)
             self.steps.append(Step(len(self.steps) + 1, reply.say, px, reply.step_done, reply.goal_done, outcome,
-                                   reply.latency_s, reply.error, reply.target))
+                                   reply.latency_s, reply.error, reply.target,
+                                   None if self.shown_at is None else round(self.shown_at - self.asked_at, 2)))
             self.part_steps += 1
             if self.save:
                 self.save(len(self.steps), img, reply)
@@ -263,8 +274,7 @@ class Session:
             if outcome is None or self._cancelled():
                 break
             img, reply = self._check(question, reply, outcome != "unchanged", acted)
-            if self.confirm and acted == "click" and reply.step_done and not self._cancelled():
-                self.confirm(self.clicked.x, self.clicked.y)  # the checking made visible, where she clicked
+            self._tick(reply)
         if not self._cancelled() and not (self.steps and self.steps[-1].error):
             self._status("done" if self.steps and self.steps[-1].goal_done else "idle")
         return self.steps

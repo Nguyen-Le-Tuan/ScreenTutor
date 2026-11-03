@@ -280,6 +280,31 @@ def test_the_tutor_streams_when_asked_and_gives_the_same_reply():
     assert len(marks) == len(says) == 1 and reply.latency_s >= 0
 
 
+def test_a_dropped_line_is_tried_once_more():
+    import httpx
+
+    from screentutor.tutor import Tutor
+
+    calls = []
+
+    def handler(request):
+        calls.append(1)
+        if len(calls) == 1:
+            raise httpx.ReadError("the line dropped")
+        return httpx.Response(200, text=f"data: {json.dumps({'choices': [{'delta': {'content': json.dumps(ANSWER)}}]})}")
+
+    tutor = Tutor("k")
+    tutor._http = httpx.Client(base_url="https://x", transport=httpx.MockTransport(handler))
+    reply = tutor.ask("x", "data:", on_say=lambda t: None)
+    assert reply.error is None and len(calls) == 2 and reply.point == (150.0, 250.0)
+
+
+def test_the_state_rule_and_the_rule_against_talking_about_itself_are_in_every_turn():
+    assert "đã bấm rồi mà không thấy" in build_prompt("x") and "để mình hướng dẫn" in build_prompt("x")
+    assert "để mình hướng dẫn" in build_follow_up_prompt("x", "y")
+    assert "đã bấm rồi mà không thấy" not in build_prompt("x", task=False)  # the prompt T4 measured stays as it was
+
+
 def test_a_failed_stream_is_an_error_not_a_crash():
     import httpx
 

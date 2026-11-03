@@ -20,6 +20,13 @@ because there is nothing to click on a picture.
   check on the number of sentences on a turn that opens with "Việc này có N phần".
 - No session error in any run.
 A part counts as named when the plan contains one of its keywords, ignoring case.
+
+Second attempt, rule changed before it ran. The first (20261102-1851xx-big, kept) got P2
+6/6, P3 4/4, P5 11/13 and failed P4 with 3/10. Reading the runs, 7 of those 10 were turns
+where the message that gives the task was fully in view and only other messages ran on:
+reading it was right, so P4 counted the wrong thing. P4 now means: the message that gives
+the task is cut off at the bottom of the view. Thresholds unchanged. Reported, not
+scored: seconds until she saw each step.
 """
 
 from __future__ import annotations
@@ -62,8 +69,8 @@ def iou(a, b) -> float:
     return inter / ((a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - inter)
 
 
-def more_below(chat, top: int) -> bool:
-    return chat.canvas.height - top > H - TASKBAR_H - INPUT_H - HEADER_H
+def message_cut(chat, message: int, top: int) -> bool:
+    return chat.boxes[message][3] - top > H - TASKBAR_H - INPUT_H - HEADER_H
 
 
 class Mom:
@@ -76,7 +83,8 @@ class Mom:
 
     def look(self):
         img, boxes = view(self.chat, self.top)
-        self.turns.append({"top": self.top, "more_below": more_below(self.chat, self.top), "true_box": boxes[self.message]})
+        self.turns.append({"top": self.top, "message_cut": message_cut(self.chat, self.message, self.top),
+                           "true_box": boxes[self.message]})
         return img, STATE
 
     def wait_change(self, timeout_s, min_change, stop):
@@ -104,7 +112,7 @@ def one(tutor: Tutor, spec: dict) -> dict:
     for i, st in enumerate(steps):
         t = mom.turns[i] if i < len(mom.turns) else {}
         turns.append({**t, "n": st.n, "target": st.target, "say": st.say, "latency_s": st.latency_s, "error": st.error,
-                      "goal_done": st.goal_done})
+                      "goal_done": st.goal_done, "shown_s": st.shown_s})
     return {"steps": turns, "plan": s.plan, "notes": s.notes, "mode": s.mode, "boxes": list(shown.values()), "said": said}
 
 
@@ -130,7 +138,7 @@ def cmd_run(args) -> None:
 
 def summarize(out: Path) -> str:
     rows = json.loads((out / "runs.json").read_text(encoding="utf-8"))
-    plans_ok, ious, should, did, extra, says, ok_says, errors, lat = 0, [], 0, 0, 0, 0, 0, 0, []
+    plans_ok, ious, should, did, extra, says, ok_says, errors, lat, shown = 0, [], 0, 0, 0, 0, 0, 0, [], []
     for r in rows:
         spec = TASKS[r["task"]]
         plan = " | ".join(r["plan"]).lower()
@@ -144,7 +152,9 @@ def summarize(out: Path) -> str:
         for s in r["steps"]:
             lat.append(s["latency_s"])
             errors += bool(s["error"])
-            if s.get("more_below") and not s["goal_done"]:
+            if s.get("shown_s"):
+                shown.append(s["shown_s"])
+            if s.get("message_cut") and not s["goal_done"]:
                 should += 1
                 did += s["target"] == "scroll"
             elif s["target"] == "scroll":
@@ -160,7 +170,8 @@ def summarize(out: Path) -> str:
              f"P3 khung đọc IoU ≥ 0,5: {p3}/{len(ious)} (cần ≥ 80%), IoU {[round(x, 2) for x in ious]}",
              f"P4 bảo kéo khi còn tiếp: {did}/{should} (cần ≥ 80%); bảo kéo khi đã hết: {extra} (tối đa 1)",
              f"P5 câu nói qua kiểm tra: {ok_says}/{says} (cần ≥ 90%)",
-             f"Lỗi phiên: {errors}. Trễ trung vị mỗi lượt: {statistics.median(lat):.1f} s", ""]
+             f"Lỗi phiên: {errors}. Trễ trung vị mỗi lượt: {statistics.median(lat):.1f} s; "
+             f"tới khi mẹ thấy bước: {statistics.median(shown or [0]):.1f} s", ""]
     for r in rows:
         lines.append(f"- {r['task']} {r['run']}: {[s['target'] for s in r['steps']]} | {r['mode']} | plan: {r['plan']}")
         lines += [f"    {s['target']}: {s['say']}" for s in r["steps"]]
