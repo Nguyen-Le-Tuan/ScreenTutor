@@ -39,6 +39,9 @@ Fourth attempt, same rule. The third (20261102-191531-big) passed all: P2 8/9, P
 9/9, P5 21/21, no errors. But the tutor said "two parts" before it had read to the end and
 then planned five, which was also the one plan that failed. The app now holds back the plan
 and the count on a scroll step; that is a change in behaviour, so the run is repeated.
+Run 20261102-192309-big, the last of the night: P2 7/9 FAILED, P3 3/3, P4 9/9, P5 21/21, no
+errors. One failure is real (principal 2 answered in one step, no plan), one is the keyword
+check (a plan that merged two parts). Left as failed; not scored again.
 """
 
 from __future__ import annotations
