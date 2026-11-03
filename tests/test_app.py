@@ -187,3 +187,23 @@ def test_the_green_flash_comes_once_when_a_task_is_done(qt_app):
     feed.status("idle")
     feed.status("done")
     assert flashes == [1, 1]      # the next task
+
+
+def test_the_tutor_speaking_up_is_a_task_of_its_own_in_the_caution_colour(qt_app):
+    isl = FakeIsland()
+    feed = Feed(isl)
+    feed.listen()
+    feed.hear("câu trước")
+    old = feed.task
+    feed.notice()
+    assert feed.task is not old and isl.states[-1][0] == "notice"
+    feed.say_start("File này là bản tạm của Zalo.", 7)
+    assert isl.states[-1][0] == "speaking"
+    feed.say_end(7)
+    assert isl.states[-1][0] == "notice" and feed.task.last_said() == "File này là bản tạm của Zalo."
+
+
+def test_the_machine_notes_say_what_to_do_about_the_temporary_copy():
+    from screentutor.app import MACHINE_NOTES
+
+    assert "tải file về một thư mục thật" in MACHINE_NOTES and "không sửa trên bản tạm" in MACHINE_NOTES

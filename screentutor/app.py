@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import sys
 import threading
 import time
@@ -38,7 +39,8 @@ MACHINE_NOTES = "\n".join([
     "- Nút \"Create PDF\" của WPS trên thanh công cụ Word không dùng được trên máy này (bấm vào chỉ hiện hộp đòi "
     "cài WPS). Muốn xuất PDF thì dùng File > Export > Create PDF/XPS.",
     "- Bấm thẳng vào file trong tin nhắn Zalo thì Word mở một bản tạm chỉ đọc (Read-Only) trong thư mục Zalo Temp; "
-    "sửa trên bản đó sẽ không vào file thật.",
+    "sửa trên bản đó sẽ không vào file thật. Muốn sửa, người dùng phải quay lại Zalo tải file về một thư mục thật rồi "
+    "mở bản đó; không sửa trên bản tạm.",
 ])
 WAIT_GRACE_S = 5.0    # a loading page may stay blank this long before anything changes
 PRE_ASK_S = 3.0       # B1b: she may point just before she presses the button or holds Ctrl+Alt
@@ -124,6 +126,12 @@ class Feed:
         self.base = state
         self._show()
 
+    def notice(self) -> None:
+        """B4: the tutor speaks up by itself. A task of its own in the chat, in the caution colour."""
+        self.task = conv.Task()
+        self.base, self.speaking = "notice", 0
+        self._show()
+
     def say_start(self, text: str, token: int) -> None:
         if self.task is None:
             self.task = conv.Task()
@@ -201,7 +209,7 @@ def main(argv=None) -> None:
     from PySide6.QtGui import QColor, QGuiApplication
     from PySide6.QtWidgets import QApplication
 
-    from . import screen
+    from . import guards, screen, winstate
     from . import settings as settings_mod
     from .history import History, when_label
     from .inputs import Click, Hold, Trail, watch
@@ -210,7 +218,7 @@ def main(argv=None) -> None:
     from .overlay import Overlay, _win_topmost
     from .session import ClickBox, Session
     from .speak import Speaker
-    from .state import format_vi, take_snapshot
+    from .state import format_vi, take_snapshot, zalo_temp_dir
     from .still import wait_change, wait_until_settled
     from .tutor import Tutor
     from .ui import AskButton
@@ -376,7 +384,7 @@ def main(argv=None) -> None:
         (out / f"{stamp}_step{n:02d}.json").write_text(json.dumps(data, ensure_ascii=False, indent=2),
                                                        encoding="utf-8")
 
-    current = {"cancel": None, "stop": None, "mode": None, "listening": False}
+    current = {"cancel": None, "stop": None, "mode": None, "listening": False, "thread": None}
     clicks = ClickBox()
     trail = Trail()
 
@@ -455,8 +463,9 @@ def main(argv=None) -> None:
         bridge.clear.emit()
         post("collapse")  # ask() also runs on the input thread (Ctrl+Alt): widgets only via the bridge
         current.update(cancel=threading.Event(), stop=threading.Event(), mode=mode)
-        threading.Thread(target=question, args=(mode, current["stop"], current["cancel"], time.monotonic()),
-                         daemon=True).start()
+        current["thread"] = threading.Thread(target=question, args=(mode, current["stop"], current["cancel"],
+                                                                    time.monotonic()), daemon=True)
+        current["thread"].start()
 
     def on_click_qt(x: int, y: int) -> None:
         button_box[0] = physical(button)
@@ -478,9 +487,29 @@ def main(argv=None) -> None:
             elif current["mode"] == "PUSH_TO_TALK" and current["stop"] is not None:
                 current["stop"].set()  # Ctrl+Alt let go: the question is complete
 
+    def watch_traps() -> None:
+        """B4: reads the window in front and one folder, on this machine only. Waits while the tutor is busy,
+        so it never talks over a task; what it noticed in the meantime it says when the task is over."""
+        guard = guards.ZaloCopy()
+        folder = zalo_temp_dir(os.environ.get("TEMP", ""))
+        while folder is not None and not stop_inputs.wait(guards.EVERY_S):
+            thread = current["thread"]
+            if (thread is not None and thread.is_alive()) or feed.speaking:
+                continue
+            try:
+                hwnd = winstate.foreground_hwnd()
+                copy = guard.check(winstate.describe(hwnd) if hwnd else None, guards.temp_copies(folder), time.time())
+            except Exception as e:  # a sensor that fails must never take the app down
+                print(f"Không đọc được cửa sổ để gác: {e}", flush=True)
+                continue
+            if copy is not None:
+                post("notice")
+                say(guards.sentence(button_box[0] is not None))
+
     button.clicked.connect(lambda: ask("ENDPOINTING"))
     stop_inputs = threading.Event()
     threading.Thread(target=watch, args=(on_input, stop_inputs), kwargs={"trail": trail}, daemon=True).start()
+    threading.Thread(target=watch_traps, daemon=True).start()
     print("ScreenTutor đang chạy. Bấm nút tròn hoặc giữ Ctrl+Alt rồi nói. Ctrl+C ở đây để tắt.", flush=True)
     try:
         app.exec()

@@ -190,8 +190,12 @@ def format_vi(s: Snapshot) -> str:
 
 
 # T5 X-1 (02/11): a file clicked straight in Zalo opens from here, read-only; edits made there never reach
-# the real file, which is how mom's "blank copy" happens. The label says so to the model.
+# the real file. Whether this is how mom's "blank copy" came about is not known. The label says so to the model.
 ZALO_TEMP = "bản tạm chỉ đọc của Zalo (Zalo Temp)"
+
+
+def zalo_temp_dir(temp: str) -> Path | None:
+    return Path(temp) / "Zalo Temp" / "TempDownloads" if temp else None
 
 
 def zalo_folders(documents: str, temp: str) -> dict[str, str]:
@@ -200,7 +204,7 @@ def zalo_folders(documents: str, temp: str) -> dict[str, str]:
     received = Path(documents) / "Zalo Received Files" if documents else None
     if received and received.is_dir():
         out["Zalo Received Files"] = str(received)
-    opened = Path(temp) / "Zalo Temp" / "TempDownloads" if temp else None
+    opened = zalo_temp_dir(temp)
     if opened and opened.is_dir():
         out[ZALO_TEMP] = str(opened)
     return out

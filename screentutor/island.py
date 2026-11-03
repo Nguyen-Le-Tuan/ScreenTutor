@@ -64,6 +64,7 @@ STYLE = {  # state: (words, colour)
     "turn": ("Đến lượt bạn bấm", QColor(COLOR)),            # the same red as the ring
     "reading": ("Bạn đọc vùng sáng nhé", QColor(READ_COLOR)),  # the same mint as the frame
     "caution": ("Cẩn thận trước khi bấm", QColor(CAUTION_COLOR)),  # the same amber as the ring
+    "notice": ("Bạn chú ý nhé", QColor(CAUTION_COLOR)),     # B4: the tutor speaks up by itself; nothing to click
     "loading": ("Chờ trang tải", QColor(191, 90, 242)),
     "done": ("Xong rồi", QColor(48, 209, 88)),
     "error": ("Chưa nghe rõ", QColor(142, 142, 147)),
@@ -225,12 +226,12 @@ def paint_icon(p: QPainter, state: str, c: QPointF, t: float, since: float = 1.0
             a = t * 3.2 + k * 2 * math.pi / 3
             p.drawEllipse(QPointF(c.x() + 6 * math.cos(a), c.y() + 6 * math.sin(a)),
                           1.5 + (0.5 + 0.5 * math.sin(a)), 1.5 + (0.5 + 0.5 * math.sin(a)))
-    elif state in ("turn", "caution"):
+    elif state in ("turn", "caution", "notice"):
         period = TURN_PULSE_S if state == "turn" else CAUTION_PULSE_S
         phase = (t % period) / period
         ring(4 + 4.5 * phase, 1.8, _with_alpha(color, 1 - phase))
         ring(4.5, 2.2, color)
-        if state == "caution":
+        if state != "turn":
             bang(0.85)
     elif state == "reading":
         p.setPen(Qt.NoPen)
@@ -387,7 +388,7 @@ def paint_island(p: QPainter, shape: Shape, cx: float, view: View, t: float,
         width = (view.layout_w or shape.w) - 2 * SIDE
         bx0 = cx - (view.layout_w or shape.w) / 2
         messages = hover_messages(view.task, view.peek) if view.mode == "hover" else (view.task.messages if view.task else [])
-        bubbles, _ = conv.layout(messages, width, measure, current=view.state in ("speaking", "turn", "caution"))
+        bubbles, _ = conv.layout(messages, width, measure, current=view.state in ("speaking", "turn", "caution", "notice"))
         if view.mode == "hover":
             bubbles, _ = conv.newest_that_fit(bubbles, shape.h - HEADER_H - 14, keep_first=True)
         y0 = top + 6 + HEADER_H + (4 if view.mode == "hover" else 10)
@@ -508,6 +509,7 @@ def paint_bubble(p: QPainter, b: conv.Bubble, ox: float, oy: float, accent: QCol
 HOVER_DWELL_S = 0.25     # the mouse rests this long on the closed island before it opens
 LEAVE_S = 0.30           # and leaves for this long before it closes again
 DONE_HOLD_S = 3.0        # "done" (or an error) shows this long, then the island rests
+NOTICE_HOLD_S = 12.0     # time to read what the tutor said by itself, after it has finished saying it
 POLL_MS, FRAME_MS = 60, 16
 AVOID_MARGIN = 20        # logical px around the island where the ring's target counts as underneath
 SCROLL_STEP = 42         # px per wheel notch in the pinned island
@@ -745,6 +747,8 @@ class Island(QWidget):
         if self.level_source is not None and self.view.state in ("listening", "speaking"):
             self.view.level = self.level_source()
         if self.view.state in ("done", "error") and now - self._state_at >= DONE_HOLD_S:
+            self.set_state("idle")
+        if self.view.state == "notice" and now - self._state_at >= NOTICE_HOLD_S:
             self.set_state("idle")
         if not self.morph.moving():
             self._fit()

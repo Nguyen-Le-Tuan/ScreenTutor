@@ -320,3 +320,17 @@ def test_a_ring_under_the_peeking_island_closes_it():
 
 def island_mod_messages(i):
     return island.hover_messages(i.view.task, i.view.peek)
+
+
+def test_what_the_tutor_said_by_itself_stays_a_while_then_the_island_rests():
+    clock = [0.0]
+    isl = Island(clock=lambda: clock[0], cursor=lambda: QPoint(5, 500))
+    task = conv.Task()
+    task.say("File này là bản tạm của Zalo.")
+    isl.set_state("notice", task)
+    clock[0] = island.NOTICE_HOLD_S - 0.5
+    isl.tick()
+    assert isl.view.state == "notice"
+    clock[0] = island.NOTICE_HOLD_S + 0.5
+    isl.tick()
+    assert isl.view.state == "idle"
