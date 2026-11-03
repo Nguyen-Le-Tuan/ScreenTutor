@@ -12,6 +12,12 @@ sound of its sentence, not as soon as its place is known. In the T13 videos the 
 the voice by 3.0 s (median of 28 steps, 0.9-4.4 s): she clicked before she heard where,
 which cut the sentence off, and on D4 the amber ring came 4.1 s before its warning.
 
+C2 (03/11): just before the sentence is said, the screen is compared with the screenshot the
+answer is about (fresh.py). If it has moved on (a toast gone, a box come up, she went ahead),
+nothing is said and the tutor looks again, waiting first for a click she made meanwhile (founder:
+look again in silence). At most MAX_STALE times in a row. Replayed on the T13 videos: 5 of 5
+stale turns caught, 1 of 24 fresh turns flagged (tutor_eval/stale_replay.py).
+
 B2 (02/11): the session keeps the plan of a big task, the part being done and the notes
 of a long message, and hands them to every later turn, so she never has to ask again.
 Each step says what it wants:
@@ -40,7 +46,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 
-from .still import BIG_CHANGE, CHANGE_MIN
+from . import fresh
+from .still import BIG_CHANGE, CHANGE_MIN, STILL_S
 
 MAX_STEPS = 12        # T6 (02/11): exporting a PDF after backing out of a wrong dialog took 8 steps and hit 8
 MAX_PLAN_STEPS = 30   # a task with a plan (founder's big tasks, 02/11)...
@@ -52,6 +59,9 @@ SCROLL_WAIT_S = 60
 HIDE_PAUSE_S = 0.12   # let the ring disappear before watching the screen, or its vanishing looks like a change
 RING_FLIGHT_S = 0.5   # overlay.TRAVEL_S and a little: measured 02/11, the ring's flight alone counts as a change
 SOUND_WAIT_S = 4.0    # C1: a sentence with no voice (no sound card) still puts its step up after this long
+MAX_STALE = 2         # C2: looks again at most this many times in a row; a screen that keeps moving gets its answer
+TICK_R = 30           # physical px around her last click: its green tick is ours, not a change of the screen
+STALE = "stale"       # C2: what a step comes to when its screen moved on before it was said
 READ_DONE = "Đọc xong bạn bấm chuột một cái nhé."  # founder 02/11: reading has no click of its own to wait for
 
 
@@ -67,6 +77,9 @@ class Step:
     error: str | None = None
     target: str = ""               # what the step asked for: click, read, scroll or none
     shown_s: float | None = None   # seconds from the screenshot until she saw the step
+    stale: bool = False            # C2: the screen moved on before this step was said, so it never was
+    region: float | None = None    # C2: share of the area around the target that had changed by then
+    whole: float | None = None     # C2: share of the whole screen that had changed by then
 
 
 @dataclass
@@ -92,6 +105,8 @@ class Session:
     show_scroll: object = None     # (point) physical px; until B3 draws the arrow, a ring there
     on_plan: object = None         # (plan, part) -> None: the parts of the task and the part being done, from 1
     confirm: object = None         # (x, y) physical px: the step she clicked there has been checked and is done
+    glance: object = None          # C2: () -> PIL image of the screen now, to check an answer against before it is said
+    own: object = None             # C2: () -> [(x1, y1, x2, y2)] physical px of our own widgets, left out of that check
     steps: list[Step] = field(default_factory=list)
     plan: list[str] = field(default_factory=list)
     part: int = 0                  # from 1; 0 while there is no plan
@@ -109,6 +124,11 @@ class Session:
     sounded: bool = False          # this turn's sentence has made its first sound
     on_screen: object = field(default_factory=threading.Event)   # this turn's step is up
     lock: object = field(default_factory=threading.RLock)        # the voice's thread shows the step too
+    seen: object = None            # the screenshot this turn's answer is about
+    moved_on: bool | None = None   # C2: that screenshot is no longer the screen; None until checked
+    change: object = None          # C2: what the check measured (fresh.Change), for the log
+    ticked: tuple | None = None    # where this turn's green tick went
+    stale_run: int = 0             # C2: turns in a row whose screen had moved on
 
     @staticmethod
     def _is_waiting(reply) -> bool:
@@ -146,6 +166,7 @@ class Session:
             self.turn += 1
             self.waiting_step, self.sounded, self.reading = None, False, False
             self.on_screen = threading.Event()
+            self.seen, self.moved_on, self.change, self.ticked = img, None, None, None
 
     def _check(self, question: str, last_say: str, changed: bool | None, acted: str = "click"):
         """Look again after she acted: the next turn, with all that is known about the task."""
@@ -172,6 +193,7 @@ class Session:
         click, self.clicked = self.clicked, None
         if self.confirm and click is not None and reply.step_done and not self._cancelled():
             self.confirm(click.x, click.y)
+            self.ticked = (click.x, click.y)
 
     def _prepare_step(self, reply, px, box) -> None:
         """This turn's step is known. It goes up with the first sound of its sentence (C1)."""
@@ -225,20 +247,56 @@ class Session:
         if self.shown_at is not None:
             self.hide()
 
+    def _screen_moved_on(self) -> bool:
+        """C2: is the screen this turn's step is about gone? Checked once, just before the sentence is said."""
+        if self.moved_on is None:
+            self.moved_on = False
+            if self.glance is not None and self.seen is not None and self.stale_run < MAX_STALE:
+                ignore = list(self.own()) if self.own else []
+                if self.ticked:
+                    x, y = self.ticked
+                    ignore.append((x - TICK_R, y - TICK_R, x + TICK_R, y + TICK_R))
+                self.change = fresh.compare(self.seen, self.glance(), self.waiting_step[1], ignore)
+                self.moved_on = self.change.stale
+        return self.moved_on
+
     def _speak(self, text: str) -> None:
         if not self.spoken:
+            if self.waiting_step is not None and self._screen_moved_on():
+                return   # C2: not a word about a screen that has gone
             self.spoken = True
+            self.stale_run = 0
             turn = self.turn
             self.say(f"{text} {READ_DONE}" if self.reading else text, lambda: self._on_sound(turn))
+
+    def _look_again(self, question: str, heard: str | None):
+        """C2: the screen moved on while the tutor was answering. Nothing is said: it looks again (founder 03/11).
+        heard: the last sentence she heard in this task; None, nothing yet, and it asks afresh."""
+        self.stale_run += 1
+        self._drop_step()
+        click = self.wait_click(self.asked_at, 0)   # she went ahead and clicked while it was answering
+        if click is not None:
+            self.clicked = click
+            self._settle(click)
+            acted = "click"
+        else:
+            self.pause(STILL_S)                     # a box that is coming up finishes first
+            acted = "stale"
+        if heard is None:
+            return self._ask(question)
+        return self._check(question, heard, True, acted)
 
     def _settle(self, click) -> str:
         self.pause(HIDE_PAUSE_S)
         return self.settle(click)
 
     def _click(self, reply, px) -> str | None:
-        """Words and ring together, her click, a still screen. None: she stopped, or asked something new."""
+        """Words and ring together, her click, a still screen. None: she stopped, or asked something new.
+        STALE: the screen moved on before a word was said."""
         self._prepare_step(reply, px, None)
         self._speak(reply.say)
+        if self.moved_on:
+            return STALE
         click = self.wait_click(self.shown_at, CLICK_WAIT_S) if self._wait_shown() else None
         self.hide()
         if click is None or self._cancelled():
@@ -250,6 +308,8 @@ class Session:
         """A region to read. Returns (outcome, what she did); outcome None as in _click."""
         self._prepare_step(reply, px, box)
         self._speak(reply.say)
+        if self.moved_on:
+            return STALE, "read"
         if not self._wait_shown():
             self.hide()
             return None, "read"
@@ -276,6 +336,8 @@ class Session:
         """Show where to scroll and wait for the screen; she has nothing to click. None as in _click."""
         self._prepare_step(reply, px, None)   # her turn, not "Chờ trang tải" (founder 02/11)
         self._speak(reply.say)
+        if self.moved_on:
+            return STALE
         if not self._wait_shown():
             self.hide()
             return None
@@ -287,18 +349,23 @@ class Session:
         self.pause(HIDE_PAUSE_S)
         return outcome
 
+    def _ask(self, question: str):
+        """The first turn of a new task."""
+        self._status("thinking")
+        img, state = self.look()
+        self._turn_starts(img)
+        return img, self.tutor.ask(question, self.encode(img), state, self.pointer, on_mark=self._early_mark,
+                                   on_say=self._early_say, known=self.known)
+
     def run(self, question: str, max_steps: int = MAX_STEPS, last_say: str | None = None) -> list[Step]:
         """last_say: the task is being picked up again, this was the last thing the tutor said in it."""
         if last_say is None:
-            self._status("thinking")
-            img, state = self.look()
-            self._turn_starts(img)
-            reply = self.tutor.ask(question, self.encode(img), state, self.pointer, on_mark=self._early_mark,
-                                   on_say=self._early_say, known=self.known)
+            img, reply = self._ask(question)
         else:
             if self.on_plan and self.plan:
                 self.on_plan(self.plan, self.part)   # the card comes back before the tutor speaks
             img, reply = self._check(question, last_say, None, "resume")
+        heard = last_say   # the last sentence she heard in this task
         outcome = None
         waits = 0
         while not self._cancelled():
@@ -329,6 +396,7 @@ class Session:
                 outcome = self.wait_screen()
                 if self._cancelled():
                     break
+                heard = reply.say
                 img, reply = self._check(question, reply.say, outcome != "unchanged")
                 continue
             waits = 0
@@ -338,8 +406,16 @@ class Session:
                 outcome, acted = self._scroll(reply, px), "moved"
             else:
                 outcome, acted = self._click(reply, px), "click"
+            if self.change is not None:
+                self.steps[-1].region, self.steps[-1].whole = self.change.region, self.change.whole
+            if outcome == STALE and not self._cancelled():
+                self.steps[-1].stale = True
+                img, reply = self._look_again(question, heard)
+                self._tick(reply)
+                continue
             if outcome is None or self._cancelled():
                 break
+            heard = reply.say
             img, reply = self._check(question, reply.say, outcome != "unchanged", acted)
             self._tick(reply)
         if not self._cancelled() and not (self.steps and self.steps[-1].error):

@@ -527,7 +527,7 @@ def main(argv=None) -> None:
             wait_change=lambda timeout_s, min_change, stop: wait_change(grab_own_masked, timeout_s, min_change, stop),
             show_box=lambda box, caution: bridge.frame.emit(*box, caution),
             show_scroll=lambda px: bridge.hint.emit(*px),
-            confirm=bridge.tick.emit,
+            confirm=bridge.tick.emit, glance=screen.grab, own=own_rects,
             save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer, on_plan=on_plan,
             known=known, plan=list(rec.plan), part=rec.part, notes=rec.notes)
         steps = session.run(rec.question, last_say=last_say)
@@ -536,8 +536,12 @@ def main(argv=None) -> None:
         if rec.outcome != "error":  # in the background: she does not wait for her own notes
             threading.Thread(target=learn, args=(memory, rec, tutor.summarise), daemon=True).start()
         for s in steps:
+            moved = "" if s.whole is None else (f" | màn hình {'ĐÃ ĐỔI, không nói' if s.stale else 'còn như cũ'} "
+                                                f"(vùng {'—' if s.region is None else f'{s.region:.3f}'}, "
+                                                f"cả màn {s.whole:.4f})")
             print(f"  bước {s.n} ({s.target or 'click'}): {s.say} | trỏ {s.point_px} | sau cú bấm {s.settle or '—'} | "
-                  f"bước xong {s.step_done} | việc xong {s.goal_done} | {s.latency_s:.1f} s", flush=True)
+                  f"bước xong {s.step_done} | việc xong {s.goal_done} | {s.latency_s:.1f} s"
+                  f" | hiện sau {'—' if s.shown_s is None else f'{s.shown_s:.1f} s'}{moved}", flush=True)
         offer_left_task(rec, cancel)
 
     def begin(mode: str | None) -> None:

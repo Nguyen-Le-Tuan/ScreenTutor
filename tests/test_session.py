@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from screentutor import session as session_mod
 from screentutor.inputs import Click
@@ -605,3 +605,58 @@ def test_the_tick_comes_with_the_next_ring_and_only_once():
     s.run("x")
     assert ticks == [(30, 80), (500, 600)]
     assert log.index(("tick",)) < log.index(("show", 192, 108))
+
+
+def _moved(box=(60, 560, 300, 650)):
+    """The screen after something came up near (20, 560) on the grid, (38, 605) in pixels."""
+    img = Image.new("RGB", (1920, 1080))
+    ImageDraw.Draw(img).rectangle(box, fill="white")
+    return img
+
+
+def test_a_screen_that_moved_on_is_not_talked_about_and_is_looked_at_again():
+    tutor = FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(15, 74)),
+                       _go("Bạn bấm Export.", point=(20, 560)),
+                       _go("Bạn bấm Create PDF.", point=(500, 500)),
+                       Reply(say="Xong rồi.", target="none", step_done=True, goal_done=True)])
+    s, log = _session(tutor, [CLICK, None, CLICK], ["settled", "settled"])
+    s.glance = iter([Image.new("RGB", (1920, 1080)), _moved(), Image.new("RGB", (1920, 1080))]).__next__
+    steps = s.run("Xuất PDF")
+    assert [x[1] for x in log if x[0] == "say"] == ["Bạn bấm File.", "Bạn bấm Create PDF.", "Xong rồi."]
+    assert ("show", 38, 605) not in log
+    assert tutor.calls[2] == ("follow_up", "Xuất PDF", "Bạn bấm File.", True)   # she has heard only "File"
+    assert [t["acted"] for t in tutor.turns] == ["click", "stale", "click"]
+    assert [st.stale for st in steps] == [False, True, False, False]
+
+
+def test_a_click_she_made_while_it_answered_is_waited_for_and_checked():
+    tutor = FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(15, 74)),
+                       _go("Bạn bấm Export.", point=(20, 560)),
+                       Reply(say="Xong rồi.", target="none", step_done=True, goal_done=True)])
+    ahead = Click(5.0, 40, 600, "left")
+    s, log = _session(tutor, [CLICK, ahead], ["settled", "settled"])
+    s.glance = iter([Image.new("RGB", (1920, 1080)), _moved()]).__next__
+    ticks = []
+    s.confirm = lambda x, y: ticks.append((x, y))
+    s.run("x")
+    assert [t["acted"] for t in tutor.turns] == ["click", "click"] and ticks[-1] == (40, 600)
+    assert [x[1] for x in log if x[0] == "say"] == ["Bạn bấm File.", "Xong rồi."]
+
+
+def test_a_screen_that_keeps_moving_gets_its_answer_after_two_more_looks():
+    tutor = FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(20, 560))] * 3)
+    s, log = _session(tutor, [None, None], [])
+    s.glance = _moved
+    steps = s.run("x")
+    assert [c[0] for c in tutor.calls] == ["ask", "ask", "ask"]   # nothing said yet: asked afresh
+    assert [x[1] for x in log if x[0] == "say"] == ["Bạn bấm File."]
+    assert [st.stale for st in steps] == [True, True, False]
+
+
+def test_our_own_widgets_changing_is_not_the_screen_moving_on():
+    for own, said in (([(50, 540, 320, 680)], 1), ([], 0)):
+        tutor = FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(20, 560))] * 3)
+        s, log = _session(tutor, [None, None], [])
+        s.glance, s.own = _moved, (lambda own=own: own)
+        s.run("x")
+        assert len(tutor.calls) == (1 if said else 3)

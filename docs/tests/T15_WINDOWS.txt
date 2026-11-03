@@ -1,8 +1,8 @@
-T15: CHUYẾN WINDOWS (lời nói và cái chỉ cùng lúc; kiểm màn hình cũ và dấu chấm sẽ thêm vào đây)
+T15: CHUYẾN WINDOWS (lời nói và cái chỉ cùng lúc; kiểm màn hình cũ; dấu chấm sẽ thêm vào đây)
 ==============================================================================================
-Soạn 03/11/2026. Hiện mới có phần C1. Phần C2 (kiểm màn hình còn như lúc chụp không) và C4 (dấu
-chấm) sẽ được thêm vào file này trước chuyến đi, để gom vào một chuyến. Nếu muốn thử riêng C1 thì
-chỉ làm A và B, khoảng 20 phút.
+Soạn 03/11/2026. Hiện có phần C1 (mục B) và C2 (mục C). Phần C4 (dấu chấm) sẽ được thêm vào file
+này trước chuyến đi, để gom vào một chuyến. A, B, C mất khoảng 40 phút.
+Để cửa sổ đen của ScreenTutor.bat mở suốt chuyến: cuối mỗi việc app in từng bước ra đó.
 
 C1 làm gì: vòng chỉ hiện đúng lúc loa phát tiếng đầu tiên của câu, không hiện ngay khi model vừa
 biết chỗ. Trong 4 video T13, vòng hiện trước tiếng trung vị 2,85 s (29 lượt); có 2 lượt vòng hiện
@@ -49,3 +49,37 @@ Làm như mẹ: chờ nghe rồi mới bấm; riêng B3 thì bấm nhanh.
 Chép ba video vào thư mục OneDrive của dự án, KHÔNG qua GitHub (video có danh sách chat thật).
 Bên Ubuntu, Claude đặt chúng vào tutor_eval/t15_data/ (đã gitignore, cùng mọi file .mp4) rồi chạy:
   .venv/bin/python -m tutor_eval.voice_sync tutor_eval/t15_data/C1_D1.mp4 tutor_eval/t15_data/C1_D4.mp4
+
+
+C. C2: MÀN HÌNH ĐÃ ĐỔI THÌ KHÔNG NÓI, XEM LẠI (20 phút)
+------------------------------------------------------
+C2 làm gì: ngay trước khi nói, tutor chụp lại màn hình và so với ảnh nó vừa trả lời. Nếu vùng
+quanh chỗ chỉ đổi từ 3% trở lên, hoặc cả màn hình đổi từ 2% trở lên, thì nó không nói, không chỉ,
+mà im lặng xem lại (viền sáng chạy tiếp). Bạn có bấm gì trong lúc nó xem thì nó chờ cú bấm đó
+xong rồi mới xem lại. Tối đa 2 lần liền; lần thứ 3 thì nói luôn.
+Phát lại trên 4 video T13: bắt 5/5 lượt màn hình đã cũ, báo nhầm 1/24 lượt (bạn rê chuột làm sáng
+đúng dòng cần bấm trong Explorer). Ngưỡng chọn trên chính các lượt đó, nên đây mới là phép thử
+độc lập. Chưa làm: canh chỗ chỉ SAU khi đã nói (thông báo tắt lúc vòng đang hiện thì vòng vẫn đứng đó).
+
+Mỗi bước, cửa sổ đen in thêm "màn hình còn như cũ" hoặc "màn hình ĐÃ ĐỔI, không nói", kèm hai con số.
+
+Luật chấm (ghi trước khi chạy; đề xuất của Claude):
+  - M-1 đạt: ở cả 3 ca C1-C3, tutor KHÔNG nói câu nào về thứ đã biến mất hay bước bạn đã tự làm.
+  - M-2 đạt: trong B1 và B2 (làm bình thường, chờ nghe rồi mới bấm), mỗi việc có tối đa 1 dòng
+    "ĐÃ ĐỔI, không nói" (báo nhầm làm chậm khoảng 4 s).
+  - Chỉ ghi lại: mỗi lần xem lại làm chậm bao lâu; có lúc nào tutor im quá lâu khiến bạn tưởng treo.
+
+Quay màn hình có tiếng như mục B. Ba ca, mỗi ca dựng cho màn hình đổi TRONG LÚC viền sáng đang chạy:
+[ ] C1. Thông báo tự tắt. Trong Zalo bấm mũi tên tải một file, chọn chỗ lưu, bấm Save. Khi thông báo
+        "Đã tải xong · Mở thư mục" vừa hiện, bấm nút tròn hỏi ngay: "mở chỗ file vừa tải".
+        Tutor có nói "bấm Mở thư mục" sau khi thông báo đã tắt không? ______
+        Cửa sổ đen có dòng "ĐÃ ĐỔI, không nói" không? Sau đó nó chỉ vào đâu? ______
+        Tên video: C2_toast.mp4
+[ ] C2. Tự làm trước. Trong Word hỏi "xuất giáo án ra PDF". Khi viền sáng đang chạy (tutor đang xem),
+        bạn tự bấm File rồi Export. Câu tiếp theo tutor nói là về File, hay về màn hình Export? ______
+        Tên video: C2_ahead.mp4
+[ ] C3. Hộp hiện ra. Đi tới hộp Publish (file PDF cùng tên đã có). Khi viền sáng đang chạy, tự bấm
+        Publish để hộp "already exists, replace?" hiện ra. Tutor có bảo "bấm Publish" nữa không? ______
+        Tên video: C2_box.mp4
+[ ] C4. Chép toàn bộ chữ trong cửa sổ đen vào file console.txt, để cùng chỗ với video (có tên file và
+        chat thật nên cũng KHÔNG qua GitHub).

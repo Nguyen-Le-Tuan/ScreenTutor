@@ -149,6 +149,7 @@ python -m tutor_eval.sam run --yes          # T11 (about $0.06)
 | `screentutor/inputs.py`, `still.py` | Observing clicks and the mouse path; waiting for a still screen or a change |
 | `screentutor/speak.py` | Local VieNeu voice, with fixes for how file names and times are read; says when its first sound goes out |
 | `tutor_eval/voice_sync.py` | Measures, on a screen recording with sound, how far the voice comes after the mark. Before the fix, on the four T13 videos: a median of 2.85 s over 29 turns |
+| `screentutor/fresh.py`, `tutor_eval/stale_replay.py` | Before a step is said, is the screen still the one it is about? If not, the tutor says nothing and looks again. Replayed on the T13 videos: 5 of 5 stale turns caught, 1 of 24 fresh ones flagged (thresholds chosen on those turns) |
 | `grounding_test/`, `tutor_eval/`, `stt_eval/`, `tts_eval/` | The tests above, each with its pre-registered rule in the file's docstring |
 | `docs/tests/` | Checklists and results of the hands-on Windows runs. T2–T8 are filled in; T13 is the next run. T10 is her own first trial, on her own tasks; the filled-in sheet holds her words and stays private |
 

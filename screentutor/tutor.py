@@ -169,6 +169,9 @@ FOLLOW_BLOCK = (
 FOLLOW_ACTED = {
     "click": "Sau đó người dùng đã bấm chuột; ảnh trên được chụp khi màn hình đã đứng yên.",
     "read": "Sau đó người dùng bấm chuột để báo đã đọc xong; ảnh trên được chụp khi màn hình đã đứng yên.",
+    "stale": "Sau đó, trong lúc tutor đang xem, màn hình đã đổi mà không có cú bấm nào (một thông báo tự tắt, một hộp "
+             "mới hiện ra, hoặc người dùng đã tự làm tiếp), nên câu trả lời trước chưa được nói ra và người dùng chưa "
+             "nghe gì mới; ảnh trên là màn hình lúc này.",
     "moved": "Sau đó màn hình đã thay đổi mà không có cú bấm nào, thường là người dùng đã kéo xuống; "
              "ảnh trên được chụp sau đó.",
     "resume": "Sau đó người dùng đã làm việc khác và giờ quay lại làm tiếp việc này; ảnh trên là màn hình lúc này, có "
