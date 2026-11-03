@@ -98,6 +98,13 @@ shows: the runs so far are reported as they came, and thresholds were never move
 Run 20261102-192014 passed all: R5a 11/11, R5b 24/24, R5c 5.35 s, R5d 3.15 s, R5e 5/5, R6 0.
 Not independent evidence: the state rule was written after looking at case_04, these 12
 cases have now been run 6 times in one evening, and R5b passes with the code filter's help.
+
+Tenth rule, T14's paid part (plan section 7.2b), fixed before the run with --known: the same
+12 cases and 2 runs, with a block of what is known about her, made up. It holds a task that
+looks like some of the cases, on purpose: the block must not pull the ring away from what is
+on the screen.
+- T14a: at least 10/12 hits in each run, and 0 caution flags. If this fails, the block goes.
+- Reported, not scored: latency beside the run before, R5b, R5d, R5e.
 """
 
 from __future__ import annotations
@@ -130,6 +137,9 @@ EST_COST_PER_CALL = 0.008
 T12_SAY_OK, T12_LATENCY_S = 24, 6.4   # R5b, R5c of the plan's T12
 T12_RING_S = 5.0                      # R5d
 STATE_CASE, STATE_REPEATS, STATE_MIN = "case_04", 5, 4   # R5e
+KNOWN_SAMPLE = ("- Việc trước (hôm qua, xong): Xuất giáo án ra PDF gửi tiệm in: Mở File > Chọn Export > Tạo PDF\n"
+                "- Việc trước (3 ngày trước, xong): Mở bảng kê khai thi đua trong Zalo: Mở nhóm tổ > Bấm link\n"
+                "- Hay nhận giáo án qua Zalo nhóm tổ\n- Hay xuất giáo án ra PDF để gửi tiệm in")   # made up
 
 # Hits out of 2 for the pointing-only prompt, effort low, 29/10 (with state where state_t1.json has it).
 BASELINE_HITS = {"case_01": 2, "case_02": 2, "case_03": 0, "case_04": 2, "case_05": 2, "case_06": 2,
@@ -214,7 +224,8 @@ def cmd_run(args) -> None:
                     started, seen = time.perf_counter(), {}
                     reply = tutor.ask(it.question_vi, data_url, state,
                                       on_mark=lambda _r: seen.setdefault("ring", time.perf_counter() - started),
-                                      on_say=lambda _t: seen.setdefault("say", time.perf_counter() - started))
+                                      on_say=lambda _t: seen.setdefault("say", time.perf_counter() - started),
+                                      known=KNOWN_SAMPLE if args.known else None)
                     scores = score_point(reply.point, sent_size, orig_size, it.boxes, gconfig.NEAR_PX)
                     raw_file = f"raw/{n:03d}.json"
                     (out / raw_file).write_text(json.dumps(reply.raw, ensure_ascii=False, indent=2),
@@ -238,7 +249,8 @@ def cmd_run(args) -> None:
             data_url, sent_size, orig_size = prepare_image(it.image_path)
             extra = []
             for _ in range(STATE_REPEATS):
-                reply = tutor.ask(it.question_vi, data_url, states.get(STATE_CASE), on_mark=lambda _r: None)
+                reply = tutor.ask(it.question_vi, data_url, states.get(STATE_CASE), on_mark=lambda _r: None,
+                                  known=KNOWN_SAMPLE if args.known else None)
                 extra.append(score_point(reply.point, sent_size, orig_size, it.boxes, gconfig.NEAR_PX)["norm1000"]["result"])
             (out / "state_case.json").write_text(json.dumps(extra), encoding="utf-8")
     finally:
@@ -326,6 +338,7 @@ def main(argv=None) -> None:
     sub.add_parser("plan")
     r = sub.add_parser("run")
     r.add_argument("--yes", action="store_true", help="xác nhận gọi API có tính phí")
+    r.add_argument("--known", action="store_true", help="T14: gửi kèm khối những gì đã biết về người dùng")
     s = sub.add_parser("summary")
     s.add_argument("dir")
     args = p.parse_args(argv)

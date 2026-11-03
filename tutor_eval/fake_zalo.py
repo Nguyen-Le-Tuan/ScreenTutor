@@ -68,6 +68,7 @@ class Chat:
     messages: list[Message]
     canvas: Image.Image = None
     boxes: list[tuple[int, int, int, int]] = field(default_factory=list)   # on the canvas
+    contacts: list[str] = field(default_factory=list)                      # the chat list, when it is not the usual one
 
 
 def draw_chat(chat: Chat) -> Chat:
@@ -131,8 +132,8 @@ def chrome(chat: Chat) -> Image.Image:
     d.rectangle((BAR_W, 0, CHAT_X, bottom), fill=LIST_BG)
     d.rounded_rectangle((BAR_W + 14, 18, CHAT_X - 14, 52), 8, fill=(234, 237, 240))
     d.text((BAR_W + 30, 26), "Tìm kiếm", font=SMALL, fill=SOFT)
-    names = [chat.title, "Cloud của tôi", "Tổ trưởng (tên giả)", "Ban giám hiệu (tên giả)", "Phụ huynh lớp 7A (tên giả)",
-             "Công đoàn trường (tên giả)", "Nhóm Thử Nghiệm"]
+    names = chat.contacts or [chat.title, "Cloud của tôi", "Tổ trưởng (tên giả)", "Ban giám hiệu (tên giả)",
+                              "Phụ huynh lớp 7A (tên giả)", "Công đoàn trường (tên giả)", "Nhóm Thử Nghiệm"]
     for i, name in enumerate(names):
         y = 74 + i * 78
         if i == 0:
@@ -203,6 +204,15 @@ LONG_CHAT = draw_chat(Chat("Tổ Khoa Học (tên giả)", [
     Message("Thầy Minh (tên giả)", "Dạ, em sẽ có mặt sớm để chuẩn bị máy chiếu."),
     STUDY.messages[2],
 ]))
+CONTACTS = ["Tổ Khoa Học (tên giả)", "Cloud của tôi", "Chị Mai (tên giả)", "Anh Phát (tên giả)", "Cô Hiền (tên giả)",
+            "Chú Tâm (tên giả)", "Bạn Yến (tên giả)"]
+
+
+def contact_row(i: int) -> tuple[int, int, int, int]:
+    """The row of chat list entry i, in screen px."""
+    return BAR_W, 74 + i * 78, CHAT_X, 152 + i * 78
+
+
 STUDY_PARTS = ["đăng nhập trang bồi dưỡng", "chọn mô đun 3", "xem hết video", "làm bài kiểm tra",
                "tải giấy chứng nhận PDF", "gửi vào nhóm Zalo của tổ"]
 
