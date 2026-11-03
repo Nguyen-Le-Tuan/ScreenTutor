@@ -95,6 +95,9 @@ still writes one in about 24 calls, so tutor.spoken now drops them in code; it a
 back the count of parts and the plan on a scroll step. The prompt is unchanged. Same 12
 cases, 2 runs, R5a-e and R6 unchanged. This is the last attempt tonight whatever it
 shows: the runs so far are reported as they came, and thresholds were never moved.
+Run 20261102-192014 passed all: R5a 11/11, R5b 24/24, R5c 5.35 s, R5d 3.15 s, R5e 5/5, R6 0.
+Not independent evidence: the state rule was written after looking at case_04, these 12
+cases have now been run 6 times in one evening, and R5b passes with the code filter's help.
 """
 
 from __future__ import annotations
