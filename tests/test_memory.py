@@ -191,3 +191,13 @@ def test_overlap_ignores_small_words():
     assert overlap("Hay gửi file cho tiệm in", "Thường gửi file cho tiệm in") >= 0.6
     assert overlap("Hay gửi file cho tiệm in", "Hay mở Zalo nhóm tổ") < 0.6
     assert Fact("x").seen == 1
+
+
+def test_asking_to_go_on_is_understood_with_or_without_accents():
+    from screentutor.memory import asks_to_resume
+
+    for text in ("Làm tiếp", "làm tiếp đi", "Mẹ muốn làm tiếp", "tiếp tục", "Tiếp tục việc lúc nãy", "lam tiep",
+                 "tiep tuc viec hoi nay", "Làm tiếp việc đang dở nhé"):
+        assert asks_to_resume(text), text
+    for text in ("Tiếp tục phát video", "làm tiếp bảng điểm lớp 7A", "Xuất giáo án ra PDF", "Mẹ muốn làm cái này", ""):
+        assert not asks_to_resume(text), text

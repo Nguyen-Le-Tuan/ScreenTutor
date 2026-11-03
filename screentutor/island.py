@@ -65,6 +65,7 @@ STYLE = {  # state: (words, colour)
     "reading": ("Bạn đọc vùng sáng nhé", QColor(READ_COLOR)),  # the same mint as the frame
     "caution": ("Cẩn thận trước khi bấm", QColor(CAUTION_COLOR)),  # the same amber as the ring
     "notice": ("Bạn chú ý nhé", QColor(CAUTION_COLOR)),     # B4: the tutor speaks up by itself; nothing to click
+    "offer": ("Làm tiếp", QColor(94, 92, 230)),             # B7: a task left half done; a click picks it up
     "loading": ("Chờ trang tải", QColor(191, 90, 242)),
     "done": ("Xong rồi", QColor(48, 209, 88)),
     "error": ("Chưa nghe rõ", QColor(142, 142, 147)),
@@ -233,6 +234,16 @@ def paint_icon(p: QPainter, state: str, c: QPointF, t: float, since: float = 1.0
         ring(4.5, 2.2, color)
         if state != "turn":
             bang(0.85)
+    elif state == "offer":
+        phase = (t % TURN_PULSE_S) / TURN_PULSE_S
+        ring(6 + 2.5 * phase, 1.6, _with_alpha(color, 1 - phase))
+        p.setPen(Qt.NoPen)
+        p.setBrush(color)
+        triangle = QPainterPath(QPointF(c.x() - 2.6, c.y() - 4.2))
+        triangle.lineTo(QPointF(c.x() + 4.4, c.y()))
+        triangle.lineTo(QPointF(c.x() - 2.6, c.y() + 4.2))
+        triangle.closeSubpath()
+        p.drawPath(triangle)
     elif state == "reading":
         p.setPen(Qt.NoPen)
         phase = (t % READ_PULSE_S) / READ_PULSE_S
@@ -510,6 +521,7 @@ HOVER_DWELL_S = 0.25     # the mouse rests this long on the closed island before
 LEAVE_S = 0.30           # and leaves for this long before it closes again
 DONE_HOLD_S = 3.0        # "done" (or an error) shows this long, then the island rests
 NOTICE_HOLD_S = 12.0     # time to read what the tutor said by itself, after it has finished saying it
+OFFER_HOLD_S = 20.0      # "Làm tiếp: ..." stays this long, and takes clicks only for this long
 POLL_MS, FRAME_MS = 60, 16
 AVOID_MARGIN = 20        # logical px around the island where the ring's target counts as underneath
 SCROLL_STEP = 42         # px per wheel notch in the pinned island
@@ -541,7 +553,7 @@ class Island(QWidget):
         self.recent: list[tuple[str, str]] = []
         self.show_button = True
         self.color = "#000000"
-        self.on_color = self.on_button_toggle = self.on_clear = None
+        self.on_color = self.on_button_toggle = self.on_clear = self.on_offer = None
         self._confirm_until = 0.0
         # A7: read from worker threads, so plain tuples swapped whole (logical x, y, w, h), or None
         self.cover: tuple[int, int, int, int] | None = None        # what to grey out for the stillness check
@@ -561,7 +573,8 @@ class Island(QWidget):
     # what the tutor is doing -------------------------------------------------------------
 
     def set_state(self, state: str, task: conv.Task | None = None, level: float | None = None) -> None:
-        if state != self.view.state:
+        changed = state != self.view.state
+        if changed:
             self._state_at = self._clock()
         self.view.state = state
         if task is not None:
@@ -569,6 +582,8 @@ class Island(QWidget):
             self.view.title = task.question
         self.view.level = level
         self._relayout()
+        if changed:
+            self._apply_click_through()  # only "Làm tiếp" takes a click while closed
 
     def set_level(self, level: float | None) -> None:
         self.view.level = level
@@ -626,7 +641,7 @@ class Island(QWidget):
         now = self._clock()
         inside = self.contains_global(QPointF(self._cursor()))
         if self.mode == "collapsed":
-            if inside and not (self.hidden_for_target or self.no_hover):
+            if inside and not (self.hidden_for_target or self.no_hover or self.view.state == "offer"):
                 self._inside_since = self._inside_since if self._inside_since is not None else now
                 if now - self._inside_since >= HOVER_DWELL_S:
                     self.set_mode("hover")
@@ -677,7 +692,11 @@ class Island(QWidget):
     def mouseReleaseEvent(self, event):
         if event.button() != Qt.LeftButton:
             return
-        if self.mode == "hover":
+        if self.mode == "collapsed" and self.view.state == "offer":
+            self.set_state("idle")
+            if self.on_offer:
+                self.on_offer()
+        elif self.mode == "hover":
             self.set_mode("pinned")
         elif self.mode == "pinned":
             pos = event.position()
@@ -750,6 +769,8 @@ class Island(QWidget):
             self.set_state("idle")
         if self.view.state == "notice" and now - self._state_at >= NOTICE_HOLD_S:
             self.set_state("idle")
+        if self.view.state == "offer" and now - self._state_at >= OFFER_HOLD_S:
+            self.set_state("idle")
         if not self.morph.moving():
             self._fit()
         self.update()
@@ -800,7 +821,8 @@ class Island(QWidget):
         self.takes_clicks = None if self.click_through or not self.isVisible() else box
 
     def _apply_click_through(self) -> None:
-        self.click_through = self.mode == "collapsed" or self.hidden_for_target or self._peek_until is not None
+        closed = self.mode == "collapsed" and self.view.state != "offer"
+        self.click_through = closed or self.hidden_for_target or self._peek_until is not None
         self.setAttribute(Qt.WA_TransparentForMouseEvents, self.click_through)
         self._publish()
         if self.isVisible():

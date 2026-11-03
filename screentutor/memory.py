@@ -143,6 +143,18 @@ FILTERS = [
 ]
 
 
+RESUME_WORDS = ("lam tiep", "tiep tuc")
+RESUME_REST = frozenset("""
+    cai cho cu da dang di do hoi hom hom lai lam luc me minh muon nay nao nay nhe nha oi phan thoi tiep truoc tuc viec
+""".split())
+
+
+def asks_to_resume(text: str) -> bool:
+    """"Làm tiếp", "tiếp tục việc lúc nãy", with or without accents. "Tiếp tục phát video" is a question of its own."""
+    bare = " ".join(WORD.findall(plain(text)))
+    return any(w in bare for w in RESUME_WORDS) and set(bare.split()) <= RESUME_REST
+
+
 def scrub(text: str) -> str:
     for pattern in FILTERS:
         text = pattern.sub(HIDDEN, text)

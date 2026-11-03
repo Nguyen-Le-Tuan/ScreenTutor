@@ -207,3 +207,12 @@ def test_the_machine_notes_say_what_to_do_about_the_temporary_copy():
     from screentutor.app import MACHINE_NOTES
 
     assert "tải file về một thư mục thật" in MACHINE_NOTES and "không sửa trên bản tạm" in MACHINE_NOTES
+
+
+def test_a_task_left_half_done_is_offered_and_taken_up_under_its_own_question(qt_app):
+    isl = FakeIsland()
+    feed = Feed(isl)
+    feed.offer("Gửi giáo án cho tổ trưởng")
+    assert isl.states[-1][0] == "offer" and feed.task.last_said() == "Làm tiếp: Gửi giáo án cho tổ trưởng"
+    feed.back("Gửi giáo án cho tổ trưởng")
+    assert isl.states[-1][0] == "thinking" and feed.task.question == "Gửi giáo án cho tổ trưởng"

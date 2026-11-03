@@ -334,3 +334,51 @@ def test_what_the_tutor_said_by_itself_stays_a_while_then_the_island_rests():
     clock[0] = island.NOTICE_HOLD_S + 0.5
     isl.tick()
     assert isl.view.state == "idle"
+
+
+def _offering(clock):
+    isl = Island(clock=lambda: clock[0], cursor=lambda: QPoint(5, 500))
+    task = conv.Task()
+    task.say("Làm tiếp: Gửi giáo án cho tổ trưởng")
+    isl.show()
+    isl.set_state("offer", task)
+    return isl
+
+
+def test_only_the_offer_takes_a_click_while_the_island_is_closed():
+    clock = [0.0]
+    isl = _offering(clock)
+    assert not isl.click_through and isl.mode == "collapsed" and isl.takes_clicks is not None
+    picked = []
+    isl.on_offer = lambda: picked.append(1)
+    click(isl, QPointF(isl.width() / 2, 20))
+    assert picked == [1] and isl.view.state == "idle" and isl.click_through and isl.mode == "collapsed"
+    isl.hide()
+
+
+def test_the_offer_shows_the_task_and_goes_away_by_itself():
+    clock = [0.0]
+    isl = _offering(clock)
+    v = island.View("collapsed", "offer", isl.view.task)
+    assert island.content_size(v, 1536, 864)[0] > 0            # there are words on it, not only an icon
+    clock[0] = island.OFFER_HOLD_S - 1
+    isl.tick()
+    assert isl.view.state == "offer"
+    clock[0] = island.OFFER_HOLD_S + 1
+    isl.tick()
+    assert isl.view.state == "idle" and isl.click_through
+    isl.hide()
+
+
+def test_resting_the_mouse_on_the_offer_does_not_open_the_island():
+    clock = [0.0]
+    isl = Island(clock=lambda: clock[0], cursor=lambda: QPoint(isl.geometry().center().x(), 20))
+    task = conv.Task()
+    task.say("Làm tiếp: Gửi giáo án")
+    isl.show()
+    isl.set_state("offer", task)
+    for i in range(10):
+        clock[0] = i * 0.1
+        isl.poll()
+    assert isl.mode == "collapsed"
+    isl.hide()

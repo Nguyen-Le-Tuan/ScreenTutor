@@ -48,6 +48,10 @@ NOT_HEARD = "Mình chưa nghe rõ. Bạn hỏi lại nhé."
 NO_MIC = "Mình chưa nghe được micro. Bạn kiểm tra lại micro nhé."
 SETTINGS_POLL_MS = 2000
 PEEK_S, PART_PEEK_S = 5.0, 3.0   # the island opens by itself: on a new plan, and on each new part
+OFFER_AGE_S = 12 * 3600          # B7: how old a half-done task may be for the island to offer it by itself...
+RESUME_AGE_S = 7 * 86400         # ...and for her to ask for it in words
+OFFER_AFTER_S = 3.2              # leave the green "done" on the island for its 3 s first
+OFFER_WAIT_S = 20.0              # the longest it waits for the tutor to finish speaking
 
 
 def masked(img: Image.Image, rects: list[tuple[int, int, int, int]]) -> Image.Image:
@@ -124,6 +128,20 @@ class Feed:
 
     def status(self, state: str) -> None:
         self.base = state
+        self._show()
+
+    def offer(self, title: str) -> None:
+        """B7: a big task was left half done and the question that cut it off is over (founder, 02/11)."""
+        self.task = conv.Task()
+        self.task.say(f"Làm tiếp: {title}")
+        self.base, self.speaking = "offer", 0
+        self._show()
+
+    def back(self, title: str) -> None:
+        """B7: the half-done task is taken up again, under its own question."""
+        self.task = conv.Task()
+        self.task.hear(title)
+        self.base, self.speaking = "thinking", 0
         self._show()
 
     def notice(self) -> None:
@@ -215,7 +233,7 @@ def main(argv=None) -> None:
     from .inputs import Click, Hold, Trail, watch
     from .island import Island
     from .listen import Mic, _api_key, listen
-    from .memory import Memory, learn
+    from .memory import Memory, asks_to_resume, learn
     from .overlay import Overlay, _win_topmost
     from .session import ClickBox, Session
     from .speak import Speaker
@@ -419,10 +437,32 @@ def main(argv=None) -> None:
             say(NOT_HEARD)
             return
         post("hear", heard.text)
+        left = history.resumable(time.time(), RESUME_AGE_S) if asks_to_resume(heard.text) else None
+        if left is not None:
+            pick_up(left, cancel)
+            return
         pointer = pointing(trail.between(asked_at - PRE_ASK_S, time.monotonic()), screen_size, own_rects())
         print(f"Chuột lúc hỏi: {pointer or 'không chỉ vào đâu'}", flush=True)
-        rec = history.start(heard.text)
+        run_task(history.start(heard.text), cancel, pointer, memory.context(heard.text))
 
+    def pick_up(rec, cancel: threading.Event) -> None:
+        """B7: the plan, the part and the notes come back; the first turn looks at the screen as it is now."""
+        post("back", rec.title)
+        history.reopen(rec)
+        run_task(rec, cancel, last_say=rec.steps[-1].say if rec.steps else "")
+
+    def offer_left_task(rec, cancel: threading.Event) -> None:
+        """A side question is over, and the big task it cut off is still there."""
+        left = history.resumable(time.time(), OFFER_AGE_S, skip=rec.id)
+        if left is None or cancel.is_set():
+            return
+        waited = 0.0
+        while feed.speaking and waited < OFFER_WAIT_S and not cancel.wait(0.2):
+            waited += 0.2
+        if not cancel.wait(OFFER_AFTER_S):
+            post("offer", left.title)
+
+    def run_task(rec, cancel: threading.Event, pointer=None, known=None, last_say=None) -> None:
         def save_step(n, img, reply):
             save(n, img, reply)
             history.add_step(rec, reply.say, reply.element, reply.step_done, reply.goal_done, reply.caution,
@@ -449,30 +489,44 @@ def main(argv=None) -> None:
             show_scroll=lambda px: bridge.hint.emit(*px),
             confirm=bridge.tick.emit,
             save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer, on_plan=on_plan,
-            known=memory.context(heard.text))
-        steps = session.run(heard.text)
-        history.finish(rec, outcome_of(steps, cancel.is_set()))
+            known=known, plan=list(rec.plan), part=rec.part, notes=rec.notes)
+        steps = session.run(rec.question, last_say=last_say)
+        history.finish(rec, outcome_of(steps, cancel.is_set()), session.notes)
         post("recent", recent_items())
         if rec.outcome != "error":  # in the background: she does not wait for her own notes
             threading.Thread(target=learn, args=(memory, rec, tutor.summarise), daemon=True).start()
         for s in steps:
             print(f"  bước {s.n} ({s.target or 'click'}): {s.say} | trỏ {s.point_px} | sau cú bấm {s.settle or '—'} | "
                   f"bước xong {s.step_done} | việc xong {s.goal_done} | {s.latency_s:.1f} s", flush=True)
+        offer_left_task(rec, cancel)
+
+    def begin(mode: str | None) -> None:
+        """A new request replaces whatever was going on. Also runs on the input thread: widgets only via the bridge."""
+        if current["cancel"] is not None:
+            current["cancel"].set()
+            current["stop"].set()
+        speaker.stop()
+        bridge.clear.emit()
+        post("collapse")
+        current.update(cancel=threading.Event(), stop=threading.Event(), mode=mode)
 
     def ask(mode: str) -> None:
         if current["listening"] and current["mode"] == "ENDPOINTING" and mode == "ENDPOINTING":
             current["stop"].set()  # a second press on the button: she has finished talking
             return
-        if current["cancel"] is not None:
-            current["cancel"].set()  # a new question replaces the old one
-            current["stop"].set()
-        speaker.stop()
-        bridge.clear.emit()
-        post("collapse")  # ask() also runs on the input thread (Ctrl+Alt): widgets only via the bridge
-        current.update(cancel=threading.Event(), stop=threading.Event(), mode=mode)
+        begin(mode)
         current["thread"] = threading.Thread(target=question, args=(mode, current["stop"], current["cancel"],
                                                                     time.monotonic()), daemon=True)
         current["thread"].start()
+
+    def on_offer_clicked() -> None:
+        left = history.resumable(time.time(), RESUME_AGE_S)
+        if left is not None:
+            begin(None)
+            current["thread"] = threading.Thread(target=pick_up, args=(left, current["cancel"]), daemon=True)
+            current["thread"].start()
+
+    island.on_offer = on_offer_clicked
 
     def on_click_qt(x: int, y: int) -> None:
         button_box[0] = physical(button)

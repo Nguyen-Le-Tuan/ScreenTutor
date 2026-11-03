@@ -20,6 +20,9 @@ Each step says what it wants:
 A read or scroll wait with nothing happening stops as a click step does (founder). A screen
 that never stands still is a video, not a failure: the next turn looks at it all the same.
 
+B7 (02/11): a task left half done can be picked up. The session starts with the plan, the part
+and the notes it had, and its first turn looks at the screen as it is now.
+
   py -m screentutor.session --delay 6 "Mẹ muốn xuất giáo án ra PDF"     # Windows
 """
 
@@ -131,12 +134,12 @@ class Session:
         self.shown_at, self.spoken, self.screen_size = None, False, img.size
         self.asked_at = time.monotonic()
 
-    def _check(self, question: str, reply, changed: bool, acted: str = "click"):
+    def _check(self, question: str, last_say: str, changed: bool | None, acted: str = "click"):
         """Look again after she acted: the next turn, with all that is known about the task."""
         self._status("thinking")
         img, state = self.look()
         self._turn_starts(img)
-        return img, self.tutor.follow_up(question, reply.say, self.encode(img), state, changed, plan=self.plan or None,
+        return img, self.tutor.follow_up(question, last_say, self.encode(img), state, changed, plan=self.plan or None,
                                          part=self.part or None, notes=self.notes, acted=acted,
                                          on_mark=self._early_mark, on_say=self._early_say)
 
@@ -226,12 +229,18 @@ class Session:
         self.pause(HIDE_PAUSE_S)
         return outcome
 
-    def run(self, question: str, max_steps: int = MAX_STEPS) -> list[Step]:
-        self._status("thinking")
-        img, state = self.look()
-        self._turn_starts(img)
-        reply = self.tutor.ask(question, self.encode(img), state, self.pointer, on_mark=self._early_mark,
-                               on_say=self._early_say, known=self.known)
+    def run(self, question: str, max_steps: int = MAX_STEPS, last_say: str | None = None) -> list[Step]:
+        """last_say: the task is being picked up again, this was the last thing the tutor said in it."""
+        if last_say is None:
+            self._status("thinking")
+            img, state = self.look()
+            self._turn_starts(img)
+            reply = self.tutor.ask(question, self.encode(img), state, self.pointer, on_mark=self._early_mark,
+                                   on_say=self._early_say, known=self.known)
+        else:
+            if self.on_plan and self.plan:
+                self.on_plan(self.plan, self.part)   # the card comes back before the tutor speaks
+            img, reply = self._check(question, last_say, None, "resume")
         outcome = None
         waits = 0
         while not self._cancelled():
@@ -263,7 +272,7 @@ class Session:
                 outcome = self.wait_screen()
                 if self._cancelled():
                     break
-                img, reply = self._check(question, reply, outcome != "unchanged")
+                img, reply = self._check(question, reply.say, outcome != "unchanged")
                 continue
             waits = 0
             if reply.target == "read" and self.wait_change:
@@ -274,7 +283,7 @@ class Session:
                 outcome, acted = self._click(reply, px), "click"
             if outcome is None or self._cancelled():
                 break
-            img, reply = self._check(question, reply, outcome != "unchanged", acted)
+            img, reply = self._check(question, reply.say, outcome != "unchanged", acted)
             self._tick(reply)
         if not self._cancelled() and not (self.steps and self.steps[-1].error):
             self._status("done" if self.steps and self.steps[-1].goal_done else "idle")

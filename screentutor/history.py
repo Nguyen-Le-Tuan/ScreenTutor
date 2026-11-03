@@ -5,7 +5,8 @@ clean. A task holds her question as heard, the tutor's sentences, what each step
 and how it ended. No screenshots and no sound: those stay in tutor_runs/ as before. The
 folder is gitignored, and the pinned island can delete it all.
 
-Later, B5 indexes these files into her own knowledge base, and B7 resumes a task left half done.
+B5 indexes these files into her own knowledge base. B7 picks up a big task left half done: its
+plan, the part it had reached and its notes are here, and the same file goes on being written.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ from .settings import ROOT
 DIR = ROOT / "history"
 KEEP = 500                       # the newest tasks kept; older files are removed
 OUTCOMES = ("done", "unfinished", "stopped", "error", "interrupted")
+LEFT_HALF_DONE = ("interrupted", "stopped", "unfinished")
 
 
 @dataclass
@@ -47,6 +49,7 @@ class TaskRecord:
     steps: list[StepRecord] = field(default_factory=list)
     outcome: str = "unfinished"   # until finish(): the app may close in the middle
     ended_at: float | None = None
+    notes: str = ""               # what was read of a long message, for picking the task up again
 
     @property
     def title(self) -> str:
@@ -81,9 +84,22 @@ class History:
         rec.plan, rec.part = list(plan), part
         self.write(rec)
 
-    def finish(self, rec: TaskRecord, outcome: str) -> None:
+    def finish(self, rec: TaskRecord, outcome: str, notes: str = "") -> None:
         rec.outcome = outcome if outcome in OUTCOMES else "stopped"
         rec.ended_at = self._clock()
+        rec.notes = notes or rec.notes
+        self.write(rec)
+
+    def resumable(self, now: float, max_age_s: float, skip: str | None = None) -> TaskRecord | None:
+        """The latest big task left half done, if it is recent enough to mean anything to her."""
+        for rec in self.tasks():
+            if rec.id != skip and rec.plan and rec.outcome in LEFT_HALF_DONE \
+                    and now - (rec.ended_at or rec.started_at) <= max_age_s:
+                return rec
+        return None
+
+    def reopen(self, rec: TaskRecord) -> None:
+        rec.outcome, rec.ended_at = "unfinished", None
         self.write(rec)
 
     def write(self, rec: TaskRecord) -> None:

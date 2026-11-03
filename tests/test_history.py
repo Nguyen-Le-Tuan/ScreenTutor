@@ -89,3 +89,46 @@ def test_the_plan_and_the_part_are_kept(tmp_path):
     h.set_plan(rec, ["Đăng nhập", "Xem video", "Làm bài"], 2)
     back = h.tasks()[0]
     assert back.plan == ["Đăng nhập", "Xem video", "Làm bài"] and back.part == 2
+
+
+def _half_done(h, question="Gửi giáo án cho tổ trưởng", outcome="interrupted", plan=("Mở Word", "Mở Zalo"), part=2):
+    rec = h.start(question)
+    if plan:
+        h.set_plan(rec, list(plan), part)
+    h.finish(rec, outcome, "Ghi chú đã đọc")
+    return rec
+
+
+def test_the_latest_big_task_left_half_done_can_be_found(tmp_path):
+    now = [1000.0]
+    h = History(tmp_path, clock=lambda: now[0])
+    first = _half_done(h)
+    now[0] += 10
+    assert h.resumable(now[0], 3600).id == first.id
+    assert h.resumable(now[0], 3600).notes == "Ghi chú đã đọc" and h.resumable(now[0], 3600).part == 2
+    assert h.resumable(now[0], 3600, skip=first.id) is None
+    now[0] += 7200
+    assert h.resumable(now[0], 3600) is None                      # too old to offer by itself
+    assert h.resumable(now[0], 86400).id == first.id              # but she can still ask for it
+
+
+def test_only_big_tasks_left_half_done_count(tmp_path):
+    h = History(tmp_path, clock=lambda: 1000.0)
+    _half_done(h, plan=())                                        # a small question that was cut off
+    _half_done(h, outcome="done")
+    _half_done(h, outcome="error")
+    assert h.resumable(1000.0, 3600) is None
+    assert _half_done(h, outcome="stopped").id == h.resumable(1000.0, 3600).id
+
+
+def test_a_task_picked_up_again_keeps_its_file_and_its_steps(tmp_path):
+    h = History(tmp_path, clock=lambda: 1000.0)
+    rec = _half_done(h)
+    h.add_step(rec, "Bạn bấm Lưu.")
+    h.reopen(rec)
+    assert rec.outcome == "unfinished" and rec.ended_at is None
+    h.add_step(rec, "Bạn bấm Zalo.")
+    h.finish(rec, "done")
+    back = h.tasks()
+    assert len(back) == 1 and [s.say for s in back[0].steps] == ["Bạn bấm Lưu.", "Bạn bấm Zalo."]
+    assert back[0].outcome == "done" and back[0].notes == "Ghi chú đã đọc" and h.resumable(1000.0, 3600) is None

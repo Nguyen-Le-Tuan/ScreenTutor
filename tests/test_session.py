@@ -23,6 +23,14 @@ class FakeTutor:
         return self.replies.pop(0)
 
 
+CLICK = Click(1.0, 1, 1, "left")
+
+
+def _go(say, part=None, plan=(), notes="", target="click", point=(100, 100), **kw):
+    return Reply(say=say, found=True, point=point, part=part, plan=list(plan), notes=notes, target=target,
+                 step_done=True, goal_done=False, **kw)
+
+
 def _session(tutor, clicks, outcomes, waits=(), changes=()):
     log = []
     clicks, outcomes, waits, changes = list(clicks), list(outcomes), list(waits), list(changes)
@@ -80,6 +88,20 @@ def test_the_first_turn_gets_what_is_known_about_her():
     s.known = "- Hay gửi file cho tiệm in"
     s.run("Gửi file")
     assert tutor.known == "- Hay gửi file cho tiệm in"
+
+
+def test_a_task_left_half_done_goes_on_from_the_part_it_had_reached():
+    plans = []
+    tutor = FakeTutor([_go("Bạn bấm vào biểu tượng Zalo.", part=2),
+                       Reply(say="Xong rồi bạn nhé.", target="none", part=3, step_done=True, goal_done=True)])
+    s, log = _session(tutor, [CLICK], ["settled"])
+    s.plan, s.part, s.notes = ["Mở Word", "Mở Zalo", "Gửi file"], 2, "Gửi cho tổ trưởng."
+    s.on_plan = lambda plan, part: plans.append(part)
+    steps = s.run("Gửi giáo án cho tổ trưởng", last_say="Bạn bấm vào nút Lưu.")
+    assert tutor.calls[0] == ("follow_up", "Gửi giáo án cho tổ trưởng", "Bạn bấm vào nút Lưu.", None)
+    assert tutor.turns[0] == {"plan": ["Mở Word", "Mở Zalo", "Gửi file"], "part": 2, "notes": "Gửi cho tổ trưởng.",
+                              "acted": "resume"}
+    assert plans[:1] == [2] and steps[-1].goal_done and plans[-1] == 3    # the card first, then the last part
 
 
 def test_stops_when_nothing_to_point_at_or_no_click():
@@ -195,14 +217,6 @@ def test_an_unfinished_task_ends_idle_and_an_error_says_so():
 
 
 # B2: the plan, the parts, reading and scrolling
-
-def _go(say, part=None, plan=(), notes="", target="click", point=(100, 100), **kw):
-    return Reply(say=say, found=True, point=point, part=part, plan=list(plan), notes=notes, target=target,
-                 step_done=True, goal_done=False, **kw)
-
-
-CLICK = Click(1.0, 1, 1, "left")
-
 
 def test_says_the_plan_on_the_first_turn_and_walks_through_the_parts():
     plans, seen = [], []

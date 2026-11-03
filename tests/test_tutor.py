@@ -337,3 +337,9 @@ def test_a_failed_stream_is_an_error_not_a_crash():
     tutor = Tutor("k")
     tutor._http = httpx.Client(base_url="https://x", transport=httpx.MockTransport(lambda r: httpx.Response(400, text="bad")))
     assert "HTTP 400" in tutor.ask("x", "data:", on_say=print).error
+
+
+def test_a_task_picked_up_again_is_told_as_such_and_claims_no_click():
+    text = build_follow_up_prompt("x", "Bạn bấm Lưu.", plan=["Mở Word", "Mở Zalo"], part=2, acted="resume")
+    assert "quay lại làm tiếp" in text and "Phần" not in text.split("Lượt trước")[0]
+    assert "đã bấm chuột" not in text.split("Lượt trước")[1].split("step_done")[0] and "2. Mở Zalo" in text

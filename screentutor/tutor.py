@@ -171,6 +171,8 @@ FOLLOW_ACTED = {
     "read": "Sau đó người dùng bấm chuột để báo đã đọc xong; ảnh trên được chụp khi màn hình đã đứng yên.",
     "moved": "Sau đó màn hình đã thay đổi mà không có cú bấm nào, thường là người dùng đã kéo xuống; "
              "ảnh trên được chụp sau đó.",
+    "resume": "Sau đó người dùng đã làm việc khác và giờ quay lại làm tiếp việc này; ảnh trên là màn hình lúc này, có "
+              "thể không còn ở chỗ cũ.",
 }
 SCREEN_CHANGED = {True: " Chương trình đo được: sau cú bấm, màn hình đã thay đổi.",
                   False: " Chương trình đo được: sau cú bấm, màn hình không thay đổi.",
@@ -229,7 +231,7 @@ def build_follow_up_prompt(goal: str, last_say: str, state: str | None = None,
                            screen_changed: bool | None = None, task: bool = True,
                            plan: list[str] | None = None, part: int | None = None, notes: str = "",
                            acted: str = "click") -> str:
-    changed = "" if acted == "moved" else SCREEN_CHANGED[screen_changed]  # no click to talk about
+    changed = "" if acted in ("moved", "resume") else SCREEN_CHANGED[screen_changed]  # no click to talk about
     text = (point_prompt(goal, state)
             + FOLLOW_BLOCK.format(last_say=last_say, acted=FOLLOW_ACTED[acted], changed=changed) + SAY_RULES)
     return text + follow_task_rules(plan, part, notes) if task else text
