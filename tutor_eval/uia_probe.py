@@ -201,9 +201,17 @@ def run(mode: str, seconds: float) -> Path:
             else:
                 down = uia.left_down()
                 if down and not was_down:
-                    rows.append({"kind": "click", **uia.at(*pos)})
-                    print(f"  {app_of(rows[-1]['exe'])}: {rows[-1]['type']} \"{rows[-1]['name'][:40]}\" "
-                          f"{rows[-1]['ms']} ms", flush=True)
+                    try:
+                        row = {"kind": "click", **uia.at(*pos)}
+                    except Exception as exc:
+                        # UI Automation can transiently reject ElementFromPoint while an app
+                        # opens or closes a control.  The physical click has already happened;
+                        # skip only this sample so the 90-second measurement can continue.
+                        print(f"  Bỏ qua một lần bấm: không đọc được UI Automation ({exc})", flush=True)
+                    else:
+                        rows.append(row)
+                        print(f"  {app_of(row['exe'])}: {row['type']} \"{row['name'][:40]}\" "
+                              f"{row['ms']} ms", flush=True)
                 was_down = down
             time.sleep(SAMPLE_S if mode == "hover" else 0.01)
     with out.open("a", encoding="utf-8") as f:

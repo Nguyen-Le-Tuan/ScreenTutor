@@ -11,8 +11,8 @@ Mở lại ScreenTutor.bat.
 
 C3b. "LÀM TIẾP" CHỈ HIỆN SAU CÂU HỎI PHỤ (sửa 03/11)
 ----------------------------------------------------
-[ ] C3b-1. Làm xong trọn một việc (ví dụ hỏi "Mở thư mục Downloads ở đâu", bấm theo tới khi tutor
-           báo xong): ô có tự về nghỉ, và KHÔNG hiện "Làm tiếp" hay hỏi lại việc cũ không? ______
+[x] C3b-1. Làm xong trọn một việc (ví dụ hỏi "Mở thư mục Downloads ở đâu", bấm theo tới khi tutor
+           báo xong): ô có tự về nghỉ, và KHÔNG hiện "Làm tiếp" hay hỏi lại việc cũ không? Có.
 [ ] C3b-2. Bỏ dở một việc lớn (không bấm gì 3 phút), rồi hỏi một câu khác tới khi xong:
            có bị mời làm tiếp việc đã bỏ không (KHÔNG được mời)? ______
 [ ] C3b-3. Đang giữa việc lớn, hỏi một câu phụ tới khi xong: "Làm tiếp: ..." có hiện đúng MỘT lần? ______
@@ -24,18 +24,33 @@ G. DÒ CÂY TRỢ NĂNG CỦA WINDOWS (10-15 phút, làm khi đã xong A-E của
 Đo xem Windows có cho biết ngay "mẹ vừa bấm nút nào" trong Zalo, Word, Brave không (ý từ
 vercel-labs/agent-desktop). Chỉ đọc, không bấm hay gửi gì. Luật U1-U3 ghi sẵn đầu file
 tutor_eval\uia_probe.py. Tắt ScreenTutor trước khi dò.
-[ ] G1.  py -m pip install comtypes
-[ ] G2.  py -m tutor_eval.uia_probe hover
+[x] G1.  py -m pip install comtypes
+[x] G2.  py -m tutor_eval.uia_probe hover
          90 giây: lần lượt Zalo (dòng chat, file, link, nút Gửi), Word (File, Export, nút trên ribbon),
          Brave (tab, link). Dừng chuột khoảng 1 giây trên mỗi chỗ, mỗi app khoảng 10 chỗ.
-[ ] G3.  py -m tutor_eval.uia_probe click
+[x] G3.  py -m tutor_eval.uia_probe click
          90 giây: bấm như mẹ bấm, cũng ở 3 app (bấm chỗ vô hại: dòng chat, tab, ô trống).
-[ ] G4.  py -m tutor_eval.uia_probe tree      (5 giây để đưa Zalo lên trước; chạy lại cho Word, cho Brave)
-[ ] G5.  py -m tutor_eval.uia_probe summary "tutor_runs\uia_probe-*.jsonl"
+         Lượt 1: script in các phần tử của Zalo, Brave và Word, rồi dừng bằng
+         _ctypes.COMError (-2147220991, "An event was unable to invoke any of the subscribers")
+         tại ElementFromPoint. Không in dòng "Đã lưu ..." sau lượt click này; cần chạy lại.
+         Lượt 2: đã lưu tutor_runs\\uia_probe-20261103-154310.jsonl. Kết quả có Zalo (18 chỗ)
+         và Brave (5 chỗ); không có dòng Word, nhưng có Excel (2 chỗ), Code (1 chỗ) và Explorer
+         (13 chỗ), do các cửa sổ đó được bấm trong lúc đo. Có một lần bấm bị bỏ qua vì UI
+         Automation không đọc được ElementFromPoint.
+         Lượt bổ sung Word: đã lưu tutor_runs\\uia_probe-20261103-154542.jsonl; Word có 15 chỗ
+         được ghi nhận (nội dung trang, Back, Export, Create PDF/XPS, Cancel, Bold, Italic).
+[x] G4.  py -m tutor_eval.uia_probe tree      (5 giây để đưa Zalo lên trước; chạy lại cho Word, cho Brave)
+         Đã chạy tự động ba lượt: Zalo (uia_probe-20261103-154750.jsonl; U3 98 ms),
+         Word (uia_probe-20261103-154809.jsonl; U3 357 ms), Brave
+         (uia_probe-20261103-154827.jsonl; U3 14 ms).
+[x] G5.  py -X utf8 -m tutor_eval.uia_probe summary "tutor_runs\uia_probe-*.jsonl"
          Chép nguyên các dòng kết quả vào đây:
-         ____________________________________________________________________________
-         ____________________________________________________________________________
-         ____________________________________________________________________________
+         Brave: 11 chỗ; U1 thấy đúng nút 64% TRƯỢT; U2 đọc tại điểm trung vị 3 ms, p90 6 ms ĐẠT; U3 tìm theo tên 14 ms ĐẠT
+         Word: 24 chỗ; U1 thấy đúng nút 67% TRƯỢT; U2 đọc tại điểm trung vị 6 ms, p90 108 ms TRƯỢT; U3 tìm theo tên 357 ms TRƯỢT
+         Zalo: 28 chỗ; U1 thấy đúng nút 39% TRƯỢT; U2 đọc tại điểm trung vị 10 ms, p90 34 ms ĐẠT; U3 tìm theo tên 98 ms ĐẠT
+         code.exe: 4 chỗ; U1 thấy đúng nút 0% TRƯỢT; U2 đọc tại điểm trung vị 3 ms, p90 5 ms ĐẠT; U3 tìm theo tên — —
+         excel.exe: 2 chỗ; U1 thấy đúng nút 100% ĐẠT; U2 đọc tại điểm trung vị 5 ms, p90 5 ms ĐẠT; U3 tìm theo tên — —
+         explorer.exe: 21 chỗ; U1 thấy đúng nút 100% ĐẠT; U2 đọc tại điểm trung vị 13 ms, p90 19 ms ĐẠT; U3 tìm theo tên — —
          File tutor_runs\uia_probe-*.jsonl có tên chat thật: để trên máy, KHÔNG commit.
 
 
