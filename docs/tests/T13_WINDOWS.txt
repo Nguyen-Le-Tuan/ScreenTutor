@@ -66,10 +66,10 @@ Dùng nội dung giả trong docs/tests/T12_TIN_NHAN_GIA.txt, đã dán vào "Cl
         tròn: "Học cái này trong Zalo". Tutor không bảo kéo xuống; nó chỉ tới đoạn chữ
         "boiduong-thunghiem.example" và yêu cầu bấm. Trong ảnh, chuỗi này hiển thị cùng màu với
         chữ trong tin nhắn, không phải liên kết màu xanh. Người dùng bấm theo chỉ dẫn nhiều lần,
-        tutor tiếp tục yêu cầu bấm vào đó.
-        Khi kéo xong, có khung xanh ngọc và lớp tối không? ______  (W-4) Ô và nút tròn có sáng không? ______
-        Cuối cùng tutor có nói "Việc này có mấy phần" và ô tự mở cho xem các phần không? ______
-        Các phần tutor đưa ra: ________________________________________________
+        tutor tiếp tục yêu cầu bấm vào đó. Thử lại lần hai, tutor yêu cầu scroll xuống để đọc hết nội dung
+        Khi kéo xong, có khung xanh ngọc và lớp tối không? Có  (W-4) Ô và nút tròn có sáng không? Có vẫn sáng
+        Cuối cùng tutor có nói "Việc này có mấy phần" và ô tự mở cho xem các phần không? Có chia phần và cho xem trước các phần.
+        Các phần tutor đưa ra: Việc này có 6 phần...tôi quên ghi lại và sau đó thử làm lại task C1 này nhưng không bao giờ thực hiện được nữa vì model cứ bắt ấn vào cái link format text như cái lần thử đầu tiên. Tôi thử 5 lần, lần nào cũng vậy, không bắt kéo xuống.
 [ ] C2. Trong lúc bước đọc đang chờ, nhắn từ điện thoại một tin mới vào Cloud của tôi: bước đọc có
         tự kết thúc không? ______ (đã biết có thể bị; ghi lại để quyết có cần sửa)
 [ ] C3. Đang ở phần 2 của Việc 1, bấm nút tròn hỏi câu khác ("Nút lưu ở đâu"). Xong câu đó: ô có hiện
@@ -84,7 +84,7 @@ Dùng nội dung giả trong docs/tests/T12_TIN_NHAN_GIA.txt, đã dán vào "Cl
         Sau khi cuộn tới hết tài liệu trống, tutor tiếp tục yêu cầu cuộn. Ảnh minh họa cục bộ (không
         commit): [c4_file_trong_1.png](../../tutor_eval/t12_data/c4_file_trong_1.png),
         [c4_file_trong_2.png](../../tutor_eval/t12_data/c4_file_trong_2.png).
-[ ] C5. (W-5) Gác bản tạm Zalo: trong Zalo bấm THẲNG vào một file .docx bất kỳ.
+[x] C5. (W-5) Gác bản tạm Zalo: trong Zalo bấm THẲNG vào một file .docx bất kỳ.
         Thanh tiêu đề Word: Du_thao_quy_che_GIA.docx - Read-Only - Saved.
         Tutor tự nói: "File này là bản tạm của Zalo..." (câu bị cắt trong ảnh). Ô có chuyển màu
         vàng cam: Có. Đứng yên 10 giây: tutor không nói lại; ô tự thu gọn, nút micro chuyển vàng.
@@ -96,8 +96,9 @@ Dùng nội dung giả trong docs/tests/T12_TIN_NHAN_GIA.txt, đã dán vào "Cl
         chỉ Save, cần giới thiệu rằng có thể chọn chỗ lưu file và có thể hỏi mục đích/vị trí người dùng
         muốn lưu, thay vì mặc định lưu ở thư mục gợi ý.
         Bấm nút tròn, nói "tải file về": Có; tutor dẫn về Zalo để tải file.
-        Mở bản đã tải về (trong Downloads hay thư mục thật): tutor có im lặng không? ______
-        Đường dẫn file tạm (File > Info), thay tên file bằng <tên file>: _______________________
+        Mở bản đã tải về có hậu tố "(1)" trong thư mục audio: tutor không tự nói lại cảnh báo bản
+        tạm Zalo.
+        Đường dẫn file tạm (File > Info): C:\Users\Lenovo\AppData\Local\Temp\Zalo Temp\TempDownloads\Du_thao_quy_che_GIA.docx
         Lượt khởi động lại app: sau Ctrl+C, mở lại app rồi hỏi cách mở file vừa lưu, tutor hiện lại
         kế hoạch 3 phần trước đó và chuyển sang phần 2 "Mở thư mục chứa file". Vòng đỏ ban đầu chỉ
         vào khoảng trống trong Zalo. Người dùng ghi nhận ở lượt trước có hộp mở file chỉ hiện thoáng
@@ -110,47 +111,56 @@ Dùng nội dung giả trong docs/tests/T12_TIN_NHAN_GIA.txt, đã dán vào "Cl
         [c5_restart_2.png](../../tutor_eval/t12_data/c5_restart_2.png),
         [c5_restart_3.png](../../tutor_eval/t12_data/c5_restart_3.png),
         [c5_restart_4.png](../../tutor_eval/t12_data/c5_restart_4.png).
-[ ] C6. Đường chuột: khoanh chuột quanh một tin trong Zalo rồi hỏi "Cái này là gì". Trong cửa sổ đen
-        có dòng "Chuột lúc hỏi: khoanh quanh vùng ..." không? ______  Tutor có nói về đúng tin đó không? ______
-        Đưa chuột vào một tin, để yên, hỏi "cái này là gì": dòng "dừng ở (...)"? ______
+[x] C6. Đường chuột: khoanh chuột quanh một tin trong Zalo rồi hỏi "Cái này là gì". Trong cửa sổ đen
+        có dòng "Chuột lúc hỏi: khoanh quanh vùng ..." không? Có: "khoanh quanh vùng (0, 2)-(965, 448)
+        trên lưới 0-1000". Tutor nói về khối tin nhắn xanh hướng dẫn đọc dự thảo, góp ý và nộp phiếu
+        trước 17 giờ thứ Sáu; sau đó chỉ nút tải xuống của Dự thảo quy chế.
+        Đưa chuột vào một tin, để yên, hỏi "cái này là gì": dòng "dừng ở (640, 245) trên lưới
+        0-1000".
 
 
 D. CÁC MỤC CÒN HIỆU LỰC CỦA T9 (20 phút)
 ----------------------------------------
-[ ] F-1. Trang đang tải: dựng case_04 (Brave ở tab khác, Zalo ở trước). Giữ Ctrl+Alt: "Cái link cô tổ
+[x] F-1. Trang đang tải: dựng case_04 (Brave ở tab khác, Zalo ở trước). Giữ Ctrl+Alt: "Cái link cô tổ
          trưởng gửi mẹ ấn hoài mà không chịu mở lên". Bấm theo vòng. Khi Brave tải, tutor có chờ rồi
-         nói tiếp hay báo xong không? ______
-[ ] F-2a. Ghi đè: Word mở giáo án, Downloads ĐÃ CÓ PDF cùng tên. "Mẹ muốn xuất giáo án này ra PDF để
-          gửi tiệm in". Ở hộp hỏi thay file: vòng màu gì? ______ Câu tutor nói: ___________________
-[ ] F-2b. Gửi đi: trong Zalo, chat Cloud của tôi. "Mẹ muốn gửi file PDF giáo án vào đây".
-          Ở nút gửi: vòng màu gì? ______ Câu tutor nói: ________________________________
-[ ] F-3. Có lần nào tutor chỉ nút "Create PDF" của WPS không? ______
-[ ] F-8. Word mở giáo án, không bôi đen gì: "Mẹ muốn làm chữ to hơn". Tutor có bảo bôi đen trước? ______
+         nói tiếp hay báo xong không? khi trang brave đang loading, tutor đã lưu lại cái state này và xử lí, và khi brave đã mở xong bảng tính thì tutor mới phát âm thanh là "Trang brave đang tải, bạn chờ chút nha". Ngay sau câu nói đó thì nó tự chụp state lại một lần nữa và báo "Bạn đã mở được rồi nha".
+[x] F-2a. Ghi đè: Word mở giáo án, Downloads ĐÃ CÓ PDF cùng tên. "Mẹ muốn xuất giáo án này ra PDF để
+          gửi tiệm in". Ở hộp hỏi thay file: vòng màu gì? Vàng Câu tutor nói: Bạn ấn "Yes" thì file giáo án cũ sẽ bị thay bằng file giáo án mới.
+[x] F-2b. Gửi đi: trong Zalo, chat Cloud của tôi. "Mẹ muốn gửi file PDF giáo án vào đây".
+          Ở nút gửi: vòng màu gì? màu đỏ Câu tutor nói: Bạn bấm đúp vào file pdf để gửi đi nhé
+[x] F-3. Có lần nào tutor chỉ nút "Create PDF" của WPS không? Không
+[x] F-8. Word mở giáo án, không bôi đen gì: "Mẹ muốn làm chữ to hơn". Tutor có bảo bôi đen trước? Tutor không bảo bôi đen kiểu quét khối hay chỉ dùng phím tắt là Ctrl - A mà lại dùng dùng vòng tròn đỏ chỉ vào hình kính lúp "Editing" rồi "Select All" thủ công. 
+Từ đây tôi nhận ra một việc là tutor / model tập trung vào việc sử dụng chuột thay vì kết hợp các thao tác trên bàn phím. Sau khi quét đen thì tutor kêu : "Bạn bấm vào chữ A có mũi tên hướng lên ở thanh phía trên để cho chữ to ra."
+Khi này tôi mới hỏi thêm: "nhưng làm sao biết đây là tab link của chữ bao nhiêu tôi muốn tăng cụ thể lên size chữ 15..". ở đây mới bắt đầu có vấn đề nặng và làm tôi rất khó chịu, đó là model không phân việt được cái dấu mũi tên xuống để xổ ra các option cỡ chữ có sẵn và khung nhập cỡ chữ bằng tay.Và nó cứ cho cái vòng tròn màu đó đè lên cả hai option trên. 
+Và khi tôi ấn vào cái ô nhập cỡ chữ thì model không phân biệt được là tôi đang ấn vào ô nhập liệu để kêu tôi là "Gõ vào và enter" mà cứ lặp đi lặp lại là tôi hãy ấn vào cái ô màu đỏ đang hiện. Sau đó tôi bực quá mới xổ cái danh sách option thì model mới kêu tôi tự nhập cỡ chữ rồi ấn enter.
 
 
 E. DỮ LIỆU CHO T12 (20 phút, làm trước phần F)
 ----------------------------------------------
 [x] E1. Dán nội dung trong docs/tests/T12_TIN_NHAN_GIA.txt vào chat "Cloud của tôi", đúng như hướng
         dẫn trong file đó.
-[ ] E2. Chụp toàn màn hình (Zalo phóng to, ô và nút tròn cứ để nguyên), mỗi vị trí kéo một ảnh:
+[x] E2. Chụp toàn màn hình (Zalo phóng to, ô và nút tròn cứ để nguyên), mỗi vị trí kéo một ảnh:
         Việc 1: từ chỗ tin dài vừa bắt đầu, mỗi lần kéo khoảng nửa màn hình, tới khi thấy hết.
         Việc 2: ở chỗ tin hiệu trưởng hiện đủ, và một ảnh khi tin bị cắt nửa dưới.
         Đặt tên: t12_viec1_1.png, t12_viec1_2.png, ...  t12_viec2_1.png, ...
         Lưu vào tutor_eval\t12_data\ (đã gitignore). Ảnh có danh sách chat thật bên trái, nên
         KHÔNG commit, KHÔNG gửi ai; chỉ chép sang Ubuntu bằng thư mục OneDrive của dự án.
-[ ] E3. Thêm 2 ảnh Word khi đang mở bản tạm của Zalo (phần C5), đặt tên t12_ban_tam_1.png, ..._2.png.
+        Người dùng xác nhận đã chụp xong bộ ảnh này.
+[x] E3. Thêm 2 ảnh Word khi đang mở bản tạm của Zalo (phần C5), đặt tên t12_ban_tam_1.png, ..._2.png.
         Ghi lại chữ trên thanh tiêu đề trong C5 là đủ, không cần ghi gì thêm.
+        Đã lưu: tutor_eval\\t12_data\\t12_ban_tam_1.png và ...\\t12_ban_tam_2.png.
+        Thanh tiêu đề được ghi nhận: "Du_thao_quy_che_GIA.docx - Read-Only - Saved".
 
 
 F. QUAY DEMO (Win+Alt+R; nói chậm, rõ như mẹ)
 --------------------------------------------
 Quay vài bản thô; Claude sẽ cùng bạn chọn và viết kịch bản dựng.
-[ ] D-1. Gác bản tạm: bấm thẳng file trong Zalo → tutor tự nói → "tải file về" → làm theo tới khi mở
-         đúng bản thật.
-[ ] D-2. Việc lớn: "Học cái này trong Zalo" → kéo → khung đọc → kế hoạch hiện trên ô → làm phần 1
-         (thấy dấu tích xanh sau mỗi bước).
-[ ] D-3. Giữa chừng hỏi câu khác → "Làm tiếp" → quay lại đúng phần.
-[ ] D-4. Xuất PDF có bước ghi đè (vòng vàng).
+[x] D-1. Gác bản tạm: bấm thẳng file trong Zalo → tutor tự nói → "tải file về" → làm theo tới khi mở
+         đúng bản thật. File Video D1.mp4
+[x] D-2. Việc lớn: "Học cái này trong Zalo" → kéo → khung đọc → kế hoạch hiện trên ô → làm phần 1
+         (thấy dấu tích xanh sau mỗi bước). Kết quả: bị kẹt trong vòng lặp không nhận diện được đường link đang là dạng text mà cứ bắt ấn vào rồi bắt qua brave rồi lại về Zalo bắt ấn vào cái text thay vì chỉ quét khối và copy.
+[ ] D-3. Giữa chừng hỏi câu khác → "Làm tiếp" → quay lại đúng phần. Kết quả: Thất bại thảm hại, bạn hãy tự coi video để đánh giá kết quả.
+[x] D-4. Xuất PDF có bước ghi đè (vòng vàng).
          Tên các file video (để trên máy, KHÔNG commit): __________________________________
 
 
