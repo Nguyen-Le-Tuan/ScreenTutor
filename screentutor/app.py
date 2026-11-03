@@ -95,6 +95,39 @@ def outcome_of(steps, cancelled: bool) -> str:
     return "stopped"
 
 
+class Offers:
+    """When to offer "Làm tiếp" (B7), after the founder's first try on Windows (03/11).
+
+    It used to offer the latest half-done task after every task, finished or not, so a task she had
+    left on purpose came back again and again. Now: only the big task that a side question cut off,
+    once that side question has been answered, and only once. A task she left herself, or that ran
+    out of time, is never offered by itself; she can still say "làm tiếp".
+    """
+
+    def __init__(self):
+        self.running = None      # the task being walked through now
+        self.cut_off = None      # the id of the big task a new question cut off
+
+    def start(self, rec) -> None:
+        self.running = rec
+
+    def interrupt(self) -> None:
+        """A new request is starting: if a big task was under way, it is the one cut off."""
+        if self.running is not None and self.running.plan:
+            self.cut_off = self.running.id
+
+    def end(self, rec, cancelled: bool) -> str | None:
+        """The id of the task to offer now that rec is over, or None. A cut-off task is offered once."""
+        if self.running is rec:
+            self.running = None
+        if cancelled:
+            return None  # another question took over; the one that ends it decides
+        cut, self.cut_off = self.cut_off, None
+        if cut is None or rec.plan or rec.outcome != "done":
+            return None  # nothing was cut off, this was a big task of its own, or the side question failed
+        return cut
+
+
 class Feed:
     """What the tutor does, turned into what the island and the button show (A7). Qt thread only.
 
@@ -408,6 +441,7 @@ def main(argv=None) -> None:
                                                        encoding="utf-8")
 
     current = {"cancel": None, "stop": None, "mode": None, "listening": False, "thread": None}
+    offers = Offers()
     clicks = ClickBox()
     trail = Trail()
 
@@ -454,8 +488,9 @@ def main(argv=None) -> None:
 
     def offer_left_task(rec, cancel: threading.Event) -> None:
         """A side question is over, and the big task it cut off is still there."""
-        left = history.resumable(time.time(), OFFER_AGE_S, skip=rec.id)
-        if left is None or cancel.is_set():
+        cut = offers.end(rec, cancel.is_set())
+        left = history.resumable(time.time(), OFFER_AGE_S, skip=rec.id) if cut else None
+        if left is None or left.id != cut or cancel.is_set():
             return
         waited = 0.0
         while feed.speaking and waited < OFFER_WAIT_S and not cancel.wait(0.2):
@@ -466,6 +501,8 @@ def main(argv=None) -> None:
             threading.Thread(target=speaker.speak, args=(OFFER_SAY,), daemon=True).start()
 
     def run_task(rec, cancel: threading.Event, pointer=None, known=None, last_say=None) -> None:
+        offers.start(rec)
+
         def save_step(n, img, reply):
             save(n, img, reply)
             history.add_step(rec, reply.say, reply.element, reply.step_done, reply.goal_done, reply.caution,
@@ -505,6 +542,7 @@ def main(argv=None) -> None:
 
     def begin(mode: str | None) -> None:
         """A new request replaces whatever was going on. Also runs on the input thread: widgets only via the bridge."""
+        offers.interrupt()
         if current["cancel"] is not None:
             current["cancel"].set()
             current["stop"].set()

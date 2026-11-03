@@ -223,3 +223,74 @@ def test_the_sentence_that_offers_a_task_follows_the_rules_for_speech():
     from tutor_eval.run import say_problems
 
     assert say_problems(OFFER_SAY) == [] and "bấm vào ô" in OFFER_SAY
+
+
+class Rec:
+    def __init__(self, id, plan=(), outcome="done"):
+        self.id, self.plan, self.outcome = id, list(plan), outcome
+
+
+def test_offer_only_the_big_task_a_side_question_cut_off_and_only_once():
+    from screentutor.app import Offers
+
+    o = Offers()
+    big, side = Rec("big", ["Mở Zalo", "Tải file"], "interrupted"), Rec("side")
+    o.start(big)
+    o.interrupt()                          # she asks something else in the middle
+    assert o.end(big, cancelled=True) is None
+    o.start(side)
+    assert o.end(side, cancelled=False) == "big"
+    again = Rec("again")
+    o.start(again)
+    assert o.end(again, cancelled=False) is None   # offered once; a later question does not bring it back
+
+
+def test_no_offer_after_a_task_that_simply_ended():
+    from screentutor.app import Offers
+
+    o = Offers()
+    done = Rec("done", ["a", "b"], "done")
+    o.start(done)
+    assert o.end(done, cancelled=False) is None    # founder, 03/11: when the task is done, rest
+    left = Rec("left", ["a", "b"], "stopped")      # she walked away: never offered by itself
+    o.start(left)
+    assert o.end(left, cancelled=False) is None
+    small = Rec("small")
+    o.start(small)
+    assert o.end(small, cancelled=False) is None
+
+
+def test_no_offer_when_the_new_question_was_a_big_task_or_failed():
+    from screentutor.app import Offers
+
+    o = Offers()
+    a, b = Rec("a", ["x", "y"], "interrupted"), Rec("b", ["p", "q"], "done")
+    o.start(a)
+    o.interrupt()
+    o.end(a, cancelled=True)
+    o.start(b)
+    assert o.end(b, cancelled=False) is None       # she moved on to another big task
+    small = Rec("small")
+    o.start(small)
+    assert o.end(small, cancelled=False) is None   # and a is not offered later out of the blue
+    o.start(a)
+    o.interrupt()
+    o.end(a, cancelled=True)
+    failed = Rec("failed", outcome="error")
+    o.start(failed)
+    assert o.end(failed, cancelled=False) is None
+
+
+def test_a_chain_of_side_questions_keeps_the_offer_for_the_last_one():
+    from screentutor.app import Offers
+
+    o = Offers()
+    big, q1, q2 = Rec("big", ["a", "b"], "interrupted"), Rec("q1"), Rec("q2")
+    o.start(big)
+    o.interrupt()
+    o.end(big, cancelled=True)
+    o.start(q1)
+    o.interrupt()                                  # a second side question replaces the first
+    assert o.end(q1, cancelled=True) is None
+    o.start(q2)
+    assert o.end(q2, cancelled=False) == "big"

@@ -1,0 +1,45 @@
+T13 BỔ SUNG (03/11/2026): làm cùng chuyến Windows, điền ngay trong file này
+==========================================================================
+Thêm sau khi founder thử trên Windows ngày 03/11. Để riêng file này để không đụng vào phiếu
+T13_WINDOWS.txt đang điền dở (git pull không bị vướng).
+
+Trước khi làm: tắt ScreenTutor, lưu phiếu T13 đang điền, rồi trong PowerShell ở thư mục repo:
+    git pull --ff-only
+    git log --oneline -1      (phải là commit mới nhất Claude báo): ______
+Mở lại ScreenTutor.bat.
+
+
+C3b. "LÀM TIẾP" CHỈ HIỆN SAU CÂU HỎI PHỤ (sửa 03/11)
+----------------------------------------------------
+[ ] C3b-1. Làm xong trọn một việc (ví dụ hỏi "Mở thư mục Downloads ở đâu", bấm theo tới khi tutor
+           báo xong): ô có tự về nghỉ, và KHÔNG hiện "Làm tiếp" hay hỏi lại việc cũ không? ______
+[ ] C3b-2. Bỏ dở một việc lớn (không bấm gì 3 phút), rồi hỏi một câu khác tới khi xong:
+           có bị mời làm tiếp việc đã bỏ không (KHÔNG được mời)? ______
+[ ] C3b-3. Đang giữa việc lớn, hỏi một câu phụ tới khi xong: "Làm tiếp: ..." có hiện đúng MỘT lần? ______
+           Hỏi thêm một câu nữa tới khi xong: có bị mời lại không (KHÔNG được mời)? ______
+
+
+G. DÒ CÂY TRỢ NĂNG CỦA WINDOWS (10-15 phút, làm khi đã xong A-E của T13)
+------------------------------------------------------------------------
+Đo xem Windows có cho biết ngay "mẹ vừa bấm nút nào" trong Zalo, Word, Brave không (ý từ
+vercel-labs/agent-desktop). Chỉ đọc, không bấm hay gửi gì. Luật U1-U3 ghi sẵn đầu file
+tutor_eval\uia_probe.py. Tắt ScreenTutor trước khi dò.
+[ ] G1.  py -m pip install comtypes
+[ ] G2.  py -m tutor_eval.uia_probe hover
+         90 giây: lần lượt Zalo (dòng chat, file, link, nút Gửi), Word (File, Export, nút trên ribbon),
+         Brave (tab, link). Dừng chuột khoảng 1 giây trên mỗi chỗ, mỗi app khoảng 10 chỗ.
+[ ] G3.  py -m tutor_eval.uia_probe click
+         90 giây: bấm như mẹ bấm, cũng ở 3 app (bấm chỗ vô hại: dòng chat, tab, ô trống).
+[ ] G4.  py -m tutor_eval.uia_probe tree      (5 giây để đưa Zalo lên trước; chạy lại cho Word, cho Brave)
+[ ] G5.  py -m tutor_eval.uia_probe summary "tutor_runs\uia_probe-*.jsonl"
+         Chép nguyên các dòng kết quả vào đây:
+         ____________________________________________________________________________
+         ____________________________________________________________________________
+         ____________________________________________________________________________
+         File tutor_runs\uia_probe-*.jsonl có tên chat thật: để trên máy, KHÔNG commit.
+
+
+Xong: commit cùng phiếu T13 (KHÔNG "git add ."):
+    git add docs/tests/T13_WINDOWS.txt docs/tests/T13_BO_SUNG_03-11.txt
+    git commit -m "Windows T13 results"
+    git push
