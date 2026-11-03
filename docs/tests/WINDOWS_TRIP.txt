@@ -1,22 +1,15 @@
-CHUYẾN WINDOWS: DANH SÁCH VIỆC LÀM MỘT LẦN, 31/10/2026
-=====================================================
-Làm theo đúng thứ tự. Tổng khoảng 2-2,5 giờ. Mở từng file .txt, điền vào chỗ trống ngay trong file.
+CHUYẾN WINDOWS (cập nhật 02/11/2026)
+===================================
+Chuyến này chỉ có MỘT file: docs/tests/T13_WINDOWS.txt. Làm theo thứ tự trong đó.
+Kèm theo: docs/tests/T12_TIN_NHAN_GIA.txt (nội dung giả để dán vào Zalo, chat "Cloud của tôi").
 
-  0. ĐỒNG BỘ NHÁNH TRƯỚC TIÊN (5 phút): làm mục A0 trong T5_OVERLAY_WINDOWS.txt.
-     Đừng bấm Pull/Sync trong VS Code trước bước này.
-     Sau A0, "git log --oneline -1" phải ra commit mới nhất Claude báo khi push.
-  1. T5_OVERLAY_WINDOWS.txt       (~20 phút)  vòng đỏ chỉ chỗ; A1-A4 cài thư viện và key
-  2. T6_CLICK_STILL_WINDOWS.txt   (~30 phút)  nghe click, chờ màn hình đứng yên, phiên nhiều bước
-  3. T7_VOICE_WINDOWS.txt         (~30 phút)  giọng đọc, micro, nút "Hỏi", ô chữ; A5-A7 cài thêm
-  4. T8_APP_WINDOWS.txt           (~40 phút)  cả app, đóng vai mẹ, tập quay video demo
+T5-T8 là chuyến ngày 31/10 - 01/11 (đã điền). T9 không chạy riêng; các mục còn hiệu lực của nó nằm
+trong phần D của T13.
 
-Nếu một bước chặn mọi thứ phía sau (ví dụ báo lỗi đỏ khi cài, vòng đỏ không hiện), ghi lại lỗi
-vào file đó, bỏ qua phần phụ thuộc, làm tiếp phần không phụ thuộc, rồi báo Claude.
+Nếu một bước chặn mọi thứ phía sau (ví dụ báo lỗi đỏ khi cài, ô hay vòng không hiện), ghi lại lỗi
+vào T13, bỏ qua phần phụ thuộc, làm tiếp phần không phụ thuộc, rồi báo Claude.
 
 KHI XONG:
-  - Chỉ commit các file .txt đã điền, KHÔNG dùng "git add ." (để không kéo theo ảnh hay ghi âm):
-        git add docs/tests/T5_OVERLAY_WINDOWS.txt docs/tests/T6_CLICK_STILL_WINDOWS.txt docs/tests/T7_VOICE_WINDOWS.txt docs/tests/T8_APP_WINDOWS.txt
-        git commit -m "Windows trip results T5-T8"
-        git push
-  - Thư mục tutor_runs (ảnh màn hình thật) để nguyên trên Windows, không nén, không gửi.
-  - Quay về Ubuntu, nhắn Claude: "Đã chạy xong chuyến Windows".
+  - Chỉ commit T13_WINDOWS.txt, KHÔNG dùng "git add ." (để không kéo theo ảnh hay ghi âm).
+  - tutor_runs (ảnh màn hình thật) để nguyên trên Windows. Ảnh T12 trong tutor_eval\t12_data\ chép
+    sang Ubuntu qua thư mục OneDrive của dự án, không qua GitHub.

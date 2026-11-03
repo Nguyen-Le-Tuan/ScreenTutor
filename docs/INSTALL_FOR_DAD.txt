@@ -2,7 +2,7 @@ CÀI SCREENTUTOR LÊN MÁY MẸ (cho ba, khoảng 30-40 phút)
 =====================================================
 ScreenTutor là trợ lý trên màn hình: mẹ hỏi bằng giọng, nó nhìn màn hình, khoanh vòng đỏ chỗ
 cần bấm và đọc hướng dẫn bằng giọng Việt. Nó KHÔNG tự bấm hay gõ gì; mẹ luôn là người bấm.
-Chỉ chạy trên Windows, đã thử trên máy giống hệt máy mẹ (1920x1080, scale 125%).
+Chỉ chạy trên Windows. Bản trước đã thử trên máy giống hệt máy mẹ (1920x1080, scale 125%).
 
 Cần: Internet ổn định, micro và loa của laptop, khoảng 2 GB ổ C (thư viện + model giọng đọc).
 
@@ -54,8 +54,8 @@ Cần: Internet ổn định, micro và loa của laptop, khoảng 2 GB ổ C (t
 [ ] Bấm đúp ScreenTutor.bat. Một cửa sổ đen thu nhỏ xuống taskbar (đó là ScreenTutor; ĐÓNG cửa
     sổ đó là tắt ScreenTutor).
 [ ] Lần đầu nó tải model giọng đọc khoảng 250 MB, chờ 1-3 phút.
-[ ] Khi thấy nút "Hỏi" màu xanh ở góc dưới bên phải và ô chữ đen nhỏ ở giữa mép trên là xong.
-[ ] Thử: mở File Explorer, bấm "Hỏi", nói "Mẹ muốn vào chỗ chứa file tải về thì bấm vào đâu".
+[ ] Khi thấy nút tròn đen hình micro ở góc dưới bên phải và ô đen nhỏ ở giữa mép trên là xong.
+[ ] Thử: mở File Explorer, bấm nút tròn, nói "Mẹ muốn vào chỗ chứa file tải về thì bấm vào đâu".
     Sau khoảng 5-8 giây phải thấy vòng đỏ khoanh chữ Downloads và nghe giọng đọc.
 [ ] Tạo lối tắt cho mẹ: chuột phải ScreenTutor.bat > Show more options > Send to > Desktop
     (create shortcut). Đổi tên lối tắt thành "Hỏi máy tính".
@@ -64,22 +64,44 @@ Cần: Internet ổn định, micro và loa của laptop, khoảng 2 GB ổ C (t
 7. NÓI VỚI MẸ (quan trọng, nói TRƯỚC khi mẹ đồng ý dùng thử)
 -------------------------------------------------------------
 - Những gì được gửi tới Meta, và khi nào:
-  + Khi mẹ bấm "Hỏi" hay giữ Ctrl+Alt, giọng mẹ được gửi đi để chép thành chữ.
+  + Khi mẹ bấm nút tròn hay giữ Ctrl+Alt, giọng mẹ được gửi đi để chép thành chữ.
   + Sau đó, ở MỖI BƯỚC hướng dẫn, ScreenTutor chụp màn hình và gửi ảnh đó cùng câu hỏi và một bản
     tóm tắt về máy: tiêu đề các cửa sổ đang mở (thường có tên file, tên trang web hay tên nhóm Zalo),
     app mở mặc định, đường dẫn các thư mục chuẩn, và tên các file tài liệu hay ảnh mới sửa trong 3
     ngày qua.
-  + Một câu hỏi có thể kéo dài nhiều bước: mỗi lần mẹ bấm chuột trong lúc máy đang hướng dẫn (và
-    khi máy đang chờ một trang tải xong), nó tự chụp và gửi tiếp, cho tới khi xong việc (tối đa 12
-    bước), mẹ hỏi câu khác, hoặc 3 phút mẹ không bấm gì.
+  + Một câu hỏi có thể kéo dài nhiều bước: mỗi lần mẹ bấm chuột hay kéo màn hình trong lúc máy đang
+    hướng dẫn (và khi máy đang chờ một trang tải xong), nó tự chụp và gửi tiếp, cho tới khi xong
+    việc (tối đa 12 bước; việc lớn có kế hoạch tối đa 30 bước), mẹ hỏi câu khác, hoặc mẹ không làm
+    gì trong 3 phút (bước kéo xuống: 1 phút).
   + Vì vậy, trong lúc máy đang hướng dẫn, đừng để trên màn hình thứ mẹ không muốn gửi đi (tin nhắn
     riêng, điểm hay thông tin học sinh, mật khẩu).
+  + Nếu mẹ chỉ chuột hay khoanh chuột khi hỏi, máy gửi kèm MỘT DÒNG TOẠ ĐỘ của chỗ đó (không gửi
+    thêm ảnh). Đường chuột lúc đó chỉ tính trên máy, không lưu lại và không vẽ lên màn hình.
+  + SAU MỖI VIỆC, chữ của việc đó (câu mẹ hỏi, kế hoạch, các câu tutor đã nói) được gửi tới Meta
+    một lần nữa, KHÔNG kèm ảnh, để tóm thành ghi chú ngắn và rút ra điều có ích về cách mẹ làm việc,
+    ví dụ "hay gửi giáo án cho tiệm in qua Zalo".
+  + Khi mẹ hỏi câu mới, máy tìm việc cũ giống câu đó ngay trên máy, không cần mạng. Nếu có, tóm tắt
+    của tối đa 3 việc cũ và tối đa 5 điều đã biết về mẹ (tổng dưới 700 chữ cái) được gửi kèm câu hỏi.
+  + Trước khi gửi và trước khi lưu ghi chú, bộ lọc trên máy che mật khẩu, mã OTP, số điện thoại,
+    email, số dài và họ tên đầy đủ. Bộ lọc có thể sót, ví dụ tên đứng một mình như "bạn Lan", và nó
+    KHÔNG che được những gì nằm trong ảnh màn hình.
   + Chưa hỏi thì không có gì của mẹ được gửi đi. Lúc mới bật, app chỉ gọi Meta một lần để kiểm tra
     kết nối, không kèm ảnh hay giọng. Giọng đọc của tutor được tạo ngay trên máy.
+- Những gì máy tự đọc ngay trên máy, kể cả khi mẹ chưa hỏi, và KHÔNG gửi đi:
+  + vị trí chuột và cú bấm, để biết mẹ đã bấm chưa và mẹ đang chỉ vào đâu (giữ khoảng 1 phút rồi bỏ);
+  + tên cửa sổ đang ở trước mặt và tên file trong thư mục tạm của Zalo, cứ 2 giây một lần, để nhắc
+    mẹ khi Word đang mở bản tạm của Zalo. Khi đó máy tự nói một câu viết sẵn, không chụp màn hình.
 - Dùng model bản Standard; theo tài liệu Meta, nội dung gửi tới bản này không dùng để huấn luyện.
   Tài liệu về phần giọng nói chưa nói rõ chính sách dữ liệu.
-- Ảnh từng bước được lưu lại trên chính máy mẹ, trong C:\ScreenTutor\tutor_runs, để Tuấn xem
-  lại khi cần sửa lỗi. Có thể xoá thư mục này bất cứ lúc nào. Không gửi thư mục này cho ai.
+- Lưu trên chính máy mẹ:
+  + C:\ScreenTutor\tutor_runs: ảnh từng bước, để Tuấn xem lại khi cần sửa lỗi. Xoá tay được bất cứ
+    lúc nào. Không gửi thư mục này cho ai.
+  + C:\ScreenTutor\history: từng việc đã làm (câu mẹ hỏi, câu tutor nói, không có ảnh hay giọng),
+    tối đa 500 việc gần nhất.
+  + C:\ScreenTutor\history\memory: kho kiến thức, gồm ghi chú từng việc và những điều đã biết về mẹ.
+  + Xoá hai thư mục history: rê chuột vào ô đen trên cùng, bấm vào ô để mở rộng, bấm "Xoá lịch sử",
+    bấm thêm lần nữa để xác nhận. Xoá tay thư mục C:\ScreenTutor\history cũng được.
+  + C:\ScreenTutor\settings.json: màu ô, bật tắt nút tròn, bật tắt viền sáng. Không có gì riêng tư.
 - Đưa mẹ tờ docs\HUONG_DAN_CHO_ME.txt (in ra được).
 
 
@@ -89,5 +111,9 @@ Cần: Internet ổn định, micro và loa của laptop, khoảng 2 GB ổ C (t
 - Nó nói "Mình chưa nghe được micro": làm lại bước 5 (quyền micro).
 - Nó nói "Mình chưa xem được màn hình": kiểm tra Internet và key ở bước 4.
 - Nó chỉ sai chỗ: mẹ cứ hỏi lại; ghi lại vào phiếu docs\tests\T10_MOM_TRIAL.txt.
+- Máy chạy nặng lúc tutor đang xem màn hình: mở C:\ScreenTutor\settings.json bằng Notepad, đổi
+  "edge_glow" thành false rồi lưu (tắt viền sáng, không cần mở lại app).
+- Nút tròn che mất thứ gì: rê chuột vào ô đen trên cùng, bấm vào ô, bấm công tắc "Nút tròn". Tắt nút
+  thì vẫn hỏi được bằng cách giữ Ctrl+Alt.
 - Muốn tắt hẳn: đóng cửa sổ đen "ScreenTutor" ở taskbar.
 - Chụp màn hình lỗi trong cửa sổ đen gửi Tuấn (đừng chụp key).

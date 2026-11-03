@@ -1,0 +1,38 @@
+NỘI DUNG GIẢ CHO T12 (dán vào Zalo, chat "Cloud của tôi"), 02/11/2026
+=====================================================================
+Mọi chữ dưới đây là bịa. Chỉ gửi vào chat "Cloud của tôi" (My Documents) của chính mình,
+KHÔNG gửi cho ai khác. Nội dung giống màn hình giả mà Claude đã thử trên Ubuntu, để so được.
+
+VIỆC 1: TIN DÀI CÓ CÁC BƯỚC (phải kéo xuống mới đọc hết)
+-------------------------------------------------------
+Trước tin này, gửi 4-5 tin ngắn bất kỳ (ví dụ "Chào cả tổ", "Họp ở phòng 204") để tin dài
+bắt đầu ở nửa dưới màn hình. Rồi dán nguyên tin sau, giữ đúng các dòng xuống hàng:
+
+THÔNG BÁO BỒI DƯỠNG THƯỜNG XUYÊN (nội dung giả để thử nghiệm)
+Kính gửi quý thầy cô tổ Khoa Học. Theo kế hoạch của nhà trường, mỗi thầy cô cần hoàn thành khoá bồi dưỡng trực tuyến trước ngày 15 tháng 11. Các bước thực hiện như sau:
+Bước 1. Vào trang boiduong-thunghiem.example và đăng nhập bằng tài khoản giáo viên đã được cấp.
+Bước 2. Chọn mô đun số 3 có tên là Đánh giá học sinh theo năng lực.
+Bước 3. Xem hết video bài giảng của mô đun, tổng cộng khoảng 40 phút. Lưu ý không tua nhanh vì hệ thống sẽ không ghi nhận thời gian học.
+Bước 4. Làm bài kiểm tra cuối mô đun, gồm 20 câu trắc nghiệm, cần đạt từ 16 câu đúng trở lên. Thầy cô được làm lại tối đa 3 lần.
+Bước 5. Tải giấy chứng nhận hoàn thành về máy và lưu lại dưới dạng file PDF.
+Bước 6. Gửi file giấy chứng nhận vào nhóm Zalo của tổ để tổ trưởng tổng hợp.
+Thầy cô nào gặp khó khăn khi đăng nhập thì báo lại cho tổ trưởng trước ngày 10 tháng 11 để được cấp lại mật khẩu. Những thầy cô đã hoàn thành rồi thì không cần làm lại. Trân trọng cảm ơn quý thầy cô.
+
+Các phần đúng (nhãn, để chấm R2): đăng nhập trang bồi dưỡng; chọn mô đun 3; xem hết video; làm bài kiểm tra; tải giấy chứng nhận PDF; gửi vào nhóm Zalo của tổ
+
+
+VIỆC 2: TIN KIỂU HIỆU TRƯỞNG, KÈM FILE VÀ LINK
+---------------------------------------------
+Dán tin sau:
+
+Các thầy cô đọc tin nhắn và các file sau để hoàn thành việc nhận xét và đóng góp ý kiến cho dự thảo quy chế chi tiêu nội bộ năm học mới (nội dung giả để thử nghiệm). Hạn chót là 17 giờ thứ Sáu tuần này.
+Cụ thể: thứ nhất, đọc file dự thảo quy chế. Thứ hai, ghi ý kiến vào phiếu góp ý theo mẫu đính kèm. Thứ ba, điền vào biểu mẫu trực tuyến ở đường link bên dưới. Thứ tư, nộp phiếu góp ý cho tổ trưởng.
+
+Rồi gửi tiếp 3 file trống, tạo bằng Word hay Excel rồi đặt đúng tên:
+  Du_thao_quy_che_GIA.docx
+  Phieu_gop_y_GIA.docx
+  Bang_tong_hop_GIA.xlsx
+Rồi gửi đường link (bịa, không mở được, không sao):
+  https://bieumau-thunghiem.example/gop-y
+
+Các phần đúng (nhãn, để chấm R2): đọc file dự thảo; ghi ý kiến vào phiếu góp ý; điền biểu mẫu trực tuyến; nộp phiếu cho tổ trưởng

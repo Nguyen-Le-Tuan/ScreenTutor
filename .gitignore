@@ -257,3 +257,6 @@ tutor_eval/results/
 # Her task history, memory and settings stay on her machine (founder, 02/11)
 history/
 settings.json
+
+# T12: screenshots taken on Windows; they show her real chat list (02/11)
+tutor_eval/t12_data/

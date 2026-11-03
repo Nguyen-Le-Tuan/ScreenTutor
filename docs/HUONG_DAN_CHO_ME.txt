@@ -3,29 +3,53 @@ HỎI MÁY TÍNH — CÁCH DÙNG (in ra để cạnh máy)
 
 1. MỞ
    Bấm đúp vào biểu tượng "Hỏi máy tính" trên màn hình Desktop.
-   Chờ thấy nút xanh chữ "Hỏi" ở góc dưới bên phải.
+   Chờ thấy NÚT TRÒN màu đen có hình micro ở góc dưới bên phải.
 
 2. HỎI
-   Cách 1: bấm nút "Hỏi" rồi nói. Mẹ nói xong, ngừng lại là máy tự hiểu.
+   Cách 1: bấm nút tròn rồi nói. Mẹ nói xong, ngừng lại là máy tự hiểu.
    Cách 2: giữ hai phím Ctrl và Alt, vừa giữ vừa nói, nói xong thì thả tay.
    Nói như nói với con, ví dụ:
      "Cái giáo án mẹ sửa hôm qua nằm ở đâu?"
      "Mẹ muốn xuất file này ra PDF để gửi tiệm in."
+   Muốn hỏi về một chỗ trên màn hình: đưa chuột vào chỗ đó hoặc khoanh chuột quanh nó,
+   rồi nói "cái này". Máy hiểu mẹ đang chỉ vào đâu.
 
-3. LÀM THEO
-   Máy khoanh một vòng ĐỎ ở chỗ cần bấm và đọc to hướng dẫn.
-   Mẹ tự bấm vào chỗ có vòng. Máy sẽ chờ màn hình đổi xong rồi chỉ bước tiếp theo,
-   cho tới khi nói là đã xong.
+3. LÀM THEO NHỮNG GÌ MÁY CHỈ
+   Vòng ĐỎ            Bấm vào đó. Máy chờ màn hình đổi xong rồi chỉ bước tiếp theo.
+   Vòng VÀNG CAM      CẨN THẬN: bấm vào đó sẽ GỬI đi cho người khác hoặc THAY file cũ.
+                      Nghe hết câu máy nói rồi mới bấm. Không chắc thì đừng bấm, gọi cho con.
+   Khung XANH NGỌC    Phần sáng là chỗ cần đọc, phần còn lại tối đi một chút.
+                      Đọc xong, bấm chuột một cái vào chỗ trống (đừng bấm vào đường link).
+   Hình CON CHUỘT     Lăn bánh xe trên con chuột về phía mình để kéo màn hình xuống.
+   DẤU TÍCH XANH      Hiện đúng chỗ mẹ vừa bấm: máy đã kiểm tra, bước đó đúng rồi.
+   VIỀN NHIỀU MÀU     Quanh màn hình: máy đang xem, mẹ chờ một chút.
+   VIỀN XANH LÁ       Quanh màn hình, thoáng qua: xong hết việc rồi.
 
-4. VÒNG MÀU VÀNG = CẨN THẬN
-   Nếu vòng có màu VÀNG CAM, bấm vào đó sẽ GỬI đi cho người khác hoặc THAY file cũ.
-   Nghe hết câu máy nói rồi mới bấm. Không chắc thì đừng bấm, gọi cho con.
+4. VIỆC LỚN
+   Việc có nhiều phần thì máy nói "Việc này có mấy phần" và ô đen trên cùng tự mở
+   cho mẹ xem các phần. Mẹ cứ làm theo, không cần hỏi lại.
 
-5. MUỐN HỎI CHUYỆN KHÁC
-   Cứ bấm "Hỏi" (hoặc giữ Ctrl+Alt) và nói câu mới; máy bỏ việc cũ, làm việc mới.
+5. ĐANG LÀM MÀ MUỐN HỎI CHUYỆN KHÁC
+   Cứ bấm nút tròn (hoặc giữ Ctrl+Alt) và nói câu mới; máy làm việc mới trước.
+   Xong câu đó, ô đen hiện chữ "Làm tiếp: ...". Mẹ bấm vào ô đó, hoặc bấm nút tròn
+   rồi nói "làm tiếp", máy quay lại đúng phần đang làm dở.
 
-Ô chữ đen nhỏ ở giữa mép trên màn hình là câu máy nghe được từ mẹ.
-Rê chuột vào để xem cả câu. Nếu máy nghe sai, mẹ hỏi lại chậm và rõ hơn.
+6. KHI MÁY TỰ LÊN TIẾNG
+   Mẹ bấm thẳng vào file trong Zalo thì Word mở một BẢN TẠM, sửa trên đó sẽ không vào
+   file thật. Máy sẽ tự nói cho mẹ biết. Lúc đó mẹ bấm nút tròn rồi nói "tải file về",
+   máy chỉ từng bước. Máy không chụp màn hình và không gửi gì đi trong lúc nhắc này.
+
+7. MÀU CỦA Ô ĐEN TRÊN CÙNG
+   Xanh trời: đang nghe mẹ          Tím: đang xem màn hình, hoặc chờ trang tải
+   Xanh dương: đang nói             Đỏ: đến lượt mẹ bấm
+   Xanh ngọc: mẹ đọc phần sáng      Vàng cam: cẩn thận
+   Xanh lá: xong                    Xám: máy chưa nghe rõ, mẹ hỏi lại chậm và rõ hơn
+   Chàm: có việc đang dở, bấm vào để làm tiếp
+   Rê chuột vào ô để xem cuộc trò chuyện. Bấm vào ô để xem nhiều hơn và các việc trước.
+
+8. XOÁ LỊCH SỬ
+   Máy nhớ các việc mẹ đã làm, ngay trên máy này, để lần sau giúp đúng ý mẹ hơn.
+   Muốn xoá: rê chuột vào ô đen, bấm vào ô, bấm "Xoá lịch sử", rồi bấm thêm lần nữa.
 
 Máy chỉ khoanh chỗ và nói, KHÔNG tự bấm hay gõ gì thay mẹ.
 Muốn tắt: đóng cửa sổ đen "ScreenTutor" ở thanh taskbar phía dưới.

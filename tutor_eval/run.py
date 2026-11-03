@@ -96,8 +96,9 @@ back the count of parts and the plan on a scroll step. The prompt is unchanged. 
 cases, 2 runs, R5a-e and R6 unchanged. This is the last attempt tonight whatever it
 shows: the runs so far are reported as they came, and thresholds were never moved.
 Run 20261102-192014 passed all: R5a 11/11, R5b 24/24, R5c 5.35 s, R5d 3.15 s, R5e 5/5, R6 0.
-Not independent evidence: the state rule was written after looking at case_04, these 12
-cases have now been run 6 times in one evening, and R5b passes with the code filter's help.
+Not independent evidence: the state rule was written after looking at case_04, and these 12
+cases have now been run 6 times in one evening. The code filter for sentences about the tutor
+itself was in place but changed none of the 24 (checked against the raw answers).
 
 Tenth rule, T14's paid part (plan section 7.2b), fixed before the run with --known: the same
 12 cases and 2 runs, with a block of what is known about her, made up. It holds a task that

@@ -7,9 +7,10 @@ Khoảng 45-60 phút. Mỗi câu hỏi tốn vài xu.
 Trước khi bắt đầu:
 [ ] App đã cài và chạy được (docs\INSTALL_FOR_DAD.txt, mục 6).
 [ ] Mẹ đã được nói đủ mục 7 của hướng dẫn cài: khi mẹ hỏi, giọng mẹ được gửi tới Meta; ở mỗi bước
-    hướng dẫn, máy gửi ảnh màn hình cùng tên các cửa sổ đang mở và tên file mới sửa; ảnh từng bước
-    lưu trên máy mẹ. Mẹ đồng ý dùng thử: ______
-[ ] Mẹ có tờ docs\HUONG_DAN_CHO_ME.txt. Ba giải thích 2 phút: nút Hỏi, giữ Ctrl+Alt, vòng đỏ,
+    hướng dẫn, máy gửi ảnh màn hình cùng tên các cửa sổ đang mở và tên file mới sửa; sau mỗi việc,
+    chữ của việc đó được gửi đi để tóm; câu hỏi mới có thể gửi kèm tóm tắt việc cũ giống nó; ảnh,
+    lịch sử và kho kiến thức lưu trên máy mẹ, xoá được. Mẹ đồng ý dùng thử: ______
+[ ] Mẹ có tờ docs\HUONG_DAN_CHO_ME.txt. Ba giải thích 2 phút: nút tròn, giữ Ctrl+Alt, vòng đỏ,
     vòng vàng = cẩn thận. Sau đó để mẹ tự làm.
 
 Luật cho người ngồi cạnh:
@@ -51,10 +52,12 @@ VIỆC THẬT CỦA MẸ (làm theo thứ tự nào cũng được; bỏ việc 
 
 SAU BUỔI THỬ (hỏi mẹ, ghi nguyên văn)
 ------------------------------------
-[ ] Dễ dùng không? Nút "Hỏi" hay giữ Ctrl+Alt, mẹ thích cách nào hơn? ______________________
+[ ] Dễ dùng không? Nút tròn hay giữ Ctrl+Alt, mẹ thích cách nào hơn? ______________________
 [ ] Giọng đọc nghe có dễ chịu, dễ hiểu không? Nói nhanh hay chậm? ______________________
 [ ] Chờ máy trả lời có lâu không? ______________________
-[ ] Vòng đỏ có dễ thấy không? Ô chữ đen ở trên có làm vướng không? ______________________
+[ ] Vòng đỏ có dễ thấy không? Ô đen ở trên có làm vướng không? ______________________
+[ ] Khung đọc làm tối màn hình có khó chịu không? Viền sáng quanh màn hình có làm mẹ rối không? ______
+[ ] Lúc máy tự lên tiếng (bản tạm Zalo), mẹ có giật mình không? ______________________
 [ ] Lần sau gặp khó, mẹ có muốn dùng nó thay vì gọi con không? Vì sao? ______________________
 [ ] Điều gì làm mẹ sợ hay khó chịu nhất? ______________________
 [ ] Mẹ có đồng ý cho Tuấn dùng giọng nói / lời kể / hình ảnh của mẹ trong video dự thi công khai

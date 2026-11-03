@@ -1,0 +1,120 @@
+T13: CHUYẾN WINDOWS DUY NHẤT (island, khung đọc, việc lớn, gác Zalo, làm tiếp, dữ liệu T12, demo)
+==============================================================================================
+Soạn 02/11/2026. Đây là file DUY NHẤT của chuyến này; thay cho T9 (các mục T9 còn hiệu lực ở phần D).
+Khoảng 2-2,5 giờ. Làm theo thứ tự. Điền ngay trong file. Phần E (dữ liệu T12) quan trọng hơn phần F.
+
+Đã đo trên Ubuntu (chi tiết trong README): T4 với luật việc lớn trỏ 11/12 và 11/12, vòng hiện sau
+3,15 s, tổng 5,35 s; việc lớn trên màn hình giả trượt luật kế hoạch 7/9; T14 đạt; làm tiếp 5/5.
+CHƯA BIẾT, chỉ thấy được trên Windows: CPU của viền sáng, thứ tự lớp tối với ô và nút tròn,
+bấm xuyên, chữ thật trên thanh tiêu đề Word khi mở bản tạm của Zalo.
+
+Luật chấm (ghi trước khi chạy). Trượt luật nào thì ghi lại, không sửa luật:
+  - W-1 đạt: lúc ô thu gọn, bấm vào chỗ ô vẫn tới được thứ bên dưới (tab Brave, ô Search của Word).
+  - W-2 đạt: ảnh trong tutor_runs KHÔNG có vòng, khung, lớp tối hay viền sáng.
+  - W-3 đạt: OBS (hoặc Win+Alt+R) quay THẤY vòng, khung và viền sáng.
+  - W-4 đạt: lúc lớp tối hiện, ô đen và nút tròn vẫn sáng, không bị lớp tối phủ, không nháy.
+  - W-5 đạt: gác bản tạm Zalo nói đúng một lần khi Word mở bản tạm; không nói khi mở bản thật.
+  - W-6 đạt: làm tiếp quay lại đúng phần đang làm.
+  Các mục khác chỉ ghi lại.
+
+
+A. CHUẨN BỊ (10 phút)
+---------------------
+[ ] A1. Lấy bản mới:      git switch mvp      git pull --ff-only
+        git log --oneline -1   (phải là commit mới nhất Claude báo): ______
+[ ] A2.  py -m pip install -r requirements.txt      rồi      py -m pytest -q      (toàn bộ passed): ______
+[ ] A3. Bấm đúp ScreenTutor.bat. Thấy ô đen nhỏ giữa mép trên và nút tròn micro góc dưới phải? ______
+[ ] A4. Mở Task Manager, tab Performance hoặc Details, để xem CPU của python trong các mục dưới.
+
+
+B. T13a: ISLAND VÀ LỚP PHỦ (40 phút)
+------------------------------------
+[ ] B1. Ô ở 125%: hình, cỡ, cạnh dưới cong khi rê chuột, giãn vừa đủ không che thanh công cụ Word? ______
+[ ] B2. Rê chuột lên ô khoảng 1/4 giây: ô mở; rời chuột: ô thu lại? ______  Bấm vào ô đang mở: ô ghim
+        (to ra, cuộn được bằng bánh xe)? ______  Bấm ra ngoài: ô đóng? ______
+[ ] B3. (W-1) Ô thu gọn nằm trên một tab Brave hoặc ô Search của Word: bấm vào đó, tab có chuyển /
+        ô Search có nhận không? ______
+[ ] B4. Đang gõ trong Word, rê chuột qua ô: chữ vẫn gõ vào Word bình thường (ô không giành focus)? ______
+[ ] B5. Alt+Tab khi vòng đang hiện: có thấy cửa sổ của vòng hay ô trong danh sách không? ______
+[ ] B6. Sóng âm trong ô nhảy theo giọng mình khi nói, theo giọng tutor khi tutor nói? ______
+[ ] B7. CPU của python lúc nghỉ (không hỏi gì 1 phút): ____ %. Lúc tutor đang xem màn hình (có viền
+        sáng): ____ %. Nếu máy giật, đặt "edge_glow": false trong settings.json, đo lại: ____ %
+[ ] B8. (W-2) Sau vài câu hỏi, mở vài ảnh mới nhất trong tutor_runs: có vòng, khung, lớp tối, viền
+        sáng trong ảnh không? ______
+[ ] B9. (W-3) Bật Win+Alt+R quay 20 giây một câu hỏi có vòng đỏ: video có thấy vòng và viền sáng? ______
+[ ] B10. Ô ghim: đổi màu ô, tắt bật "Nút tròn", "Xoá lịch sử" (bấm 2 lần) chạy đúng? ______
+         (Xoá lịch sử sẽ xoá cả kho kiến thức; làm mục này SAU phần C và E nếu muốn giữ lịch sử thử.)
+
+
+C. T13b: VIỆC LỚN, GÁC ZALO, LÀM TIẾP, ĐƯỜNG CHUỘT (40 phút)
+------------------------------------------------------------
+Dùng nội dung giả trong docs/tests/T12_TIN_NHAN_GIA.txt, đã dán vào "Cloud của tôi" (phần E1).
+[ ] C1. Việc 1. Mở chat Cloud của tôi, để tin dài bị cắt ở mép dưới. Đưa chuột vào tin dài, bấm nút
+        tròn: "Học cái này trong Zalo". Tutor có bảo kéo xuống (hình con chuột) không? ______
+        Khi kéo xong, có khung xanh ngọc và lớp tối không? ______  (W-4) Ô và nút tròn có sáng không? ______
+        Cuối cùng tutor có nói "Việc này có mấy phần" và ô tự mở cho xem các phần không? ______
+        Các phần tutor đưa ra: ________________________________________________
+[ ] C2. Trong lúc bước đọc đang chờ, nhắn từ điện thoại một tin mới vào Cloud của tôi: bước đọc có
+        tự kết thúc không? ______ (đã biết có thể bị; ghi lại để quyết có cần sửa)
+[ ] C3. Đang ở phần 2 của Việc 1, bấm nút tròn hỏi câu khác ("Nút lưu ở đâu"). Xong câu đó: ô có hiện
+        "Làm tiếp: ..." màu chàm và tutor có nói câu mời làm tiếp không? ______
+        (W-6) Bấm vào ô đó: tutor có quay lại đúng phần 2 không? ______
+        Làm lại, lần này nói "làm tiếp" thay vì bấm: ______
+[ ] C4. Việc 2 (tin hiệu trưởng): "Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?"
+        Tutor có lập kế hoạch 4 phần không? ______  Có chỉ file dự thảo không? ______
+[ ] C5. (W-5) Gác bản tạm Zalo: trong Zalo bấm THẲNG vào một file .docx bất kỳ.
+        Chép NGUYÊN CHỮ trên thanh tiêu đề Word: ________________________________________
+        Ô có chuyển màu vàng cam và tutor nói câu "File này là bản tạm của Zalo..." không? ______
+        Đứng yên 10 giây: tutor có nói lại không (không được nói lại)? ______
+        Bấm nút tròn, nói "tải file về": tutor có dẫn về Zalo tải file không? ______
+        Mở bản đã tải về (trong Downloads hay thư mục thật): tutor có im lặng không? ______
+        Đường dẫn file tạm (File > Info), thay tên file bằng <tên file>: _______________________
+[ ] C6. Đường chuột: khoanh chuột quanh một tin trong Zalo rồi hỏi "Cái này là gì". Trong cửa sổ đen
+        có dòng "Chuột lúc hỏi: khoanh quanh vùng ..." không? ______  Tutor có nói về đúng tin đó không? ______
+        Đưa chuột vào một tin, để yên, hỏi "cái này là gì": dòng "dừng ở (...)"? ______
+
+
+D. CÁC MỤC CÒN HIỆU LỰC CỦA T9 (20 phút)
+----------------------------------------
+[ ] F-1. Trang đang tải: dựng case_04 (Brave ở tab khác, Zalo ở trước). Giữ Ctrl+Alt: "Cái link cô tổ
+         trưởng gửi mẹ ấn hoài mà không chịu mở lên". Bấm theo vòng. Khi Brave tải, tutor có chờ rồi
+         nói tiếp hay báo xong không? ______
+[ ] F-2a. Ghi đè: Word mở giáo án, Downloads ĐÃ CÓ PDF cùng tên. "Mẹ muốn xuất giáo án này ra PDF để
+          gửi tiệm in". Ở hộp hỏi thay file: vòng màu gì? ______ Câu tutor nói: ___________________
+[ ] F-2b. Gửi đi: trong Zalo, chat Cloud của tôi. "Mẹ muốn gửi file PDF giáo án vào đây".
+          Ở nút gửi: vòng màu gì? ______ Câu tutor nói: ________________________________
+[ ] F-3. Có lần nào tutor chỉ nút "Create PDF" của WPS không? ______
+[ ] F-8. Word mở giáo án, không bôi đen gì: "Mẹ muốn làm chữ to hơn". Tutor có bảo bôi đen trước? ______
+
+
+E. DỮ LIỆU CHO T12 (20 phút, làm trước phần F)
+----------------------------------------------
+[ ] E1. Dán nội dung trong docs/tests/T12_TIN_NHAN_GIA.txt vào chat "Cloud của tôi", đúng như hướng
+        dẫn trong file đó.
+[ ] E2. Chụp toàn màn hình (Zalo phóng to, ô và nút tròn cứ để nguyên), mỗi vị trí kéo một ảnh:
+        Việc 1: từ chỗ tin dài vừa bắt đầu, mỗi lần kéo khoảng nửa màn hình, tới khi thấy hết.
+        Việc 2: ở chỗ tin hiệu trưởng hiện đủ, và một ảnh khi tin bị cắt nửa dưới.
+        Đặt tên: t12_viec1_1.png, t12_viec1_2.png, ...  t12_viec2_1.png, ...
+        Lưu vào tutor_eval\t12_data\ (đã gitignore). Ảnh có danh sách chat thật bên trái, nên
+        KHÔNG commit, KHÔNG gửi ai; chỉ chép sang Ubuntu bằng thư mục OneDrive của dự án.
+[ ] E3. Thêm 2 ảnh Word khi đang mở bản tạm của Zalo (phần C5), đặt tên t12_ban_tam_1.png, ..._2.png.
+        Ghi lại chữ trên thanh tiêu đề trong C5 là đủ, không cần ghi gì thêm.
+
+
+F. QUAY DEMO (Win+Alt+R; nói chậm, rõ như mẹ)
+--------------------------------------------
+Quay vài bản thô; Claude sẽ cùng bạn chọn và viết kịch bản dựng.
+[ ] D-1. Gác bản tạm: bấm thẳng file trong Zalo → tutor tự nói → "tải file về" → làm theo tới khi mở
+         đúng bản thật.
+[ ] D-2. Việc lớn: "Học cái này trong Zalo" → kéo → khung đọc → kế hoạch hiện trên ô → làm phần 1
+         (thấy dấu tích xanh sau mỗi bước).
+[ ] D-3. Giữa chừng hỏi câu khác → "Làm tiếp" → quay lại đúng phần.
+[ ] D-4. Xuất PDF có bước ghi đè (vòng vàng).
+         Tên các file video (để trên máy, KHÔNG commit): __________________________________
+
+
+Xong: chỉ commit file này (KHÔNG "git add ."):
+    git add docs/tests/T13_WINDOWS.txt
+    git commit -m "Windows T13 results"
+    git push
+Rồi chép tutor_eval\t12_data\ sang thư mục OneDrive của dự án và nhắn Claude: "Đã chạy xong T13".
