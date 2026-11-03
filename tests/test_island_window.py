@@ -267,3 +267,56 @@ def test_a_box_under_the_closed_island_moves_it_even_when_its_centre_is_far(qt_a
     assert not island.hidden_for_target
     island.set_avoid(None)
     island.hide()
+
+
+def _peeking_island(clock):
+    island = Island(clock=lambda: clock[0], cursor=lambda: QPoint(5, 500))
+    task = conv.Task()
+    task.hear("Học cái này trong Zalo")
+    task.say("Việc này có ba phần.")
+    task.plan(["Đăng nhập", "Xem video", "Làm bài"], 0)
+    island.set_state("turn", task)
+    island.show()
+    return island
+
+
+def test_the_island_opens_by_itself_to_show_the_plan_and_lets_clicks_through():
+    clock = [0.0]
+    island = _peeking_island(clock)
+    island.peek(5.0)
+    assert island.mode == "hover" and island.view.peek and island.click_through and island.takes_clicks is None
+    shown = island_mod_messages(island)
+    assert [m.plan for m in shown] == [("Đăng nhập", "Xem video", "Làm bài")]
+    clock[0] = 4.9
+    island.poll()
+    assert island.mode == "hover"
+    clock[0] = 5.1
+    island.poll()
+    assert island.mode == "collapsed" and not island.view.peek and island._peek_until is None
+    island.hide()
+
+
+def test_the_island_does_not_peek_over_what_she_must_see_or_when_pinned():
+    clock = [0.0]
+    island = _peeking_island(clock)
+    island.no_hover = True
+    island.peek(5.0)
+    assert island.mode == "collapsed"
+    island.no_hover = False
+    island.set_mode("pinned")
+    island.peek(5.0)
+    assert island.mode == "pinned" and not island.view.peek
+    island.hide()
+
+
+def test_a_ring_under_the_peeking_island_closes_it():
+    clock = [0.0]
+    island = _peeking_island(clock)
+    island.peek(5.0)
+    island.set_avoid(QPointF(island.geometry().center().x(), 60))
+    assert island.mode == "collapsed" and island._peek_until is None
+    island.hide()
+
+
+def island_mod_messages(i):
+    return island.hover_messages(i.view.task, i.view.peek)

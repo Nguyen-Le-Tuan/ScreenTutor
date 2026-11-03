@@ -79,6 +79,8 @@ total over 12 cases hides it. So the prompt now says the rule in words, only for
 says she already clicked, and asks the sentences not to talk about the tutor. Same 12
 cases, 2 runs, thresholds unchanged. Added before this run:
 - R5e: 5 more calls on case_04 hit at least 4/5, what low reached.
+Run 20261102-190252 of this rule is void, not a result: from the 4th call on this machine
+could not resolve the API's name (21 of 24 calls, 0 tokens). The rule is unchanged.
 """
 
 from __future__ import annotations

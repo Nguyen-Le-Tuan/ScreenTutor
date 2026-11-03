@@ -15,6 +15,7 @@ B3 (02/11) adds more than the ring, all in the same window and all letting click
   hint     a small mouse with a turning wheel and falling chevrons: scroll here
   tick     a green tick where she clicked, once the tutor has checked the step: the checking made visible
   glow     a soft light around the screen edge while the tutor looks, gone before it speaks
+  flash    the same light in green, once, when the whole task is done
 
 Anything that moves while the session watches the screen is published in `cover`, and the
 frame stands still once it has landed. WDA_EXCLUDEFROMCAPTURE would keep all this out of
@@ -24,6 +25,7 @@ screenshots without hiding it, but it would also keep it out of the demo video.
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 from dataclasses import dataclass, field
 
@@ -54,6 +56,8 @@ GLOW_IN, GLOW_OUT = 2.5, 5.0         # per second: comes up slowly, leaves befor
 GLOW_FRAME_MS = 40
 GLOW_COLORS = [QColor(10, 132, 255), QColor(191, 90, 242), QColor(255, 55, 135), QColor(255, 159, 10),
                QColor(100, 210, 255), QColor(10, 132, 255)]   # the island's own family
+DONE_COLORS = [TICK_COLOR, READ_COLOR, TICK_COLOR]
+FLASH_S = 1.1                        # the green light when the whole task is done
 
 
 def to_logical(px: float, py: float, dpr: float, origin: tuple[float, float] = (0.0, 0.0)) -> tuple[float, float]:
@@ -252,13 +256,13 @@ class EdgeGlow:
             p.drawRoundedRect(QRectF(i, i, self.small[0] - 2 * i, self.small[1] - 2 * i), r, r)
         p.end()
 
-    def paint(self, p: QPainter, t: float, level: float) -> None:
+    def paint(self, p: QPainter, t: float, level: float, colors: list[QColor] = GLOW_COLORS) -> None:
         buf = QImage(*self.small, QImage.Format_ARGB32_Premultiplied)
         buf.fill(Qt.transparent)
         q = QPainter(buf)
         gradient = QConicalGradient(self.small[0] / 2, self.small[1] / 2, -(t / GLOW_S * 360) % 360)
-        for i, color in enumerate(GLOW_COLORS):
-            gradient.setColorAt(i / (len(GLOW_COLORS) - 1), color)
+        for i, color in enumerate(colors):
+            gradient.setColorAt(i / (len(colors) - 1), color)
         q.fillRect(buf.rect(), gradient)
         q.setCompositionMode(QPainter.CompositionMode_DestinationIn)
         q.drawImage(0, 0, self.mask)
@@ -302,6 +306,7 @@ class Overlay:
         self._glowing = False
         self._glow_level = 0.0
         self._glow_last = 0.0
+        self._flash_at: float | None = None
         self._edge = None
         self.glow_enabled = True
         self.cover: tuple[int, int, int, int] | None = None  # logical (x, y, w, h) that moves; read by worker threads
@@ -360,6 +365,12 @@ class Overlay:
         if self._glowing:
             self._run()
 
+    def flash(self) -> None:
+        """The whole task is done."""
+        if self.glow_enabled:
+            self._flash_at = self._steady.elapsed() / 1000
+            self._run()
+
     def clear(self) -> None:
         """Gone at once: the session takes a screenshot right after this, and the ticks stay out of its way."""
         self._target = self._box = self._hint = None
@@ -377,11 +388,11 @@ class Overlay:
 
     def _busy(self) -> bool:
         return any(v is not None for v in (self._target, self._box, self._hint)) or bool(self._ticks) \
-            or self._glowing or self._glow_level > 0
+            or self._glowing or self._glow_level > 0 or self._flash_at is not None
 
     def _moving(self) -> bool:
         landed = self._box is not None and self._clock.elapsed() / 1000 >= TRAVEL_S
-        return not landed or bool(self._ticks) or self._glow_level > 0
+        return not landed or bool(self._ticks) or self._glow_level > 0 or self._flash_at is not None
 
     def _publish(self) -> None:
         self.cover = None
@@ -411,10 +422,13 @@ class Overlay:
     def _paint(self, p: QPainter) -> None:
         now = self._steady.elapsed() / 1000
         t = self._clock.elapsed() / 1000
-        if self._glow_level > 0:
+        if self._glow_level > 0 or self._flash_at is not None:
             if self._edge is None:
                 self._edge = EdgeGlow(self._w.width(), self._w.height())
-            self._edge.paint(p, now, self._glow_level)
+            if self._glow_level > 0:
+                self._edge.paint(p, now, self._glow_level)
+            if self._flash_at is not None:
+                self._edge.paint(p, now * 3, math.sin(math.pi * min((now - self._flash_at) / FLASH_S, 1.0)), DONE_COLORS)
         if self._box is not None:
             paint_focus(p, focus_at(t, self._start, self._box), (self._w.width(), self._w.height()), color=self._color)
         if self._hint is not None:
@@ -431,6 +445,8 @@ class Overlay:
             return
         now = self._steady.elapsed() / 1000
         self._ticks = [m for m in self._ticks if now - m[0] < TICK_S]
+        if self._flash_at is not None and now - self._flash_at >= FLASH_S:
+            self._flash_at = None
         step = now - self._glow_last
         self._glow_last = now
         goal, rate = (1.0, GLOW_IN) if self._glowing else (0.0, GLOW_OUT)

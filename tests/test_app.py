@@ -35,6 +35,9 @@ class FakeIsland:
     def set_mode(self, mode):
         self.mode = mode
 
+    def peek(self, seconds):
+        self.peeks = getattr(self, "peeks", []) + [seconds]
+
 
 class FakeButton:
     def __init__(self):
@@ -134,6 +137,7 @@ def test_feed_shows_the_parts_of_a_big_task():
     assert conv.plan_progress(feed.task) == "Phần 1/3" and isl.changed == 2
     feed.plan(["Đăng nhập", "Xem video", "Làm bài"], 2)
     assert conv.plan_progress(feed.task) == "Phần 2/3" and isl.changed == 3
+    assert isl.peeks == [5.0, 3.0]                         # longer the first time
     assert len([m for m in feed.task.messages if m.plan]) == 1
     Feed(FakeIsland()).plan(["A", "B"], 1)                  # no task yet: does not fail
 
@@ -166,3 +170,20 @@ def test_a_frame_keeps_the_island_off_the_whole_box(qt_app):
     isl = Isl()
     Feed(isl, dpr=1.25).frame(125, 250, 625, 750)
     assert isl.seen == (300.0, 400.0, 100.0, 400.0)
+
+
+def test_the_green_flash_comes_once_when_a_task_is_done(qt_app):
+    isl, flashes = FakeIsland(), []
+    feed = Feed(isl)
+    feed.flash = lambda: flashes.append(1)
+    feed.status("thinking")
+    feed.say_start("Xong rồi bạn nhé.", 1)
+    feed.status("done")           # still speaking: not yet
+    assert flashes == []
+    feed.say_end(1)
+    assert flashes == [1]
+    feed.status("done")
+    assert flashes == [1]
+    feed.status("idle")
+    feed.status("done")
+    assert flashes == [1, 1]      # the next task

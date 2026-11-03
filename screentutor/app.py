@@ -45,6 +45,7 @@ PRE_ASK_S = 3.0       # B1b: she may point just before she presses the button or
 NOT_HEARD = "Mình chưa nghe rõ. Bạn hỏi lại nhé."
 NO_MIC = "Mình chưa nghe được micro. Bạn kiểm tra lại micro nhé."
 SETTINGS_POLL_MS = 2000
+PEEK_S, PART_PEEK_S = 5.0, 3.0   # the island opens by itself: on a new plan, and on each new part
 
 
 def masked(img: Image.Image, rects: list[tuple[int, int, int, int]]) -> Image.Image:
@@ -101,6 +102,8 @@ class Feed:
         self.mic_meter = None
         self.dpr = dpr
         self.glow = None               # (on) -> None: the light around the screen while the tutor looks
+        self.flash = None              # () -> None: the green light when a task is done
+        self.flashed = False
         self.task: conv.Task | None = None
         self.base = "idle"
         self.speaking = 0              # the token of the sentence being spoken, 0 when quiet
@@ -137,8 +140,10 @@ class Feed:
         """The parts of a big task and the one being done, from 1: the island's card and "Phần k/n"."""
         if self.task is None:
             self.task = conv.Task()
+        first = not any(m.plan for m in self.task.messages)
         self.task.plan(parts, max(part - 1, 0))
         self.island.task_changed()
+        self.island.peek(PEEK_S if first else PART_PEEK_S)
 
     def ring(self, x: int, y: int, caution: bool) -> None:
         from PySide6.QtCore import QPointF
@@ -171,6 +176,9 @@ class Feed:
         state = self.shown()
         if self.glow and state != "thinking":
             self.glow(False)  # it never outlasts the looking; look() turns it on after the screenshot
+        if self.flash and state == "done" and not self.flashed:
+            self.flash()   # once a task: "done" comes back after the last sentence has been spoken
+        self.flashed = state == "done" or (self.flashed and state == "speaking")
         source = None
         if state == "speaking" and self.voice_meter is not None:
             source = lambda m=self.voice_meter: m.value  # noqa: E731
@@ -233,7 +241,7 @@ def main(argv=None) -> None:
     out = Path("tutor_runs") / (datetime.now().strftime("%Y%m%d-%H%M%S") + "-app")
     out.mkdir(parents=True, exist_ok=True)
     feed = Feed(island, button, speaker.meter, dpr)
-    feed.glow = overlay.glow
+    feed.glow, feed.flash = overlay.glow, overlay.flash
 
     def keep_ours_on_top() -> None:  # the darkened screen must not cover the button and the island
         for widget in (island, button):

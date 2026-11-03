@@ -301,6 +301,7 @@ class View:
     show_button: bool = True
     color: str = "#000000"
     confirm_clear: bool = False
+    peek: bool = False        # opened by itself for a moment, to show the parts of the task
 
 
 def header_rect(shape: Shape, cx: float, top: float = TOP) -> QRectF:
@@ -313,9 +314,10 @@ def close_center(shape: Shape, cx: float, top: float = TOP) -> QPointF:
     return QPointF(head.right() - 8, head.center().y())
 
 
-def hover_messages(task: conv.Task | None) -> list[conv.Message]:
-    """The open island: her question and the tutor's sentences; the parts show as "Phần 1/3" instead."""
-    return [m for m in task.messages if not m.plan] if task else []
+def hover_messages(task: conv.Task | None, peek: bool = False) -> list[conv.Message]:
+    """The open island: her question and the tutor's sentences; the parts show as "Phần 1/3" instead.
+    Opened by itself it shows the parts and nothing else."""
+    return [m for m in task.messages if bool(m.plan) == peek] if task else []
 
 
 def content_size(view: View, screen_w: float, screen_h: float) -> tuple[float, float, float]:
@@ -327,7 +329,7 @@ def content_size(view: View, screen_w: float, screen_h: float) -> tuple[float, f
     if view.mode == "collapsed":
         return (measure(text) if text else 0.0), 0.0, 0.0
     if view.mode == "hover":
-        shown = hover_messages(view.task)
+        shown = hover_messages(view.task, view.peek)
         w = min(_clamp(conv.natural_width(shown, measure) + 2 * SIDE, *HOVER_W), HOVER_MAX_SHARE * screen_w)
         bubbles, h = conv.layout(shown, w - 2 * SIDE, measure, current=True)
         _, h = conv.newest_that_fit(bubbles, HOVER_H[1] - HEADER_H - 14, keep_first=True)
@@ -384,7 +386,7 @@ def paint_island(p: QPainter, shape: Shape, cx: float, view: View, t: float,
         measure = measure_with(BODY_PX)
         width = (view.layout_w or shape.w) - 2 * SIDE
         bx0 = cx - (view.layout_w or shape.w) / 2
-        messages = hover_messages(view.task) if view.mode == "hover" else (view.task.messages if view.task else [])
+        messages = hover_messages(view.task, view.peek) if view.mode == "hover" else (view.task.messages if view.task else [])
         bubbles, _ = conv.layout(messages, width, measure, current=view.state in ("speaking", "turn", "caution"))
         if view.mode == "hover":
             bubbles, _ = conv.newest_that_fit(bubbles, shape.h - HEADER_H - 14, keep_first=True)
@@ -543,6 +545,7 @@ class Island(QWidget):
         self.cover: tuple[int, int, int, int] | None = None        # what to grey out for the stillness check
         self.takes_clicks: tuple[int, int, int, int] | None = None  # where a click lands on the island, not her app
         self.no_hover = False              # the ring points under where the open island would be
+        self._peek_until: float | None = None
         self.morph = Morph(self._target())
         self._frame = QTimer(self)
         self._frame.setInterval(FRAME_MS)
@@ -598,7 +601,18 @@ class Island(QWidget):
 
     # opening and closing -----------------------------------------------------------------
 
+    def peek(self, seconds: float) -> None:
+        """Open by itself and show the parts of the task. She has no reason to hover over the island, and the
+        plan is what tells her the tutor has understood the whole job. Clicks still go through to her app."""
+        if self.mode == "pinned" or self.hidden_for_target or self.no_hover or self.view.task is None:
+            return
+        self._peek_until = self._clock() + seconds
+        self.view.peek = True
+        self.set_mode("hover")
+
     def set_mode(self, mode: str) -> None:
+        if mode != "hover":
+            self._peek_until, self.view.peek = None, False
         self.mode = self.view.mode = mode
         self.scroll = 0.0
         self._inside_since = self._outside_since = None
@@ -616,6 +630,9 @@ class Island(QWidget):
                     self.set_mode("hover")
             else:
                 self._inside_since = None
+        elif self._peek_until is not None:
+            if now >= self._peek_until:
+                self.set_mode("collapsed")
         elif self.mode == "hover":
             if not inside:
                 self._outside_since = self._outside_since if self._outside_since is not None else now
@@ -744,7 +761,7 @@ class Island(QWidget):
         self.update()
 
     def _sizes(self, mode: str) -> tuple[float, float, float]:
-        v = View(mode, self.view.state, self.view.task, self.view.title)
+        v = View(mode, self.view.state, self.view.task, self.view.title, peek=self.view.peek)
         return content_size(v, *self._screen_wh())
 
     def _target(self) -> Shape:
@@ -779,7 +796,7 @@ class Island(QWidget):
         self.takes_clicks = None if self.click_through or not self.isVisible() else box
 
     def _apply_click_through(self) -> None:
-        self.click_through = self.mode == "collapsed" or self.hidden_for_target
+        self.click_through = self.mode == "collapsed" or self.hidden_for_target or self._peek_until is not None
         self.setAttribute(Qt.WA_TransparentForMouseEvents, self.click_through)
         self._publish()
         if self.isVisible():

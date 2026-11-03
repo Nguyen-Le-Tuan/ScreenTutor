@@ -47,6 +47,7 @@ MODEL = "muse-spark-1.3"  # Standard tier; never a Contributor variant
 EFFORT = "minimal"  # T12 R5 (02/11): "low" thought 650 tokens on the task prompt; the 12 cases stayed on target at this
 TIMEOUT_S = 30
 RETRY_STATUSES = (429, 500, 502, 503, 504)
+RETRY_LINE_S = 1.0
 
 POINT_PROMPT = (
     "Đây là ảnh chụp toàn màn hình một máy tính Windows.\n"
@@ -418,7 +419,8 @@ class Tutor:
                     self._post("/chat/completions", body)
             except (httpx.HTTPError, RuntimeError, ValueError) as e:
                 if attempt == 0 and isinstance(e, httpx.TransportError):
-                    continue  # the line dropped (seen 02/11, and her line is longer than ours): once more
+                    time.sleep(RETRY_LINE_S)  # the line dropped (seen 02/11, her line is longer than ours): once more
+                    continue
                 return Reply(error=str(e))
             total += elapsed
             res = parse_reply(resp)

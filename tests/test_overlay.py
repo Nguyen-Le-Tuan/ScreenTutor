@@ -179,3 +179,15 @@ def test_paint_hint_and_box_do_not_fail_on_any_scale():
     for scale in (1.0, 1.25, 2.0):
         _shot(lambda p: paint_hint(p, hint_at(1.0, (0, 0), (500, 400)), scale))
         _shot(lambda p: paint_focus(p, focus_at(0.1, (10, 10), (300, 300, 310, 305)), (1920, 1080), scale))
+
+
+def test_the_green_flash_comes_and_goes(qt_app):
+    ov = Overlay()
+    ov.flash()
+    assert ov._w.isVisible() and ov._flash_at is not None
+    ov._flash_at -= 2
+    ov._tick()
+    assert ov._flash_at is None and not ov._w.isVisible()
+    ov.glow_enabled = False
+    ov.flash()
+    assert ov._flash_at is None
