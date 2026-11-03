@@ -4,6 +4,10 @@ Sound starts after about 0.2 s (int8 on the i5-12500H, 29/10) and is played whil
 the rest is still being made. stop() cuts it off, for when the user clicks or
 asks something new.
 
+C1 (03/11): speak() can say when the first sound goes out, so the step goes on the
+screen with the voice. In the T13 videos the ring led the voice by 3.0 s (median of
+28 steps), and she clicked before she heard what she was clicking.
+
 for_speech() rewrites what a speech model reads badly: on 30/10 both fp32 and
 int8 read "(1).docx" as "tám một đốt cách".
 
@@ -90,30 +94,49 @@ class Speaker:
             if self._engine is None:
                 self._engine = _load_engine()
 
-    def speak(self, text: str) -> str:
-        """Blocks until the sentence is spoken or stop() is called. Returns the text actually read."""
-        spoken = for_speech(text)
-        if not spoken:
-            return spoken
-        self.load()
-        with self._lock:
-            self._stop.clear()
-            chunks = self._metered(self._engine.infer_stream(spoken, voice=self.voice))
-            try:
-                (self._play or _play_sounddevice)(chunks, self._stop)
-            finally:
-                self.meter.reset()
-        return spoken
+    def speak(self, text: str, on_sound=None) -> str:
+        """Blocks until the sentence is spoken or stop() is called. Returns the text actually read.
 
-    def _metered(self, chunks):
+        on_sound() is called once: when the player has taken the first block, or at the end if no
+        sound went out at all (nothing to read, stopped, or failed), so what waits for it never waits forever."""
+        sound = _once(on_sound)
+        try:
+            spoken = for_speech(text)
+            if not spoken:
+                return spoken
+            self.load()
+            with self._lock:
+                self._stop.clear()
+                chunks = self._metered(self._engine.infer_stream(spoken, voice=self.voice), sound)
+                try:
+                    (self._play or _play_sounddevice)(chunks, self._stop)
+                finally:
+                    self.meter.reset()
+            return spoken
+        finally:
+            sound()
+
+    def _metered(self, chunks, sound=lambda: None):
         """Hands the audio on in 40 ms blocks and meters each one as the player takes it: the player
         takes a block when there is room for it, so the level runs close to what is heard."""
         for block in blocks(chunks, SAMPLE_RATE):
             self.meter.feed(level_of(block))
             yield block
+            sound()  # the player has written the first block and asks for more: it is playing
 
     def stop(self) -> None:
         self._stop.set()
+
+
+def _once(fn):
+    """fn, called at most once however often the result is called; nothing if fn is None."""
+    done = []
+
+    def call() -> None:
+        if fn is not None and not done:
+            done.append(True)
+            fn()
+    return call
 
 
 def _play_sounddevice(chunks, stop: threading.Event) -> None:

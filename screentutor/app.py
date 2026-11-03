@@ -419,14 +419,14 @@ def main(argv=None) -> None:
 
     said = [0]
 
-    def say(text: str) -> None:
-        """Speak without blocking the session; a click or a new question cuts it off."""
+    def say(text: str, on_sound=None) -> None:
+        """Speak without blocking the session; a click or a new question cuts it off. on_sound: see Speaker.speak."""
         said[0] += 1
         token = said[0]
 
         def run():
             try:
-                speaker.speak(text)
+                speaker.speak(text, on_sound=on_sound)
             finally:
                 post("say_end", token)
         speaker.stop()

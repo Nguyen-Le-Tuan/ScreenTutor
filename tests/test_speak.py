@@ -83,3 +83,28 @@ def test_the_meter_follows_the_voice_and_drops_to_zero_after():
     spk.speak("Bạn bấm File.")
     assert len(seen) == 3 and seen[0] > 0.5 and seen[-1] >= seen[0]  # 40 ms blocks, metered as they go out
     assert spk.meter.value == 0.0
+
+
+def test_on_sound_comes_once_as_the_player_takes_the_first_block():
+    order = []
+    spk = Speaker(engine=FakeEngine(), play=lambda chunks, stop: [order.append("block") for _ in chunks])
+    spk.speak("Bạn bấm File.", on_sound=lambda: order.append("sound"))
+    assert order == ["block", "sound", "block", "block", "block", "block"]
+
+
+def test_on_sound_still_comes_when_no_sound_went_out():
+    calls = []
+    spk = Speaker(engine=FakeEngine(), play=lambda chunks, stop: None)   # stopped before the first block
+    spk.speak("Bạn bấm File.", on_sound=lambda: calls.append("stopped"))
+    spk.speak("()", on_sound=lambda: calls.append("nothing to read"))
+
+    class Broken:
+        def infer_stream(self, text, voice):
+            raise RuntimeError("no model")
+
+    try:
+        Speaker(engine=Broken(), play=lambda chunks, stop: list(chunks)).speak("Bạn bấm File.",
+                                                                              on_sound=lambda: calls.append("failed"))
+    except RuntimeError:
+        pass
+    assert calls == ["stopped", "nothing to read", "failed"]

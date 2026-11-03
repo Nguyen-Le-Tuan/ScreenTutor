@@ -120,8 +120,14 @@ def one(tutor: Tutor, spec: dict) -> dict:
     x1, y1, x2, y2 = boxes[spec["message"]]
     path = [(i * 0.015, (x1 + x2) // 2, min((y1 + y2) // 2, 700)) for i in range(60)]   # she rests the mouse on the message
     shown, said = {}, []
+
+    def say(text, on_sound=None):
+        said.append(text)
+        if on_sound:
+            on_sound()   # no voice here: the step goes up as the words are written down
+
     s = Session(tutor=tutor, look=mom.look, encode=screen.png_data_url, show=lambda x, y, c=False: None, hide=lambda: None,
-                say=said.append, wait_click=mom.wait_click, settle=lambda c: "unchanged", pause=lambda t: None,
+                say=say, wait_click=mom.wait_click, settle=lambda c: "unchanged", pause=lambda t: None,
                 wait_change=mom.wait_change, pointer=describe(path, (W, H)),
                 show_box=lambda box, c: shown.__setitem__(len(said), box))
     steps = s.run(spec["question"], max_steps=8)

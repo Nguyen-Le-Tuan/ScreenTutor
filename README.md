@@ -138,7 +138,7 @@ python -m tutor_eval.sam run --yes          # T11 (about $0.06)
 |---|---|
 | `screentutor/app.py` | The whole app: button, hotkey, listening, session, overlay, island, voice, guards, memory |
 | `screentutor/tutor.py` | The Muse Spark calls: first turn (`ask`), the step check (`follow_up`), the note (`summarise`); the streaming reader |
-| `screentutor/session.py` | The agent loop: plan, parts, click, read, scroll, wait, picking a task up again |
+| `screentutor/session.py` | The agent loop: plan, parts, click, read, scroll, wait, picking a task up again; each step goes up with the first sound of its sentence |
 | `screentutor/island.py`, `conversation.py`, `ui.py` | The dynamic island, its talk and its 12 states; the round button |
 | `screentutor/overlay.py` | Click-through overlay: ring, reading frame, scroll hint, tick, edge light |
 | `screentutor/guards.py` | Speaking up without being asked: Zalo's temporary copy |
@@ -147,7 +147,8 @@ python -m tutor_eval.sam run --yes          # T11 (about $0.06)
 | `screentutor/listen.py`, `levels.py` | Muse Voice Transcribe realtime client, with turn joining; sound levels for the island |
 | `screentutor/state.py`, `winstate.py` | Windows state sensors (ctypes, no extra dependencies) |
 | `screentutor/inputs.py`, `still.py` | Observing clicks and the mouse path; waiting for a still screen or a change |
-| `screentutor/speak.py` | Local VieNeu voice, with fixes for how file names and times are read |
+| `screentutor/speak.py` | Local VieNeu voice, with fixes for how file names and times are read; says when its first sound goes out |
+| `tutor_eval/voice_sync.py` | Measures, on a screen recording with sound, how far the voice comes after the mark. Before the fix, on the four T13 videos: a median of 2.85 s over 29 turns |
 | `grounding_test/`, `tutor_eval/`, `stt_eval/`, `tts_eval/` | The tests above, each with its pre-registered rule in the file's docstring |
 | `docs/tests/` | Checklists and results of the hands-on Windows runs. T2–T8 are filled in; T13 is the next run. T10 is her own first trial, on her own tasks; the filled-in sheet holds her words and stays private |
 

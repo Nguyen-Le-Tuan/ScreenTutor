@@ -1,0 +1,51 @@
+T15: CHUYẾN WINDOWS (lời nói và cái chỉ cùng lúc; kiểm màn hình cũ và dấu chấm sẽ thêm vào đây)
+==============================================================================================
+Soạn 03/11/2026. Hiện mới có phần C1. Phần C2 (kiểm màn hình còn như lúc chụp không) và C4 (dấu
+chấm) sẽ được thêm vào file này trước chuyến đi, để gom vào một chuyến. Nếu muốn thử riêng C1 thì
+chỉ làm A và B, khoảng 20 phút.
+
+C1 làm gì: vòng chỉ hiện đúng lúc loa phát tiếng đầu tiên của câu, không hiện ngay khi model vừa
+biết chỗ. Trong 4 video T13, vòng hiện trước tiếng trung vị 2,85 s (29 lượt); có 2 lượt vòng hiện
+mà không có tiếng, vì bạn bấm trước khi tutor kịp nói (D4 lúc 24,2 s, bước Export).
+Đánh đổi đã biết: tiếng tới đúng giờ như cũ, còn vòng tới muộn hơn khoảng 3 s so với trước.
+
+Luật chấm (ghi trước khi chạy; là đề xuất của Claude, ở đầu tutor_eval/voice_sync.py). Trượt luật
+nào thì ghi lại, không sửa luật. lệch = lúc nghe tiếng - lúc thấy vòng:
+  - S-1 đạt: trung vị lệch không quá 0,5 s (T13: 2,85 s).
+  - S-2 đạt: không lượt nào lệch quá 1,0 s (T13: 26/29 lượt).
+  - S-3 đạt: không lượt nào vòng tới sau tiếng quá 0,5 s (T13: 0).
+  - S-4 đạt: không lượt nào có vòng mà không có tiếng (T13: 2).
+  - V-1 đạt (bạn tự cảm nhận): không còn cảnh thấy vòng rồi chờ mới nghe nói.
+Phần đảo câu cho bước cẩn thận (nói hậu quả trước, "nếu đồng ý thì bấm…" sau) CHƯA làm trong
+bản này: vòng vàng vẫn hiện lúc câu bắt đầu, tức trước phần hậu quả.
+
+
+A. CHUẨN BỊ (5 phút)
+--------------------
+[ ] A1. Trong PowerShell ở thư mục repo:
+          git fetch
+          git status          (có file đang sửa dở thì DỪNG, chụp lại, nhắn Claude; đừng xoá)
+          git switch mvp
+          git pull --ff-only
+        git log --oneline -1   (phải là commit mới nhất Claude báo): ______
+[ ] A2. py -m pytest -q      (toàn bộ passed): ______
+[ ] A3. Bấm đúp ScreenTutor.bat. Để viền sáng BẬT trong cài đặt: script đo dùng nó để chia lượt.
+
+
+B. C1: QUAY HAI VIỆC ĐÃ CÓ SỐ LIỆU CŨ (15 phút)
+-----------------------------------------------
+Quay màn hình CÓ tiếng của máy (OBS hoặc Win+Alt+R, như video D1-D4). Mỗi việc một video.
+Làm như mẹ: chờ nghe rồi mới bấm; riêng B3 thì bấm nhanh.
+
+[ ] B1. Như D1: mở phiếu góp ý từ Zalo (bản tạm), hỏi "tải file về", làm tới khi tutor báo xong.
+        Tên video: C1_D1.mp4.  Ghi chú: ______
+[ ] B2. Như D4: xuất giáo án ra PDF, có ghi đè file PDF cũ (bước vàng ở Publish và Yes).
+        Tên video: C1_D4.mp4.  Vòng vàng hiện lúc câu bắt đầu, hay trước đó? ______
+[ ] B3. Một việc ngắn bất kỳ (ví dụ "mở File > Export"), nhưng bấm NGAY khi thấy vòng.
+        Tên video: C1_nhanh.mp4. Trước khi câu bị cắt, bạn nghe được mấy chữ đầu? ______
+[ ] B4. (V-1) Cảm nhận chung: vòng và tiếng có đi cùng nhau không? Khoảng chờ trước khi có
+        vòng và tiếng có làm sốt ruột không? ______
+
+Chép ba video vào thư mục OneDrive của dự án, KHÔNG qua GitHub (video có danh sách chat thật).
+Bên Ubuntu, Claude đặt chúng vào tutor_eval/t15_data/ (đã gitignore, cùng mọi file .mp4) rồi chạy:
+  .venv/bin/python -m tutor_eval.voice_sync tutor_eval/t15_data/C1_D1.mp4 tutor_eval/t15_data/C1_D4.mp4

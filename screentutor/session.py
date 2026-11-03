@@ -6,8 +6,11 @@
 The tutor never clicks. Each step's screenshot and answer are kept in
 tutor_runs/<time>/ (gitignored) for review.
 
-The answer streams: the step is shown as soon as its place is known and the sentence is
-spoken as soon as it is complete, before the plan and the notes have finished arriving.
+The answer streams: the sentence is spoken as soon as it is complete, before the plan and
+the notes have finished arriving. C1 (03/11): the step goes on the screen with the first
+sound of its sentence, not as soon as its place is known. In the T13 videos the ring led
+the voice by 3.0 s (median of 28 steps, 0.9-4.4 s): she clicked before she heard where,
+which cut the sentence off, and on D4 the amber ring came 4.1 s before its warning.
 
 B2 (02/11): the session keeps the plan of a big task, the part being done and the notes
 of a long message, and hands them to every later turn, so she never has to ask again.
@@ -48,6 +51,7 @@ READ_WAIT_S = 180
 SCROLL_WAIT_S = 60
 HIDE_PAUSE_S = 0.12   # let the ring disappear before watching the screen, or its vanishing looks like a change
 RING_FLIGHT_S = 0.5   # overlay.TRAVEL_S and a little: measured 02/11, the ring's flight alone counts as a change
+SOUND_WAIT_S = 4.0    # C1: a sentence with no voice (no sound card) still puts its step up after this long
 READ_DONE = "Đọc xong bạn bấm chuột một cái nhé."  # founder 02/11: reading has no click of its own to wait for
 
 
@@ -73,7 +77,7 @@ class Session:
     encode: object                 # PIL image -> data URL
     show: object                   # (x, y, caution) physical px -> None
     hide: object                   # () -> None
-    say: object                    # (text) -> None
+    say: object                    # (text, on_sound=None) -> None; on_sound() once the first sound has gone out
     wait_click: object             # (since, timeout_s) -> Click or None
     settle: object                 # (click) -> outcome str
     wait_screen: object = None     # () -> outcome str: wait for a loading screen to change and settle
@@ -100,6 +104,11 @@ class Session:
     screen_size: tuple = (0, 0)    # of the screenshot this turn looks at
     reading: bool = False          # this turn's step is a region to read
     asked_at: float = 0.0
+    turn: int = 0                  # counts the turns, so a sound from an earlier turn shows nothing
+    waiting_step: tuple | None = None  # C1: (reply, px, box) of this turn, until the first sound of its sentence
+    sounded: bool = False          # this turn's sentence has made its first sound
+    on_screen: object = field(default_factory=threading.Event)   # this turn's step is up
+    lock: object = field(default_factory=threading.RLock)        # the voice's thread shows the step too
 
     @staticmethod
     def _is_waiting(reply) -> bool:
@@ -131,8 +140,12 @@ class Session:
         return len(self.steps) >= max_steps
 
     def _turn_starts(self, img) -> None:
-        self.shown_at, self.spoken, self.screen_size = None, False, img.size
-        self.asked_at = time.monotonic()
+        with self.lock:
+            self.shown_at, self.spoken, self.screen_size = None, False, img.size
+            self.asked_at = time.monotonic()
+            self.turn += 1
+            self.waiting_step, self.sounded, self.reading = None, False, False
+            self.on_screen = threading.Event()
 
     def _check(self, question: str, last_say: str, changed: bool | None, acted: str = "click"):
         """Look again after she acted: the next turn, with all that is known about the task."""
@@ -144,11 +157,11 @@ class Session:
                                          on_mark=self._early_mark, on_say=self._early_say)
 
     def _early_mark(self, reply) -> None:
-        """The answer is still arriving, but the place is known: she sees it seconds sooner."""
+        """The answer is still arriving, but the place is known: the step waits for its sentence's first sound."""
         self._tick(reply)
         px = reply.point_px(self.screen_size)
         if px and reply.target != "none" and not reply.goal_done and not self._cancelled():
-            self._show_step(reply, px, reply.box_px(self.screen_size))
+            self._prepare_step(reply, px, reply.box_px(self.screen_size))
 
     def _early_say(self, text: str) -> None:
         if not text.isascii() and not self._cancelled():  # no diacritics: the tutor asks again, see Tutor._call
@@ -160,34 +173,73 @@ class Session:
         if self.confirm and click is not None and reply.step_done and not self._cancelled():
             self.confirm(click.x, click.y)
 
+    def _prepare_step(self, reply, px, box) -> None:
+        """This turn's step is known. It goes up with the first sound of its sentence (C1)."""
+        with self.lock:
+            if self.waiting_step is not None or self.shown_at is not None:
+                return
+            self.waiting_step = (reply, px, box)
+            self.reading = reply.target == "read" and self.wait_change is not None
+            if self.sounded:
+                self._show_step(reply, px, box)
+
+    def _on_sound(self, turn: int) -> None:
+        """The voice's thread: her ears have the first sound of this turn's sentence."""
+        with self.lock:
+            if turn != self.turn or self._cancelled():
+                return
+            self.sounded = True
+            if self.waiting_step is not None:
+                self._show_step(*self.waiting_step)
+
     def _show_step(self, reply, px, box) -> None:
         """Once a turn: what she should look at, and the island's colour to match."""
+        with self.lock:
+            if self.shown_at is not None:
+                return
+            self.shown_at = time.monotonic()
+            if self.reading and self.show_box:
+                self.show_box(box, reply.caution)
+            elif reply.target == "scroll" and self.wait_change and self.show_scroll:
+                self.show_scroll(px)
+            else:
+                self.show(px[0], px[1], reply.caution)
+            self._status("caution" if reply.caution else "reading" if self.reading else "turn")  # as the mark's colour
+            self.on_screen.set()
+
+    def _wait_shown(self) -> bool:
+        """Until this turn's step is up. False: she asked something new first."""
+        deadline = time.monotonic() + SOUND_WAIT_S
+        while not self.on_screen.wait(0.05):
+            if self._cancelled():
+                return False
+            if time.monotonic() >= deadline:   # no voice: the step goes up all the same
+                with self.lock:
+                    self._show_step(*self.waiting_step)
+        return not self._cancelled()
+
+    def _drop_step(self) -> None:
+        """This turn ends without its step: a sound still to come must not put it up."""
+        with self.lock:
+            self.waiting_step = None
         if self.shown_at is not None:
-            return
-        self.shown_at = time.monotonic()
-        self.reading = reply.target == "read" and self.wait_change is not None
-        if self.reading and self.show_box:
-            self.show_box(box, reply.caution)
-        elif reply.target == "scroll" and self.wait_change and self.show_scroll:
-            self.show_scroll(px)
-        else:
-            self.show(px[0], px[1], reply.caution)   # the ring first, so her eyes are there while she hears where
-        self._status("caution" if reply.caution else "reading" if self.reading else "turn")  # as the mark's colour
+            self.hide()
 
     def _speak(self, text: str) -> None:
         if not self.spoken:
             self.spoken = True
-            self.say(f"{text} {READ_DONE}" if self.shown_at is not None and self.reading else text)
+            turn = self.turn
+            self.say(f"{text} {READ_DONE}" if self.reading else text, lambda: self._on_sound(turn))
 
     def _settle(self, click) -> str:
         self.pause(HIDE_PAUSE_S)
         return self.settle(click)
 
     def _click(self, reply, px) -> str | None:
-        """Ring, words, her click, a still screen. None: she stopped, or asked something new."""
-        self._show_step(reply, px, None)
+        """Words and ring together, her click, a still screen. None: she stopped, or asked something new."""
+        self._prepare_step(reply, px, None)
         self._speak(reply.say)
-        click = self.wait_click(self.shown_at, CLICK_WAIT_S)
+        click = self.wait_click(self.shown_at, CLICK_WAIT_S) if self._wait_shown() else None
         self.hide()
         if click is None or self._cancelled():
             return None  # she stopped, or asked something new; she can ask again any time
@@ -196,8 +248,11 @@ class Session:
 
     def _read(self, reply, px, box) -> tuple[str | None, str]:
         """A region to read. Returns (outcome, what she did); outcome None as in _click."""
-        self._show_step(reply, px, box)
+        self._prepare_step(reply, px, box)
         self._speak(reply.say)
+        if not self._wait_shown():
+            self.hide()
+            return None, "read"
         shown_at = self.shown_at
         clicked = []
 
@@ -219,8 +274,11 @@ class Session:
 
     def _scroll(self, reply, px) -> str | None:
         """Show where to scroll and wait for the screen; she has nothing to click. None as in _click."""
-        self._show_step(reply, px, None)   # her turn, not "Chờ trang tải" (founder 02/11)
+        self._prepare_step(reply, px, None)   # her turn, not "Chờ trang tải" (founder 02/11)
         self._speak(reply.say)
+        if not self._wait_shown():
+            self.hide()
+            return None
         self.pause(RING_FLIGHT_S)
         outcome = self.wait_change(SCROLL_WAIT_S, CHANGE_MIN, self._cancelled)
         self.hide()
@@ -246,8 +304,7 @@ class Session:
         while not self._cancelled():
             self._track(reply)
             if self._at_limit(max_steps) and not reply.goal_done and not reply.error:
-                if self.shown_at is not None:
-                    self.hide()
+                self._drop_step()
                 break
             px = reply.point_px(img.size)
             self.steps.append(Step(len(self.steps) + 1, reply.say, px, reply.step_done, reply.goal_done, outcome,
@@ -257,12 +314,12 @@ class Session:
             if self.save:
                 self.save(len(self.steps), img, reply)
             if reply.error:
-                if self.shown_at is not None:
-                    self.hide()
+                self._drop_step()
                 self._status("error")
                 self.say("Mình chưa xem được màn hình. Bạn hỏi lại nhé.")
                 break
             if reply.goal_done or px is None:
+                self._drop_step()
                 self._speak(reply.say)
                 if not self._is_waiting(reply) or waits >= MAX_WAITS or self.wait_screen is None:
                     break  # done, or nothing to click: the sentence already says why or asks back
@@ -370,6 +427,11 @@ def main(argv=None) -> None:
     threading.Thread(target=watch, args=(clicks.put, stop), daemon=True).start()
     tutor = Tutor(_api_key())
 
+    def say(text, on_sound=None):
+        print(f"\nTutor: {text}", flush=True)
+        if on_sound:
+            on_sound()   # no voice here: the ring goes up as the words are printed
+
     def work():
         try:
             for left in range(args.delay, 0, -1):
@@ -378,8 +440,7 @@ def main(argv=None) -> None:
             session = Session(
                 tutor=tutor, look=look, encode=screen.png_data_url,
                 show=lambda x, y, caution: bridge.point.emit(x, y, caution), hide=bridge.clear.emit,
-                say=lambda text: print(f"\nTutor: {text}", flush=True),
-                wait_click=clicks.wait,
+                say=say, wait_click=clicks.wait,
                 settle=lambda c: wait_until_settled(c.t, screen.grab)[0],
                 wait_screen=lambda: wait_until_settled(time.monotonic(), screen.grab, grace_s=5.0)[0],
                 wait_change=lambda timeout_s, min_change, stop: wait_change(screen.grab, timeout_s, min_change, stop),

@@ -260,3 +260,9 @@ settings.json
 
 # T12: screenshots taken on Windows; they show her real chat list (02/11)
 tutor_eval/t12_data/
+
+# Screen recordings show her real chats and file names; they never go to GitHub (03/11)
+*.mp4
+*.mkv
+*.mov
+tutor_eval/t15_data/

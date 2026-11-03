@@ -1,5 +1,6 @@
 from PIL import Image
 
+from screentutor import session as session_mod
 from screentutor.inputs import Click
 from screentutor.session import (MAX_PART_STEPS, MAX_PLAN_STEPS, READ_DONE, READ_WAIT_S, RING_FLIGHT_S, SCROLL_WAIT_S,
                                  ClickBox, Session)
@@ -39,11 +40,16 @@ def _session(tutor, clicks, outcomes, waits=(), changes=()):
         log.append(("change", timeout_s, min_change))
         return "stopped" if stop() else changes.pop(0)
 
+    def say(text, on_sound=None):
+        log.append(("say", text))
+        if on_sound:
+            on_sound()   # the voice starts at once
+
     s = Session(
         tutor=tutor, look=lambda: (Image.new("RGB", (1920, 1080)), "state"), encode=lambda img: "data:",
         show=lambda x, y, caution=False: log.append(("show", x, y) if not caution else ("show!", x, y)),
         hide=lambda: log.append(("hide",)),
-        say=lambda text: log.append(("say", text)),
+        say=say,
         wait_click=lambda since, timeout: clicks.pop(0) if clicks else None,
         settle=lambda click: outcomes.pop(0), pause=lambda s: None,
         wait_screen=lambda: (log.append(("wait",)), waits.pop(0))[1], wait_change=wait_change)
@@ -58,7 +64,7 @@ def test_walks_steps_until_the_task_is_done():
     s, log = _session(tutor, [Click(1.0, 29, 80, "left"), Click(2.0, 38, 605, "left")], ["settled", "settled"])
     steps = s.run("Mẹ muốn xuất ra PDF")
     assert [x for x in log if x[0] != "say"] == [("show", 29, 80), ("hide",), ("show", 38, 605), ("hide",)]
-    assert log[:2] == [("show", 29, 80), ("say", "Bạn bấm vào chữ File.")]  # ring first, then the words
+    assert log[:2] == [("say", "Bạn bấm vào chữ File."), ("show", 29, 80)]  # the ring goes up with the voice
     assert [x[1] for x in log if x[0] == "say"] == ["Bạn bấm vào chữ File.", "Bạn bấm vào chữ Export.",
                                                    "Xong rồi bạn nhé."]
     assert tutor.calls[1] == ("follow_up", "Mẹ muốn xuất ra PDF", "Bạn bấm vào chữ File.", True)
@@ -185,7 +191,7 @@ def test_a_caution_step_is_shown_as_such():
                              point=(531, 486), caution=True)])
     s, log = _session(tutor, [], [])
     s.run("Xuất PDF")
-    assert log[0] == ("show!", 1020, 525)
+    assert log[1] == ("show!", 1020, 525)
 
 
 def test_tells_the_island_what_it_is_doing():
@@ -425,7 +431,7 @@ def test_a_v1_answer_without_a_target_walks_as_before():
                        Reply(say="Xong.", step_done=True, goal_done=True)])
     s, log = _session(tutor, [CLICK], ["settled"])
     s.run("x")
-    assert log[0] == ("show", 29, 80) and tutor.turns[0]["acted"] == "click"
+    assert log[1] == ("show", 29, 80) and tutor.turns[0]["acted"] == "click"
 
 
 def test_without_a_screen_watcher_a_read_or_scroll_step_falls_back_to_the_ring():
@@ -433,7 +439,7 @@ def test_without_a_screen_watcher_a_read_or_scroll_step_falls_back_to_the_ring()
     s, log = _session(tutor, [], [])
     s.wait_change = None
     s.run("x")
-    assert log[0] == ("show", 960, 540) and log[-1] == ("hide",)
+    assert log[1] == ("show", 960, 540) and log[-1] == ("hide",)
 
 
 def test_the_tick_appears_where_she_clicked_once_the_step_is_checked():
@@ -489,11 +495,69 @@ def _streaming(replies, clicks, outcomes, changes=()):
     return tutor, s, log
 
 
-def test_the_ring_and_the_voice_come_before_the_answer_has_finished_and_only_once():
+def test_the_voice_and_the_ring_come_before_the_answer_has_finished_and_only_once():
     _, s, log = _streaming([Reply(say="Bạn bấm File.", found=True, point=(15, 74), target="click"),
                             Reply(say="Xong rồi.", target="none", step_done=True, goal_done=True)], [CLICK], ["settled"])
     s.run("x")
-    assert log == [("show", 29, 80), ("say", "Bạn bấm File."), ("reply",), ("hide",), ("say", "Xong rồi."), ("reply",)]
+    assert log == [("say", "Bạn bấm File."), ("show", 29, 80), ("reply",), ("hide",), ("say", "Xong rồi."), ("reply",)]
+
+
+def test_the_ring_waits_for_the_first_sound_of_its_sentence():
+    import threading
+
+    _, s, log = _streaming([Reply(say="Bạn bấm File.", found=True, point=(15, 74), target="click")], [], [])
+
+    def say(text, on_sound=None):   # the voice starts a moment after the sentence is handed over
+        log.append(("say", text))
+        threading.Timer(0.05, lambda: (log.append(("sound",)), on_sound())).start()
+
+    s.say = say
+    s.run("x")
+    assert log == [("say", "Bạn bấm File."), ("reply",), ("sound",), ("show", 29, 80), ("hide",)]
+
+
+def test_without_a_voice_the_ring_still_goes_up(monkeypatch):
+    monkeypatch.setattr(session_mod, "SOUND_WAIT_S", 0.05)
+    s, log = _session(FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(15, 74))]), [], [])
+    s.say = lambda text, on_sound=None: log.append(("say", text))   # no sound card: on_sound never comes
+    s.run("x")
+    assert log == [("say", "Bạn bấm File."), ("show", 29, 80), ("hide",)]
+
+
+def test_a_question_asked_before_the_voice_starts_puts_nothing_up():
+    import threading
+
+    cancel, sounds = threading.Event(), []
+    tutor = FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(15, 74))])
+    s, log = _session(tutor, [], [])
+    s.cancel = cancel
+
+    def say(text, on_sound=None):
+        sounds.append(on_sound)
+        cancel.set()   # she asks something new before the voice is heard
+
+    s.say = say
+    s.run("x")
+    sounds[0]()        # the sentence that was cut off reports late
+    assert log == [("hide",)] and len(tutor.calls) == 1
+
+
+def test_a_late_sound_from_the_turn_before_does_not_put_up_the_next_step():
+    sounds = []
+    s, log = _session(FakeTutor([Reply(say="Bạn bấm File.", found=True, point=(15, 74)),
+                                 _go("Bạn bấm Export.", point=(20, 560))]), [CLICK], ["settled"])
+
+    def say(text, on_sound=None):
+        log.append(("say", text))
+        sounds.append(on_sound)
+        if len(sounds) == 2:
+            sounds[0]()    # the first sentence's sound, arriving late
+            log.append(("late",))
+        on_sound()
+
+    s.say = say
+    s.run("x")
+    assert log[3:6] == [("say", "Bạn bấm Export."), ("late",), ("show", 38, 605)]
 
 
 def test_a_read_step_shown_early_keeps_its_box_and_its_extra_sentence():
