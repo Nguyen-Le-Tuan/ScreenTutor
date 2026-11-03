@@ -48,6 +48,7 @@ NOT_HEARD = "Mình chưa nghe rõ. Bạn hỏi lại nhé."
 NO_MIC = "Mình chưa nghe được micro. Bạn kiểm tra lại micro nhé."
 SETTINGS_POLL_MS = 2000
 PEEK_S, PART_PEEK_S = 5.0, 3.0   # the island opens by itself: on a new plan, and on each new part
+OFFER_SAY = "Bạn muốn làm tiếp việc lúc nãy thì bấm vào ô trên cùng màn hình nhé."   # approved by the founder, 02/11
 OFFER_AGE_S = 12 * 3600          # B7: how old a half-done task may be for the island to offer it by itself...
 RESUME_AGE_S = 7 * 86400         # ...and for her to ask for it in words
 OFFER_AFTER_S = 3.2              # leave the green "done" on the island for its 3 s first
@@ -461,6 +462,8 @@ def main(argv=None) -> None:
             waited += 0.2
         if not cancel.wait(OFFER_AFTER_S):
             post("offer", left.title)
+            # Not say(): the island would show "speaking" and let clicks through just as she is told to click it.
+            threading.Thread(target=speaker.speak, args=(OFFER_SAY,), daemon=True).start()
 
     def run_task(rec, cancel: threading.Event, pointer=None, known=None, last_say=None) -> None:
         def save_step(n, img, reply):

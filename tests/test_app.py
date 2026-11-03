@@ -216,3 +216,10 @@ def test_a_task_left_half_done_is_offered_and_taken_up_under_its_own_question(qt
     assert isl.states[-1][0] == "offer" and feed.task.last_said() == "Làm tiếp: Gửi giáo án cho tổ trưởng"
     feed.back("Gửi giáo án cho tổ trưởng")
     assert isl.states[-1][0] == "thinking" and feed.task.question == "Gửi giáo án cho tổ trưởng"
+
+
+def test_the_sentence_that_offers_a_task_follows_the_rules_for_speech():
+    from screentutor.app import OFFER_SAY
+    from tutor_eval.run import say_problems
+
+    assert say_problems(OFFER_SAY) == [] and "bấm vào ô" in OFFER_SAY
