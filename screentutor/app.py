@@ -44,6 +44,7 @@ MACHINE_NOTES = "\n".join([
 ])
 WAIT_GRACE_S = 5.0    # a loading page may stay blank this long before anything changes
 PRE_ASK_S = 3.0       # B1b: she may point just before she presses the button or holds Ctrl+Alt
+VEIL_S = 0.05         # C4: a hidden window leaves the screen on the compositor's next frame or two (60 Hz)
 NOT_HEARD = "Mình chưa nghe rõ. Bạn hỏi lại nhé."
 NO_MIC = "Mình chưa nghe được micro. Bạn kiểm tra lại micro nhé."
 SETTINGS_POLL_MS = 2000
@@ -143,6 +144,7 @@ class Feed:
         self.dpr = dpr
         self.glow = None               # (on) -> None: the light around the screen while the tutor looks
         self.flash = None              # () -> None: the green light when a task is done
+        self.companion = None          # C4: overlay.Companion, the dot beside her mouse while a task is on
         self.flashed = False
         self.task: conv.Task | None = None
         self.base = "idle"
@@ -209,15 +211,23 @@ class Feed:
         from PySide6.QtCore import QPointF
 
         self.island.set_avoid(QPointF(x / self.dpr, y / self.dpr))
+        self._away(True)
 
     def frame(self, x1: int, y1: int, x2: int, y2: int) -> None:
         from PySide6.QtCore import QPointF, QRectF
 
         d = self.dpr
         self.island.set_avoid(QPointF((x1 + x2) / 2 / d, (y1 + y2) / 2 / d), QRectF(x1 / d, y1 / d, (x2 - x1) / d, (y2 - y1) / d))
+        self._away(True)
 
     def unring(self) -> None:
         self.island.set_avoid(None)
+        self._away(False)
+
+    def _away(self, away: bool) -> None:
+        """C4: the dot has left her mouse for the mark on the screen, or come back to it."""
+        if self.companion is not None:
+            self.companion.set_away(away)
 
     def recent(self, items: list[tuple[str, str]]) -> None:
         """Her latest earlier tasks, (when, title), for the pinned island's bottom row."""
@@ -236,6 +246,11 @@ class Feed:
         state = self.shown()
         if self.glow and state != "thinking":
             self.glow(False)  # it never outlasts the looking; look() turns it on after the screenshot
+        if self.companion is not None:
+            from .overlay import LOOKING, TASK_ON
+
+            self.companion.set_on(self.base in TASK_ON)
+            self.companion.set_looking(state in LOOKING)   # it breathes while the tutor looks
         if self.flash and state == "done" and not self.flashed:
             self.flash()   # once a task: "done" comes back after the last sentence has been spoken
         self.flashed = state == "done" or (self.flashed and state == "speaking")
@@ -268,7 +283,7 @@ def main(argv=None) -> None:
     from .island import Island
     from .listen import Mic, _api_key, listen
     from .memory import Memory, asks_to_resume, learn
-    from .overlay import Overlay, _win_topmost
+    from .overlay import Companion, Overlay, _win_topmost
     from .session import ClickBox, Session
     from .speak import Speaker
     from .state import format_vi, take_snapshot, zalo_temp_dir
@@ -282,6 +297,8 @@ def main(argv=None) -> None:
     dpr = qscreen.devicePixelRatio()
     screen_size = to_physical((0, 0, qscreen.geometry().width(), qscreen.geometry().height()), dpr)[2:]
     overlay, button, island = Overlay(), AskButton(), Island()
+    companion = Companion()   # C4: the dot beside her mouse; the overlay flies it from there
+    overlay.start_from = companion.centre
 
     def colour(text: str) -> QColor:
         c = QColor(text)
@@ -302,10 +319,10 @@ def main(argv=None) -> None:
     out = Path("tutor_runs") / (datetime.now().strftime("%Y%m%d-%H%M%S") + "-app")
     out.mkdir(parents=True, exist_ok=True)
     feed = Feed(island, button, speaker.meter, dpr)
-    feed.glow, feed.flash = overlay.glow, overlay.flash
+    feed.glow, feed.flash, feed.companion = overlay.glow, overlay.flash, companion
 
     def keep_ours_on_top() -> None:  # the darkened screen must not cover the button and the island
-        for widget in (island, button):
+        for widget in (island, button, companion.widget):
             if widget.isVisible():
                 _win_topmost(widget)
 
@@ -327,6 +344,7 @@ def main(argv=None) -> None:
         tick = Signal(int, int)
         glow = Signal(bool)
         clear = Signal()
+        veil = Signal(bool)
         call = Signal(str, object)
 
     bridge = Bridge()
@@ -353,6 +371,13 @@ def main(argv=None) -> None:
     bridge.tick.connect(overlay.tick_at)
     bridge.glow.connect(overlay.glow)
     bridge.clear.connect(on_clear)
+    veiled, veil_done = [False], threading.Event()
+
+    def on_veil(on: bool) -> None:
+        veiled[0] = companion.veil(on)
+        veil_done.set()
+
+    bridge.veil.connect(on_veil)
     bridge.call.connect(lambda name, args: getattr(feed, name)(*args))
     post = lambda name, *args: bridge.call.emit(name, args)  # noqa: E731
 
@@ -405,6 +430,11 @@ def main(argv=None) -> None:
         return [r for r in (button_box[0], to_physical(island.cover, dpr), to_physical(overlay.cover, dpr))
                 if r is not None]
 
+    def ours_now() -> list[tuple[int, int, int, int]]:
+        """C2's check leaves out our widgets and the dot beside her mouse (still.py's watch does not need to)."""
+        dot = companion.cover
+        return own_rects() + ([to_physical(dot, dpr)] if dot else [])
+
     def grab_own_masked():
         return masked(screen.grab(), own_rects())
 
@@ -413,7 +443,14 @@ def main(argv=None) -> None:
         return inside(button_box[0], click.x, click.y) or inside(to_physical(island.takes_clicks, dpr), click.x, click.y)
 
     def look():
-        img = screen.grab()
+        veil_done.clear()
+        bridge.veil.emit(True)   # C4: the dot beside her mouse must not be in the picture either
+        if veil_done.wait(0.5) and veiled[0]:
+            time.sleep(VEIL_S)
+        try:
+            img = screen.grab()
+        finally:
+            bridge.veil.emit(False)
         bridge.glow.emit(True)  # only now: it must not be in the picture
         return img, format_vi(take_snapshot()) + "\n" + MACHINE_NOTES
 
@@ -527,7 +564,7 @@ def main(argv=None) -> None:
             wait_change=lambda timeout_s, min_change, stop: wait_change(grab_own_masked, timeout_s, min_change, stop),
             show_box=lambda box, caution: bridge.frame.emit(*box, caution),
             show_scroll=lambda px: bridge.hint.emit(*px),
-            confirm=bridge.tick.emit, glance=screen.grab, own=own_rects,
+            confirm=bridge.tick.emit, glance=screen.grab, own=ours_now,
             save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer, on_plan=on_plan,
             known=known, plan=list(rec.plan), part=rec.part, notes=rec.notes)
         steps = session.run(rec.question, last_say=last_say)

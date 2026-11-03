@@ -294,3 +294,35 @@ def test_a_chain_of_side_questions_keeps_the_offer_for_the_last_one():
     assert o.end(q1, cancelled=True) is None
     o.start(q2)
     assert o.end(q2, cancelled=False) == "big"
+
+
+class FakeCompanion:
+    def __init__(self):
+        self.on = self.away = self.looking = None
+
+    def set_on(self, on):
+        self.on = on
+
+    def set_away(self, away):
+        self.away = away
+
+    def set_looking(self, looking):
+        self.looking = looking
+
+
+def test_the_dot_waits_beside_her_mouse_from_her_question_until_the_task_is_done(qt_app):
+    feed, dot = Feed(FakeIsland()), FakeCompanion()
+    feed.companion = dot
+    feed.listen()
+    assert dot.on and not dot.looking
+    feed.status("thinking")
+    assert dot.on and dot.looking                       # it breathes while the tutor looks
+    feed.ring(100, 100, False)
+    feed.status("turn")
+    assert dot.away and not dot.looking                 # it has flown to the mark
+    feed.unring()
+    assert dot.away is False
+    feed.status("done")
+    assert dot.on is False
+    feed.notice()                                       # the guard speaking up is not her task
+    assert dot.on is False

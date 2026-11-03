@@ -1,8 +1,8 @@
-T15: CHUYẾN WINDOWS (lời nói và cái chỉ cùng lúc; kiểm màn hình cũ; dấu chấm sẽ thêm vào đây)
-==============================================================================================
-Soạn 03/11/2026. Hiện có phần C1 (mục B) và C2 (mục C). Phần C4 (dấu chấm) sẽ được thêm vào file
-này trước chuyến đi, để gom vào một chuyến. A, B, C mất khoảng 40 phút.
+T15: CHUYẾN WINDOWS (lời nói và cái chỉ cùng lúc; kiểm màn hình cũ; dấu chấm)
+=============================================================================
+Soạn 03/11/2026. Ba phần, một chuyến: C1 (mục B), C2 (mục C), C4 (mục D). Khoảng 1 giờ.
 Để cửa sổ đen của ScreenTutor.bat mở suốt chuyến: cuối mỗi việc app in từng bước ra đó.
+Vòng đỏ cũ không còn: từ bản này, cái chỉ là dấu chấm (mục D). Mục B và C vẫn chấm như đã ghi.
 
 C1 làm gì: vòng chỉ hiện đúng lúc loa phát tiếng đầu tiên của câu, không hiện ngay khi model vừa
 biết chỗ. Trong 4 video T13, vòng hiện trước tiếng trung vị 2,85 s (29 lượt); có 2 lượt vòng hiện
@@ -83,3 +83,36 @@ Quay màn hình có tiếng như mục B. Ba ca, mỗi ca dựng cho màn hình 
         Tên video: C2_box.mp4
 [ ] C4. Chép toàn bộ chữ trong cửa sổ đen vào file console.txt, để cùng chỗ với video (có tên file và
         chat thật nên cũng KHÔNG qua GitHub).
+
+
+D. C4: DẤU CHẤM ĐI THEO CHUỘT (15 phút)
+---------------------------------------
+C4 làm gì: từ lúc bạn bắt đầu hỏi tới lúc việc xong, một chấm đỏ nhỏ đứng cạnh mũi chuột (lệch
+xuống bên phải) và đi theo chuột, chậm hơn một nhịp. Khi tutor đang xem, chấm "thở" (to nhỏ). Khi
+tutor bắt đầu nói (C1), chấm bay theo đường cong tới chỗ cần chỉ, có vệt mờ phía sau, đáp xuống
+nảy nhẹ rồi toả vòng. Bạn bấm xong thì chấm quay lại cạnh chuột. Việc xong thì chấm biến mất.
+Bước cẩn thận: chấm màu vàng. Khung đọc màu xanh ngọc và hình con chuột chỉ cuộn giữ như cũ.
+Lúc tutor chụp màn hình gửi model, chấm tắt thoáng khoảng 0,1 s để không lọt vào ảnh.
+Kiểu đáp: A (đáp lên chỗ chỉ) là mặc định. Nếu bạn chọn B (đứng cạnh, toả vòng trên chỗ chỉ),
+Claude đổi DOT_STYLE trong screentutor/overlay.py trước chuyến đi.
+
+Luật chấm (ghi trước khi chạy; đề xuất của Claude):
+  - P-1 đạt: KHÔNG ảnh nào trong tutor_runs\<lần chạy>\*_stepNN.png có chấm đỏ cạnh chuột.
+  - P-2 đạt: video quay (mục B, C) THẤY chấm cạnh chuột và thấy nó bay tới chỗ chỉ.
+  - P-3 đạt: CPU của python khi tutor đang xem và bạn rê chuột liên tục: không quá 1,5%
+    (T13: nghỉ 0-0,2%, lúc xem tối đa 0,8%).
+  - P-4 đạt: bấm xong rồi rê chuột vòng vòng liên tục 3 giây: tutor vẫn sang bước tiếp như thường
+    (chấm di chuyển không bị tính là màn hình đang đổi).
+  - Chỉ ghi lại: chấm tắt thoáng lúc chụp có khó chịu không; bay có dễ nhìn theo không; chấm có che
+    mất chữ hay biểu tượng cần bấm không.
+
+[ ] D1. Hỏi một việc ngắn (ví dụ "mở File > Export" trong Word). Chấm hiện từ lúc nào? Thở khi viền
+        sáng chạy? Bay từ cạnh chuột tới chỗ chỉ đúng lúc tutor bắt đầu nói? Bấm xong thì quay lại
+        cạnh chuột? Việc xong thì biến mất? ______
+[ ] D2. (P-3) Mở Task Manager. Hỏi một việc, trong lúc viền sáng chạy thì rê chuột liên tục.
+        CPU của python cao nhất: ______ %
+[ ] D3. (P-4) Ở một bước có bấm, bấm xong thì rê chuột vòng vòng 3 giây. Tutor có sang bước tiếp
+        trong khoảng thường lệ (dưới 15 giây) không? ______
+[ ] D4. (P-1) Mở thư mục tutor_runs\ của lần chạy mới nhất, xem vài ảnh stepNN.png: có chấm đỏ
+        cạnh chuột không? ______
+[ ] D5. Cảm nhận: chấm có che chữ hay nút cần bấm không? Tắt thoáng lúc chụp có khó chịu không? ______

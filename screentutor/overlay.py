@@ -2,9 +2,12 @@
 
 A frameless, always-on-top, click-through, transparent window covers the primary
 screen, taskbar included. Given a point in screenshot pixels (physical screen
-pixels), a hollow ring glides there from the mouse cursor, opens up and pulses,
-so the user sees where to click, can still read what is under the ring, and the
-click still reaches the app underneath.
+pixels), a dot flies there from beside the mouse (C4, founder 03/11: a dot that
+leaves from her mouse instead of a ring that rises out of the ground), along a
+gentle arc with a fading trail, lands with a small bounce and sends out soft
+pulses, so she sees where to click and the click still reaches the app underneath.
+While a task is on, the dot waits beside her mouse in a small window of its own
+(Companion), breathing while the tutor looks; it leaves from there.
 
   py -m screentutor.overlay --follow-mouse            # Windows: the ring should sit on the mouse tip
   py -m screentutor.overlay --at 960 540 --seconds 5  # Windows: point at a physical pixel
@@ -34,14 +37,18 @@ from PySide6.QtGui import (QColor, QConicalGradient, QCursor, QGuiApplication, Q
 
 COLOR = QColor(255, 69, 58)          # red-orange: stands out on white Word pages, Zalo blue and the dark taskbar
 CAUTION_COLOR = QColor(255, 176, 0)  # amber: this click sends something or replaces a file (founder's rule, 27/10)
-HALO = QColor(255, 255, 255, 230)    # white edge so the ring reads on dark and light backgrounds alike
-FILL_ALPHA = 40                      # faint tint inside: the button or word under the ring stays readable
-TRAVEL_S = 0.45                      # glide from the mouse cursor to the target
+HALO = QColor(255, 255, 255, 230)    # white edge so the dot reads on dark and light backgrounds alike
+TRAVEL_S = 0.45                      # the reading frame and the scroll hint glide from the mouse this fast
 PULSE_S = 1.2                        # one pulse cycle
-TRAVEL_R, MARK_R = 12.0, 24.0        # ring radius while gliding and once arrived (logical px)
-PULSE_MAX = 52.0
-PULSE_ALPHA = 200
-STROKE = 4.0
+DOT_R = 7.0                          # logical px: the dot
+DOT_TRAVEL_S = 0.6                   # its flight from beside the mouse to the target: slow enough to follow by eye
+DOT_ARC = 0.18                       # the flight bends sideways by this share of its length
+TRAIL, TRAIL_DT = 6, 0.035           # ghost dots behind it in flight, this many seconds apart
+LAND_POP, LAND_S = 1.5, 0.25         # it lands this much bigger and settles within LAND_S
+DOT_PULSE_MAX = 30.0                 # the pulses around it once landed (logical px)
+DOT_PULSE_ALPHA = 170
+BESIDE = (13.0, 15.0)                # style "beside": where the dot waits, from the target (founder to choose)
+DOT_STYLE = "on"                     # "on": the dot sits on the target; "beside": next to it, the pulses on it
 TOPMOST_EVERY_MS = 500
 READ_COLOR = QColor(102, 212, 207)   # mint: reading is neither a click (red) nor a warning (amber)
 TICK_COLOR = QColor(48, 209, 88)     # the island's "done" green
@@ -70,48 +77,79 @@ def ease_out(t: float) -> float:
     return 1 - (1 - t) ** 3
 
 
+def ease_in_out(t: float) -> float:
+    t = min(max(t, 0.0), 1.0)
+    return t * t * (3 - 2 * t)
+
+
 @dataclass
-class Frame:
+class Dot:
     x: float
     y: float
     radius: float
     arrived: bool
-    pulses: list[tuple[float, int]] = field(default_factory=list)  # (radius, alpha)
+    trail: list[tuple[float, float, int]] = field(default_factory=list)   # (x, y, alpha), nearest first
+    pulses: list[tuple[float, int]] = field(default_factory=list)         # (radius, alpha) around pulse_at
+    pulse_at: tuple[float, float] | None = None
 
 
-def frame_at(t: float, start: tuple[float, float], target: tuple[float, float]) -> Frame:
-    """The ring t seconds after point_at(): gliding and opening up, then pulsing in place."""
-    k = ease_out(t / TRAVEL_S)
-    x = start[0] + (target[0] - start[0]) * k
-    y = start[1] + (target[1] - start[1]) * k
-    radius = TRAVEL_R + (MARK_R - TRAVEL_R) * k
-    if t < TRAVEL_S:
-        return Frame(x, y, radius, arrived=False)
-    phase = ((t - TRAVEL_S) % PULSE_S) / PULSE_S
-    pulses = []
-    for offset in (0.0, 0.5):
-        q = (phase + offset) % 1.0
-        pulses.append((MARK_R + (PULSE_MAX - MARK_R) * q, round(PULSE_ALPHA * (1 - q))))
-    return Frame(x, y, radius, arrived=True, pulses=sorted(pulses))
+def landing(target: tuple[float, float], style: str = DOT_STYLE, scale: float = 1.0) -> tuple[float, float]:
+    """Where the dot comes to rest for a target: on it, or just below and right of it like a second pointer."""
+    if style == "beside":
+        return target[0] + BESIDE[0] * scale, target[1] + BESIDE[1] * scale
+    return target
 
 
-def paint_frame(p: QPainter, f: Frame, scale: float = 1.0, color: QColor = COLOR) -> None:
+def arc(k: float, start: tuple[float, float], end: tuple[float, float]) -> tuple[float, float]:
+    """A point k (0-1) of the way along a gentle curve: a straight line looks mechanical, a thrown ball does not."""
+    (x0, y0), (x1, y1) = start, end
+    cx, cy = (x0 + x1) / 2 - (y1 - y0) * DOT_ARC, (y0 + y1) / 2 + (x1 - x0) * DOT_ARC
+    u = 1 - k
+    return u * u * x0 + 2 * u * k * cx + k * k * x1, u * u * y0 + 2 * u * k * cy + k * k * y1
+
+
+def dot_at(t: float, start: tuple[float, float], target: tuple[float, float], style: str = DOT_STYLE,
+           scale: float = 1.0) -> Dot:
+    """The dot t seconds after point_at(): in flight with its trail, then landed, bouncing once and pulsing."""
+    end = landing(target, style, scale)
+    if t < DOT_TRAVEL_S:
+        x, y = arc(ease_in_out(t / DOT_TRAVEL_S), start, end)
+        trail = []
+        for i in range(1, TRAIL + 1):
+            if t - i * TRAIL_DT > 0:
+                tx, ty = arc(ease_in_out((t - i * TRAIL_DT) / DOT_TRAVEL_S), start, end)
+                trail.append((tx, ty, round(150 * (1 - i / (TRAIL + 1)))))
+        return Dot(x, y, DOT_R, False, trail)
+    landed = t - DOT_TRAVEL_S
+    radius = DOT_R * (1 + (LAND_POP - 1) * max(1 - landed / LAND_S, 0.0))
+    phase = (landed % PULSE_S) / PULSE_S
+    first = DOT_R * 1.6
+    pulses = sorted((first + (DOT_PULSE_MAX - first) * q, round(DOT_PULSE_ALPHA * (1 - q)))
+                    for q in ((phase + offset) % 1.0 for offset in (0.0, 0.5)))
+    return Dot(end[0], end[1], radius, True, [], pulses, target)
+
+
+def paint_dot(p: QPainter, d: Dot, scale: float = 1.0, color: QColor = COLOR) -> None:
     p.setRenderHint(QPainter.Antialiasing)
-    c = QPointF(f.x, f.y)
-    p.setBrush(Qt.NoBrush)
-    for radius, alpha in f.pulses:
-        pulse = QColor(color)
-        pulse.setAlpha(alpha)
-        p.setPen(QPen(pulse, 3 * scale))
-        p.drawEllipse(c, radius * scale, radius * scale)
-    r = f.radius * scale
-    fill = QColor(color)
-    fill.setAlpha(FILL_ALPHA)
-    p.setPen(QPen(HALO, (STROKE + 3) * scale))
-    p.setBrush(fill)
-    p.drawEllipse(c, r, r)
-    p.setPen(QPen(color, STROKE * scale))
-    p.setBrush(Qt.NoBrush)
+    p.setPen(Qt.NoPen)
+    for i, (x, y, alpha) in enumerate(d.trail):
+        ghost = QColor(color)
+        ghost.setAlpha(alpha)
+        p.setBrush(ghost)
+        r = d.radius * scale * (1 - 0.1 * (i + 1))
+        p.drawEllipse(QPointF(x, y), r, r)
+    if d.pulse_at is not None:
+        p.setBrush(Qt.NoBrush)
+        for radius, alpha in d.pulses:
+            pulse = QColor(color)
+            pulse.setAlpha(alpha)
+            p.setPen(QPen(pulse, 2.5 * scale))
+            p.drawEllipse(QPointF(*d.pulse_at), radius * scale, radius * scale)
+    c, r = QPointF(d.x, d.y), d.radius * scale
+    p.setPen(Qt.NoPen)
+    p.setBrush(HALO)
+    p.drawEllipse(c, r + 2.5 * scale, r + 2.5 * scale)
+    p.setBrush(color)
     p.drawEllipse(c, r, r)
 
 
@@ -311,6 +349,7 @@ class Overlay:
         self.glow_enabled = True
         self.cover: tuple[int, int, int, int] | None = None  # logical (x, y, w, h) that moves; read by worker threads
         self.after_topmost = None      # our other windows stay above the darkened screen
+        self.start_from = None         # () -> (x, y) logical or None: where the dot waits (Companion.centre)
         self._last_topmost = 0
         self._timer = QTimer(self._w)
         self._timer.setInterval(16)
@@ -382,6 +421,9 @@ class Overlay:
         if self._target is not None:
             f = self._frame()
             return f.x, f.y
+        waiting = self.start_from() if self.start_from else None
+        if waiting is not None:
+            return waiting
         geo = self._screen.geometry()
         cursor = QCursor.pos(self._screen)
         return cursor.x() - geo.x(), cursor.y() - geo.y()
@@ -416,8 +458,8 @@ class Overlay:
         if self.after_topmost:
             self.after_topmost()
 
-    def _frame(self) -> Frame:
-        return frame_at(self._clock.elapsed() / 1000, self._start, self._target)
+    def _frame(self) -> Dot:
+        return dot_at(self._clock.elapsed() / 1000, self._start, self._target)
 
     def _paint(self, p: QPainter) -> None:
         now = self._steady.elapsed() / 1000
@@ -434,7 +476,7 @@ class Overlay:
         if self._hint is not None:
             paint_hint(p, hint_at(t, self._start, self._hint), color=self._color)
         if self._target is not None:
-            paint_frame(p, self._frame(), color=self._color)
+            paint_dot(p, self._frame(), color=self._color)
         for t0, x, y in self._ticks:
             paint_tick(p, x, y, now - t0)
 
@@ -467,6 +509,151 @@ class Overlay:
         return self._glow_level > 0 and not self._ticks and all(v is None for v in (self._target, self._box, self._hint))
 
 
+COMPANION_OFFSET = (20.0, 22.0)   # logical px from the mouse's tip: below right, clear of the arrow
+COMPANION_FOLLOW = 0.35           # each frame it closes this share of the gap: it walks beside her, it is not glued
+COMPANION_BOX = 40                # logical px: its little window
+BREATH_S, BREATH = 1.6, 0.22      # while the tutor looks: one breath, and how much the dot swells in it
+LOOKING = ("thinking", "loading")
+TASK_ON = ("listening", "thinking", "turn", "caution", "reading", "loading")   # founder 03/11: from her question
+                                                                                # until the task is done
+
+
+def breath_at(t: float, looking: bool) -> tuple[float, int]:
+    """Radius and alpha of the waiting dot, t seconds on: still, or breathing while the tutor looks."""
+    if not looking:
+        return DOT_R, 255
+    s = (1 - math.cos(2 * math.pi * t / BREATH_S)) / 2
+    return DOT_R * (1 + BREATH * s), round(255 * (0.7 + 0.3 * s))
+
+
+def follow(dot: tuple[float, float] | None, mouse: tuple[float, float]) -> tuple[float, float]:
+    """The waiting dot's next position: a step towards its place beside the mouse."""
+    goal = (mouse[0] + COMPANION_OFFSET[0], mouse[1] + COMPANION_OFFSET[1])
+    if dot is None:
+        return goal
+    return dot[0] + (goal[0] - dot[0]) * COMPANION_FOLLOW, dot[1] + (goal[1] - dot[1]) * COMPANION_FOLLOW
+
+
+class Companion:
+    """The dot beside her mouse while a task is on (C4). Call from the Qt (main) thread.
+
+    A window of its own, COMPANION_BOX wide: moving it is cheap, repainting the full-screen overlay
+    at every mouse move is not. It is away while the overlay shows a mark (the dot has flown there),
+    and veiled for the instant the tutor takes its screenshot, which must not show it. Small on
+    purpose: unmasked, its moves change ~10 of the 20,736 cells still.py watches, under CHANGE_MIN.
+    """
+
+    def __init__(self, screen=None):
+        from PySide6.QtWidgets import QWidget
+
+        class _Canvas(QWidget):
+            def paintEvent(inner, _event):  # noqa: N805
+                p = QPainter(inner)
+                self._paint(p)
+                p.end()
+
+        self._screen = screen or QGuiApplication.primaryScreen()
+        self._w = _Canvas(None, Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool
+                          | Qt.WindowTransparentForInput | Qt.WindowDoesNotAcceptFocus)
+        self._w.setAttribute(Qt.WA_TranslucentBackground)
+        self._w.setAttribute(Qt.WA_ShowWithoutActivating)
+        self._w.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self._w.resize(COMPANION_BOX, COMPANION_BOX)
+        self.on = False                # a task is on
+        self.away = False              # the dot has flown to a target
+        self.veiled = False            # hidden while the tutor takes a screenshot
+        self.looking = False
+        self._dot: tuple[float, float] | None = None   # its centre, logical, relative to the screen
+        self.cover: tuple[int, int, int, int] | None = None   # logical (x, y, w, h) while shown; read by workers
+        self._clock = QElapsedTimer()
+        self._clock.start()
+        self._last_topmost = 0
+        self._timer = QTimer(self._w)
+        self._timer.setInterval(16)
+        self._timer.timeout.connect(self._tick)
+
+    @property
+    def widget(self):
+        return self._w
+
+    def visible(self) -> bool:
+        return self.on and not self.away and not self.veiled
+
+    def set_on(self, on: bool) -> None:
+        if on != self.on:
+            self.on, self._dot = on, None   # it comes back beside the mouse, not where it was last time
+            self._refresh()
+
+    def set_away(self, away: bool) -> None:
+        if away != self.away:
+            self.away = away
+            if not away:
+                self._dot = None
+            self._refresh()
+
+    def set_looking(self, looking: bool) -> None:
+        if looking != self.looking:
+            self.looking = looking
+            self._clock.restart()       # each look starts on a breath in
+
+    def veil(self, on: bool) -> bool:
+        """Hidden (True) or back (False) around a screenshot. Returns whether it was on the screen."""
+        was = self.visible()
+        self.veiled = on
+        self._refresh()
+        return was
+
+    def centre(self) -> tuple[float, float] | None:
+        """Where the dot is waiting, logical, for the overlay to fly it from. None when it is not out."""
+        return self._dot if self.on and not self.away else None
+
+    def _refresh(self) -> None:
+        if self.visible():
+            self._tick()
+            self._w.show()
+            _win_harden(self._w)
+            self._timer.start()
+        else:
+            self._timer.stop()
+            self._w.hide()
+            self.cover = None
+
+    def _tick(self) -> None:
+        geo = self._screen.geometry()
+        cursor = QCursor.pos()
+        if not geo.contains(cursor):   # on another screen: the overlay covers the primary one only
+            self._w.hide()
+            self.cover = None
+            return
+        mouse = (cursor.x() - geo.x(), cursor.y() - geo.y())
+        before, self._dot = self._dot, follow(self._dot, mouse)
+        x, y = round(self._dot[0] - COMPANION_BOX / 2), round(self._dot[1] - COMPANION_BOX / 2)
+        if before is None or (x, y) != (self.cover or (None, None))[:2]:
+            self._w.move(geo.x() + x, geo.y() + y)
+            self.cover = (x, y, COMPANION_BOX, COMPANION_BOX)
+        if self.looking:
+            self._w.update()
+        now = self._clock.elapsed()
+        if abs(now - self._last_topmost) >= TOPMOST_EVERY_MS:
+            self._last_topmost = now
+            _win_topmost(self._w)
+        if not self._w.isVisible() and self.visible():
+            self._w.show()
+
+    def _paint(self, p: QPainter) -> None:
+        r, alpha = breath_at(self._clock.elapsed() / 1000, self.looking)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setPen(Qt.NoPen)
+        c = QPointF(COMPANION_BOX / 2, COMPANION_BOX / 2)
+        halo, dot = QColor(HALO), QColor(COLOR)
+        halo.setAlpha(round(HALO.alpha() * alpha / 255))
+        dot.setAlpha(alpha)
+        p.setBrush(halo)
+        p.drawEllipse(c, r + 2.5, r + 2.5)
+        p.setBrush(dot)
+        p.drawEllipse(c, r, r)
+
+
 def _win_harden(widget, click_through: bool = True) -> None:
     """Belt and braces on Windows: never take focus, no taskbar button, and (by default) never take clicks."""
     if sys.platform != "win32":
@@ -497,14 +684,16 @@ def _win_topmost(widget) -> None:
                                       SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE)
 
 
-def render_preview(image_path: str, px: float, py: float, t: float = TRAVEL_S + 0.3, scale: float = 1.25) -> QImage:
-    """The pointer painted onto a screenshot, as it looks t seconds after point_at(). No window needed.
+def render_preview(image_path: str, px: float, py: float, t: float = DOT_TRAVEL_S + 0.3, scale: float = 1.25,
+                   start: tuple[float, float] | None = None, style: str = DOT_STYLE,
+                   color: QColor = COLOR) -> QImage:
+    """The pointer painted onto a screenshot, as it looks t seconds after point_at() from start. No window needed.
 
     The screenshot is in physical pixels, so sizes are multiplied by the display scale (125% on mom's laptop).
     """
     img = QImage(image_path).convertToFormat(QImage.Format_ARGB32)
     p = QPainter(img)
-    paint_frame(p, frame_at(t, (px, py), (px, py)), scale)
+    paint_dot(p, dot_at(t, start or (px, py), (px, py), style, scale), scale, color)
     p.end()
     return img
 

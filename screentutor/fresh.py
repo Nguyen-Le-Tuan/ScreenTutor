@@ -30,7 +30,7 @@ from PIL import Image, ImageDraw
 from .still import changed_fraction, signature
 
 REGION_HALF = (160, 80)   # physical px either side of the target: a toast or a dialog is wider than its button
-MARK_R = 75               # the ring's pulse reaches 52 logical px, 65 physical at 125%; with its stroke, 75
+MARK_R = 75               # physical px the mark reaches at 125%: the old ring 65, the dot 41 at most
 EDGE_PX = 48              # the glow's 36 logical px at 125%, and a little
 REDUCE = 4                # the region is compared in 4x4 averages: text changes, anti-aliasing does not
 TOL = 32                  # grey levels a cell may drift without counting as changed (a row lit by the mouse is ~20)

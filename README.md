@@ -140,7 +140,7 @@ python -m tutor_eval.sam run --yes          # T11 (about $0.06)
 | `screentutor/tutor.py` | The Muse Spark calls: first turn (`ask`), the step check (`follow_up`), the note (`summarise`); the streaming reader |
 | `screentutor/session.py` | The agent loop: plan, parts, click, read, scroll, wait, picking a task up again; each step goes up with the first sound of its sentence |
 | `screentutor/island.py`, `conversation.py`, `ui.py` | The dynamic island, its talk and its 12 states; the round button |
-| `screentutor/overlay.py` | Click-through overlay: ring, reading frame, scroll hint, tick, edge light |
+| `screentutor/overlay.py` | Click-through overlay: the dot that waits beside her mouse and flies to the target, reading frame, scroll hint, tick, edge light |
 | `screentutor/guards.py` | Speaking up without being asked: Zalo's temporary copy |
 | `screentutor/memory.py`, `history.py` | Her knowledge base (BM25, profile, filter); her tasks, one file each |
 | `screentutor/gesture.py` | What her mouse path says: stopped at a point, or circled a region |

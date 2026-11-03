@@ -1,8 +1,9 @@
 import pytest
+from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QColor, QImage, QPainter
 
-from screentutor.overlay import (COLOR, MARK_R, PULSE_MAX, PULSE_S, TRAVEL_R, TRAVEL_S, ease_out, frame_at,
-                                 paint_frame, to_logical)
+from screentutor.overlay import (COLOR, DOT_PULSE_MAX, DOT_R, DOT_TRAVEL_S, LAND_POP, LAND_S, PULSE_S, TRAIL, arc,
+                                 dot_at, ease_out, landing, paint_dot, to_logical)
 
 
 @pytest.fixture(autouse=True)
@@ -16,17 +17,31 @@ def test_physical_pixels_map_to_logical_at_125_percent():
     assert to_logical(100, 50, 1.0, (1920, 0)) == (2020, 50)
 
 
-def test_ring_glides_opens_up_then_pulses():
+def test_the_dot_leaves_from_beside_the_mouse_and_flies_along_an_arc():
+    start, target = (0.0, 0.0), (300.0, 0.0)
+    first = dot_at(0, start, target)
+    assert (first.x, first.y) == start and not first.arrived and first.trail == []
+    mid = dot_at(DOT_TRAVEL_S / 2, start, target)
+    assert 100 < mid.x < 200 and abs(mid.y) > 10          # bent to the side, not a straight line
+    assert len(mid.trail) == TRAIL and mid.trail[0][2] > mid.trail[-1][2]   # the trail fades behind it
+    assert arc(0.5, start, target) == (mid.x, mid.y)
+
+
+def test_it_lands_bounces_once_then_pulses_in_place():
     start, target = (0.0, 0.0), (300.0, 200.0)
-    f0 = frame_at(0, start, target)
-    assert (f0.x, f0.y, f0.radius) == (0, 0, TRAVEL_R)
-    mid = frame_at(TRAVEL_S / 2, start, target)
-    assert 0 < mid.x < 300 and TRAVEL_R < mid.radius < MARK_R and not mid.arrived and mid.pulses == []
-    for t in (TRAVEL_S, TRAVEL_S + 0.3, TRAVEL_S + PULSE_S * 3.7):
-        f = frame_at(t, start, target)
-        assert (f.x, f.y, f.radius) == (*target, MARK_R) and f.arrived and len(f.pulses) == 2
-        (r1, a1), (r2, a2) = f.pulses
-        assert MARK_R <= r1 < r2 <= PULSE_MAX and a1 > a2  # the wider pulse is the fainter one
+    landed = dot_at(DOT_TRAVEL_S, start, target)
+    assert (landed.x, landed.y) == target and landed.arrived and landed.radius == DOT_R * LAND_POP
+    for t in (DOT_TRAVEL_S + LAND_S, DOT_TRAVEL_S + PULSE_S * 3.7):
+        d = dot_at(t, start, target)
+        assert (d.x, d.y, d.radius) == (*target, DOT_R) and d.trail == [] and d.pulse_at == target
+        (r1, a1), (r2, a2) = d.pulses
+        assert DOT_R < r1 < r2 <= DOT_PULSE_MAX and a1 > a2   # the wider pulse is the fainter one
+
+
+def test_beside_the_dot_rests_below_right_and_the_pulses_stay_on_the_target():
+    d = dot_at(DOT_TRAVEL_S + 1, (0, 0), (300, 200), style="beside")
+    assert d.x > 300 and d.y > 200 and d.pulse_at == (300, 200)
+    assert landing((300, 200), "beside", 1.25)[0] - 300 > landing((300, 200), "beside", 1.0)[0] - 300
 
 
 def test_ease_out_is_monotonic_and_bounded():
@@ -34,15 +49,16 @@ def test_ease_out_is_monotonic_and_bounded():
     assert values == sorted(values) and values[0] == 0 and values[-1] == 1
 
 
-def test_ring_leaves_the_target_readable():
+def test_the_dot_is_solid_with_a_white_edge_and_the_pulses_are_faint():
     img = QImage(400, 300, QImage.Format_ARGB32)
     img.fill(QColor(0, 0, 0, 0))
     p = QPainter(img)
-    paint_frame(p, frame_at(TRAVEL_S + 0.1, (200, 150), (200, 150)))
+    paint_dot(p, dot_at(DOT_TRAVEL_S + LAND_S + 0.01, (200, 150), (200, 150)))
     p.end()
-    on_ring = img.pixelColor(200 + int(MARK_R), 150)
-    assert (on_ring.red(), on_ring.green(), on_ring.blue()) == (COLOR.red(), COLOR.green(), COLOR.blue())
-    assert img.pixelColor(200, 150).alpha() < 60  # only a faint tint over the target
+    centre = img.pixelColor(200, 150)
+    assert centre.rgba() == COLOR.rgba() and centre.alpha() == 255
+    edge = img.pixelColor(200 + int(DOT_R) + 1, 150)
+    assert edge.red() > 240 and edge.green() > 200          # the white halo
     assert img.pixelColor(5, 5).alpha() == 0
 
 
@@ -191,3 +207,69 @@ def test_the_green_flash_comes_and_goes(qt_app):
     ov.glow_enabled = False
     ov.flash()
     assert ov._flash_at is None
+
+
+# C4: the dot beside her mouse
+
+from screentutor.overlay import BREATH, COMPANION_OFFSET, DOT_R, Companion, breath_at, follow  # noqa: E402
+
+
+def test_the_waiting_dot_walks_beside_the_mouse_a_step_behind():
+    goal = (100 + COMPANION_OFFSET[0], 100 + COMPANION_OFFSET[1])
+    assert follow(None, (100, 100)) == goal                 # it appears in its place
+    step = follow((0.0, 0.0), (100, 100))
+    assert 0 < step[0] < goal[0] and 0 < step[1] < goal[1]  # then follows, a step behind
+    dot = (0.0, 0.0)
+    for _ in range(30):
+        dot = follow(dot, (100, 100))
+    assert abs(dot[0] - goal[0]) < 0.1 and abs(dot[1] - goal[1]) < 0.1
+
+
+def test_it_breathes_only_while_the_tutor_looks():
+    assert breath_at(0.7, False) == (DOT_R, 255)
+    sizes = [breath_at(t / 10, True)[0] for t in range(17)]
+    assert min(sizes) == DOT_R and DOT_R * 1.15 < max(sizes) <= DOT_R * (1 + BREATH) + 1e-9
+
+
+def test_the_dot_is_out_only_during_a_task_and_never_in_a_screenshot(qt_app):
+    c = Companion()
+    assert not c.visible() and c.centre() is None and c.cover is None
+    c.set_on(True)
+    assert c.visible() and c.centre() is not None and c.cover is not None
+    assert c.veil(True) is True and not c.visible() and c.cover is None
+    assert c.veil(False) is False and c.visible()
+    c.set_away(True)                                         # it has flown to the mark
+    assert not c.visible() and c.centre() is None and c.cover is None
+    c.set_away(False)
+    c.set_on(False)
+    assert not c.visible() and c.cover is None
+
+
+def test_the_dot_flies_from_where_it_waited(qt_app):
+    o = Overlay()
+    o.start_from = lambda: (123.0, 45.0)
+    o.point_at(500, 500)
+    assert o._start == (123.0, 45.0)
+    o.start_from = lambda: None                              # not out: from the mouse, as before
+    o.clear()
+    o.point_at(500, 500)
+    assert o._start != (123.0, 45.0)
+    o.clear()
+
+
+def test_the_waiting_dot_moving_with_the_mouse_is_not_the_screen_changing():
+    # it is left in the grabs still.py watches after a click; at its biggest breath, moved 60 px
+    from screentutor.still import CHANGE_MIN, changed_fraction, signature
+
+    def dot(x, y):
+        def paint(p):
+            r = DOT_R * (1 + BREATH) * 1.25
+            p.setRenderHint(QPainter.Antialiasing)
+            p.setPen(Qt.NoPen)
+            p.setBrush(QColor(255, 255, 255))
+            p.drawEllipse(QPointF(x, y), r + 3.2, r + 3.2)
+            p.setBrush(COLOR)
+            p.drawEllipse(QPointF(x, y), r, r)
+        return _shot(paint, bg=(30, 30, 30))
+
+    assert changed_fraction(signature(dot(500, 500)), signature(dot(560, 530))) < CHANGE_MIN
