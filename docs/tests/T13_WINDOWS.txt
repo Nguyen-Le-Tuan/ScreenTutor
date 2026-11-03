@@ -90,9 +90,26 @@ Dùng nội dung giả trong docs/tests/T12_TIN_NHAN_GIA.txt, đã dán vào "Cl
         vàng cam: Có. Đứng yên 10 giây: tutor không nói lại; ô tự thu gọn, nút micro chuyển vàng.
         Ảnh: [t12_ban_tam_1.png](../../tutor_eval/t12_data/t12_ban_tam_1.png),
         [t12_ban_tam_2.png](../../tutor_eval/t12_data/t12_ban_tam_2.png).
-        Bấm nút tròn, nói "tải file về": tutor có dẫn về Zalo tải file không? ______
+        Khi nói "tải file về", tutor lập kế hoạch 3 phần: "Mở lại Zalo", "Tải file về thư mục",
+        "Mở bản đã tải"; sau đó hướng dẫn tới hộp Save As. Hộp đang gợi ý thư mục
+        Downloads\ScreenTutor\stt_eval\audio; vòng đỏ chỉ nút Save. Ghi chú người dùng: trước khi
+        chỉ Save, cần giới thiệu rằng có thể chọn chỗ lưu file và có thể hỏi mục đích/vị trí người dùng
+        muốn lưu, thay vì mặc định lưu ở thư mục gợi ý.
+        Bấm nút tròn, nói "tải file về": Có; tutor dẫn về Zalo để tải file.
         Mở bản đã tải về (trong Downloads hay thư mục thật): tutor có im lặng không? ______
         Đường dẫn file tạm (File > Info), thay tên file bằng <tên file>: _______________________
+        Lượt khởi động lại app: sau Ctrl+C, mở lại app rồi hỏi cách mở file vừa lưu, tutor hiện lại
+        kế hoạch 3 phần trước đó và chuyển sang phần 2 "Mở thư mục chứa file". Vòng đỏ ban đầu chỉ
+        vào khoảng trống trong Zalo. Người dùng ghi nhận ở lượt trước có hộp mở file chỉ hiện thoáng
+        rồi tự tắt; ảnh trạng thái khi hộp này còn hiện được lưu ở dưới. Sau đó tutor yêu cầu tải lại
+        file và chỉ vào biểu tượng tải xuống. Hộp Save As có sẵn Du_thao_quy_che_GIA.docx, nên Windows
+        tự đặt tên mới là Du_thao_quy_che_GIA (1).docx; vòng đỏ tiếp tục chỉ nút Save. Sau khi bấm
+        biểu tượng thư mục cạnh biểu tượng tải xuống, Explorer mở thư mục audio với cả hai bản; vòng
+        đỏ chỉ vào Du_thao_quy_che_GIA.docx (không có "(1)") thay vì bản Du_thao_quy_che_GIA (1).docx.
+        Ảnh: [c5_restart_1.png](../../tutor_eval/t12_data/c5_restart_1.png),
+        [c5_restart_2.png](../../tutor_eval/t12_data/c5_restart_2.png),
+        [c5_restart_3.png](../../tutor_eval/t12_data/c5_restart_3.png),
+        [c5_restart_4.png](../../tutor_eval/t12_data/c5_restart_4.png).
 [ ] C6. Đường chuột: khoanh chuột quanh một tin trong Zalo rồi hỏi "Cái này là gì". Trong cửa sổ đen
         có dòng "Chuột lúc hỏi: khoanh quanh vùng ..." không? ______  Tutor có nói về đúng tin đó không? ______
         Đưa chuột vào một tin, để yên, hỏi "cái này là gì": dòng "dừng ở (...)"? ______
