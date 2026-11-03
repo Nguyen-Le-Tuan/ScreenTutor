@@ -79,6 +79,7 @@ class Session:
     status: object = None          # (state) -> None for the island: thinking, turn, reading, caution, loading, error, done, idle
     cancel: object = None          # threading.Event: the user asked something new
     pointer: str | None = None     # B1b: what her mouse pointed at or circled while she asked, for the first turn
+    known: str | None = None       # B5: what her own earlier tasks say that may help with this question
     wait_change: object = None     # (timeout_s, min_change, stop) -> outcome str: wait with no click to start from
     show_box: object = None        # (box, caution) physical px; until B3 draws it, a ring at the centre of the box
     show_scroll: object = None     # (point) physical px; until B3 draws the arrow, a ring there
@@ -230,7 +231,7 @@ class Session:
         img, state = self.look()
         self._turn_starts(img)
         reply = self.tutor.ask(question, self.encode(img), state, self.pointer, on_mark=self._early_mark,
-                               on_say=self._early_say)
+                               on_say=self._early_say, known=self.known)
         outcome = None
         waits = 0
         while not self._cancelled():

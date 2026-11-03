@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import secrets
+import shutil
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -107,7 +108,9 @@ class History:
         return self.tasks()[:n]
 
     def clear(self) -> int:
-        """Delete every task (the pinned island's "Xoá lịch sử"). Returns how many files went."""
+        """Delete every task (the pinned island's "Xoá lịch sử"), and memory.py's folder with them. Returns how
+        many tasks went."""
+        shutil.rmtree(self.root / "memory", ignore_errors=True)
         n = 0
         for f in list(self.root.glob("*.json")) + list(self.root.glob("*.tmp")) if self.root.is_dir() else []:
             f.unlink(missing_ok=True)

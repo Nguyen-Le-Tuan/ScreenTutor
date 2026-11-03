@@ -105,6 +105,30 @@ NOTES_RULE = "- task_notes: khi đọc nội dung dài, ghi tối đa 80 chữ �
 NOTES_FOLLOW = "- task_notes: nếu vừa đọc thêm, viết lại đủ ghi chú cũ cộng phần mới (tối đa 80 chữ); nếu không thì rỗng.\n"
 PART_RULE = "- task_part: số thứ tự (từ 1) của phần chứa bước tiếp theo; xong hết thì bằng số phần; chưa có phần nào thì 0.\n"
 LOGIN_RULE = "- Ô đăng nhập: chỉ ô để người dùng tự gõ; không đọc, nhắc hay đoán mật khẩu."
+# B5 (02/11): what she has done before, found on her own machine. After everything that was measured.
+KNOWN_BLOCK = ("\n\nNhững gì đã biết về người dùng, từ các việc trước trên máy này. Chỉ để tham khảo, màn hình hiện tại "
+               "quan trọng hơn; không nhắc lại với người dùng:\n{known}")
+LEARN_PROMPT = (
+    "Đây là biên bản một việc người dùng, một cô giáo lớn tuổi, vừa làm trên máy tính cùng tutor:\n\n{record}\n\n"
+    "Tóm lại thành ghi chú ngắn bằng tiếng Việt có dấu:\n"
+    "- title: tên việc tối đa 10 chữ, viết như người ta gọi việc đó.\n"
+    "- apps: các app đã đi qua.\n"
+    "- path: tối đa 6 bước chính, mỗi bước tối đa 8 chữ.\n"
+    "- result: một câu ngắn nói kết quả.\n"
+    "- keywords: tối đa 8 từ khoá để tìm lại việc này, gồm cả cách nói khác của người dùng.\n"
+    "- facts: 0 đến 3 điều bền vững về công việc hay thói quen của người dùng mà biên bản này cho thấy, mỗi điều một câu "
+    "ngắn, ví dụ \"Hay nhận giáo án qua Zalo nhóm tổ\". Chỉ ghi điều có căn cứ trong biên bản. Không ghi mật khẩu, số "
+    "điện thoại hay tên người."
+)
+LEARN_SCHEMA = {
+    "type": "object",
+    "properties": {"title": {"type": "string"}, "apps": {"type": "array", "items": {"type": "string"}},
+                   "path": {"type": "array", "items": {"type": "string"}}, "result": {"type": "string"},
+                   "keywords": {"type": "array", "items": {"type": "string"}},
+                   "facts": {"type": "array", "items": {"type": "string"}}},
+    "required": ["title", "apps", "path", "result", "keywords", "facts"],
+    "additionalProperties": False,
+}
 FOLLOW_PLAN = "\n\nViệc này đã được chia thành các phần: {parts}. Bước vừa rồi thuộc phần {part}."
 FOLLOW_NOTES = "\n\nNhững gì đã đọc được ở các lượt trước: \"{notes}\""
 MODES = ("answer", "guide")
@@ -194,8 +218,10 @@ def follow_task_rules(plan: list[str] | None, part: int | None, notes: str) -> s
     return text + TASK_HEAD + SAY_SELF_RULE + PART_RULE + PLAN_FOLLOW + TARGET_RULES + NOTES_FOLLOW + LOGIN_RULE
 
 
-def build_prompt(question: str, state: str | None = None, task: bool = True, pointer: str | None = None) -> str:
-    return point_prompt(question, state) + SAY_RULES + (task_rules(pointer) if task else "")
+def build_prompt(question: str, state: str | None = None, task: bool = True, pointer: str | None = None,
+                 known: str | None = None) -> str:
+    text = point_prompt(question, state) + SAY_RULES + (task_rules(pointer) if task else "")
+    return text + KNOWN_BLOCK.format(known=known) if known else text
 
 
 def build_follow_up_prompt(goal: str, last_say: str, state: str | None = None,
@@ -210,8 +236,8 @@ def build_follow_up_prompt(goal: str, last_say: str, state: str | None = None,
 
 def build_body(question: str, image_data_url: str, state: str | None = None,
                model: str = MODEL, effort: str | None = EFFORT, task: bool = True,
-               pointer: str | None = None) -> dict:
-    return _body(build_prompt(question, state, task, pointer), image_data_url, "tutor_reply",
+               pointer: str | None = None, known: str | None = None) -> dict:
+    return _body(build_prompt(question, state, task, pointer, known), image_data_url, "tutor_reply",
                  REPLY_SCHEMA_V2 if task else REPLY_SCHEMA, model, effort)
 
 
@@ -416,8 +442,8 @@ class Tutor:
             pass
 
     def ask(self, question: str, image_data_url: str, state: str | None = None, pointer: str | None = None,
-            on_mark=None, on_say=None) -> Reply:
-        return self._call(build_body(question, image_data_url, state, self.model, self.effort, self.task, pointer),
+            on_mark=None, on_say=None, known: str | None = None) -> Reply:
+        return self._call(build_body(question, image_data_url, state, self.model, self.effort, self.task, pointer, known),
                           on_mark, on_say)
 
     def follow_up(self, goal: str, last_say: str, image_data_url: str, state: str | None = None,
@@ -426,6 +452,17 @@ class Tutor:
         """After the user acted and the screen settled: was the step done, is the task done, what next."""
         return self._call(build_follow_up_body(goal, last_say, image_data_url, state, screen_changed, self.model,
                                                self.effort, self.task, plan, part, notes, acted), on_mark, on_say)
+
+    def summarise(self, record: str) -> dict | None:
+        """B5: a finished task as a short note. Words only, no picture. None when it cannot be had; nobody waits for this."""
+        body = {"model": self.model, "reasoning_effort": self.effort,
+                "messages": [{"role": "user", "content": LEARN_PROMPT.format(record=record)}],
+                "response_format": {"type": "json_schema", "json_schema": {"name": "task_note", "schema": LEARN_SCHEMA}}}
+        try:
+            resp, _ = self._post("/chat/completions", body)
+            return json.loads(resp["choices"][0]["message"]["content"])
+        except (httpx.HTTPError, RuntimeError, ValueError, KeyError, IndexError):
+            return None
 
     def _call(self, body: dict, on_mark=None, on_say=None) -> Reply:
         """One answer. A sentence without Vietnamese diacritics (4 of 104 so far, T4-T8a) would be read

@@ -11,8 +11,8 @@ class FakeTutor:
     def __init__(self, replies):
         self.replies, self.calls, self.turns = list(replies), [], []
 
-    def ask(self, question, data_url, state, pointer=None, on_mark=None, on_say=None):
-        self.pointer = pointer
+    def ask(self, question, data_url, state, pointer=None, on_mark=None, on_say=None, known=None):
+        self.pointer, self.known = pointer, known
         self.calls.append(("ask", question, None, None))
         return self.replies.pop(0)
 
@@ -72,6 +72,14 @@ def test_the_first_turn_gets_what_her_mouse_pointed_at():
     s.pointer = "khoanh quanh vùng (250, 278)-(750, 556) trên lưới 0-1000"
     s.run("Học cái này")
     assert tutor.pointer == s.pointer
+
+
+def test_the_first_turn_gets_what_is_known_about_her():
+    tutor = FakeTutor([Reply(say="Bạn mở Zalo trước nhé.", found=False)])
+    s, _ = _session(tutor, [], [])
+    s.known = "- Hay gửi file cho tiệm in"
+    s.run("Gửi file")
+    assert tutor.known == "- Hay gửi file cho tiệm in"
 
 
 def test_stops_when_nothing_to_point_at_or_no_click():
@@ -450,9 +458,9 @@ class StreamingTutor(FakeTutor):
             on_say(reply.say)
         self.log.append(("reply",))
 
-    def ask(self, question, data_url, state, pointer=None, on_mark=None, on_say=None):
+    def ask(self, question, data_url, state, pointer=None, on_mark=None, on_say=None, known=None):
         self._early(on_mark, on_say)
-        return super().ask(question, data_url, state, pointer)
+        return super().ask(question, data_url, state, pointer, known=known)
 
     def follow_up(self, goal, last_say, data_url, state, changed, plan=None, part=None, notes="", acted="click",
                   on_mark=None, on_say=None):

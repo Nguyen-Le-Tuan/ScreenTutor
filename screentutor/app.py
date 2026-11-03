@@ -215,6 +215,7 @@ def main(argv=None) -> None:
     from .inputs import Click, Hold, Trail, watch
     from .island import Island
     from .listen import Mic, _api_key, listen
+    from .memory import Memory, learn
     from .overlay import Overlay, _win_topmost
     from .session import ClickBox, Session
     from .speak import Speaker
@@ -258,6 +259,8 @@ def main(argv=None) -> None:
 
     overlay.after_topmost = keep_ours_on_top
     history = History()  # A8: C:\ScreenTutor\history, one file per task, no pictures or sound
+    memory = Memory()    # B5: her knowledge base, in history\memory
+    threading.Thread(target=lambda: memory.load(history.tasks()), daemon=True).start()
 
     def recent_items() -> list[tuple[str, str]]:
         now = time.time()
@@ -327,7 +330,8 @@ def main(argv=None) -> None:
 
     def on_clear() -> None:
         n = history.clear()
-        print(f"Đã xoá {n} việc trong lịch sử.", flush=True)
+        memory.forget()
+        print(f"Đã xoá {n} việc trong lịch sử và kho kiến thức.", flush=True)
 
     island.on_color = lambda c: save_prefs(island_color=c)
     island.on_button_toggle = on_button_toggle
@@ -444,10 +448,13 @@ def main(argv=None) -> None:
             show_box=lambda box, caution: bridge.frame.emit(*box, caution),
             show_scroll=lambda px: bridge.hint.emit(*px),
             confirm=bridge.tick.emit,
-            save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer, on_plan=on_plan)
+            save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer, on_plan=on_plan,
+            known=memory.context(heard.text))
         steps = session.run(heard.text)
         history.finish(rec, outcome_of(steps, cancel.is_set()))
         post("recent", recent_items())
+        if rec.outcome != "error":  # in the background: she does not wait for her own notes
+            threading.Thread(target=learn, args=(memory, rec, tutor.summarise), daemon=True).start()
         for s in steps:
             print(f"  bước {s.n} ({s.target or 'click'}): {s.say} | trỏ {s.point_px} | sau cú bấm {s.settle or '—'} | "
                   f"bước xong {s.step_done} | việc xong {s.goal_done} | {s.latency_s:.1f} s", flush=True)
