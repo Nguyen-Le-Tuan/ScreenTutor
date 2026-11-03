@@ -28,6 +28,15 @@ tutor_eval\uia_probe.py. Tắt ScreenTutor trước khi dò.
 [x] G2.  py -m tutor_eval.uia_probe hover
          90 giây: lần lượt Zalo (dòng chat, file, link, nút Gửi), Word (File, Export, nút trên ribbon),
          Brave (tab, link). Dừng chuột khoảng 1 giây trên mỗi chỗ, mỗi app khoảng 10 chỗ.
+         Log: tutor_runs\\uia_probe-20261103-153515.jsonl, tổng 34 điểm hover.
+         Zalo: 10 điểm; đọc được nhóm file/âm thanh, bảng grid, document không tên, tin nhắn dài,
+         nhãn Work, tên e_04.m4a và nội dung tin nhắn. 4/10 điểm có tên và khung nhỏ; thời gian
+         đọc tại điểm trung vị 21 ms, p90 37 ms.
+         Word: 9 điểm; đọc được nhóm Voice, vùng soạn thảo "Page 1 content", Back, Export, Home,
+         Layout và Design. 8/9 điểm có tên và khung nhỏ; thời gian trung vị 60 ms, p90 308 ms.
+         Brave: 6 điểm; có hai region không tên, Reload, menu Format, một Bookmark button và nút
+         Brave. 4/6 điểm có tên và khung nhỏ; thời gian trung vị 3 ms, p90 5 ms.
+         Ngoài ba ứng dụng: Explorer 6 điểm (nút taskbar) và VS Code 3 điểm (image không tên).
 [x] G3.  py -m tutor_eval.uia_probe click
          90 giây: bấm như mẹ bấm, cũng ở 3 app (bấm chỗ vô hại: dòng chat, tab, ô trống).
          Lượt 1: script in các phần tử của Zalo, Brave và Word, rồi dừng bằng
