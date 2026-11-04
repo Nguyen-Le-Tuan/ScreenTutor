@@ -157,7 +157,9 @@ F. LÀM TIẾP (W-6) (10 phút)
 ---------------------------
 W-6 trượt trong T13 ở hai chỗ, đã sửa theo lựa chọn của bạn (03/11):
   - Câu phụ trả lời trong một lượt (C3b-3: "cái nút micro này là để làm gì") trước đây không bao giờ
-    được mời làm tiếp. Giờ được mời.
+    được mời làm tiếp. Giờ được mời, nếu model coi đó là câu hỏi (kiểu "answer"). Câu kiểu "Bạn mở Zalo
+    trước nhé" hay tutor hỏi lại thì không mời, vì câu phụ chưa xong (bạn chọn "Siết theo mode", 03/11).
+    Cửa sổ đen in "kiểu: answer" hoặc "kiểu: guide" sau mỗi việc.
   - Câu phụ có kế hoạch riêng (D-3: "bây giờ tôi muốn tải file Excel trước thì làm thế nào?") thì app hỏi
     model: chen ngang để làm được việc lớn, hay việc khác hẳn. Bản chặt (A): trên Ubuntu không mời sai lần
     nào trong 45, nhưng chính ca D3 thì 0/5 lần được mời (tutor_eval/aside.py). Ca đó bạn vẫn nói "làm tiếp".
@@ -167,6 +169,8 @@ dừng, không còn gì để mời (C3b-2, đúng như thiết kế).
 
 Luật chấm (ghi trước khi chạy; đề xuất của Claude):
   - L-1 đạt: sau câu phụ một lượt, ô hiện "Làm tiếp: ..." đúng MỘT lần và tutor nói câu mời một lần.
+    Không có ô mà cửa sổ đen in "kiểu: guide" ở câu phụ đó: ghi lại là model không coi đó là câu hỏi
+    (luật siết), vẫn tính là L-1 trượt.
   - L-2 đạt: bấm vào ô đó thì tutor quay lại đúng phần đang làm của việc lớn.
   - L-3 đạt: sau câu phụ có kế hoạch riêng mà là việc khác hẳn, KHÔNG có ô "Làm tiếp" và cửa sổ đen in
     "việc khác hẳn, không mời". Không có dòng "Câu phụ có kế hoạch riêng" thì câu phụ không được lập kế

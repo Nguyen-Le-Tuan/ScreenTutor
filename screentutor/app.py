@@ -109,7 +109,8 @@ class Offers:
     out of time, is never offered by itself; she can still say "làm tiếp".
 
     W-6 failed in T13, two ways (founder's choices, 03/11). A side question answered in one turn never
-    came back "done" (the first turn has no goal_done), so it is offered after that too. A side question
+    came back "done" (the first turn has no goal_done), so it is offered after that too, if the model took
+    it for a question (answered_at_once). A side question
     with a plan of its own was taken for another task; now aside(side, big_id) asks the model whether it
     was a detour of the big task ("tải file Excel trước" in D3) or another task.
     """
@@ -154,9 +155,13 @@ def detour_of(history, tutor, side, big_id: str, now: float) -> bool:
     return verdict is True
 
 
-def answered_at_once(steps) -> bool:
-    """One turn, nothing to point at and no error: an answer, or a "first open Zalo"; either way the side question is over."""
-    return len(steps) == 1 and steps[0].point_px is None and not steps[0].error and steps[0].target != "keys"
+def answered_at_once(steps, mode: str) -> bool:
+    """One turn, nothing to point at, no error, and the model took it for a question to answer (mode "answer").
+    A first turn always ends when there is nothing to point at, so without the mode "Bạn mở Zalo trước nhé",
+    "Trang đang tải" or a question back to her also looked over, and "Làm tiếp" came up while she was still on
+    the side question (founder 03/11: "Siết theo mode")."""
+    return (mode == "answer" and len(steps) == 1 and steps[0].point_px is None and not steps[0].error
+            and steps[0].target != "keys")
 
 
 class Feed:
@@ -651,7 +656,8 @@ def main(argv=None) -> None:
             print(f"  bước {s.n} ({s.target or 'click'}): {s.say} | trỏ {s.point_px} | sau cú bấm {s.settle or '—'} | "
                   f"bước xong {s.step_done} | việc xong {s.goal_done} | {s.latency_s:.1f} s"
                   f" | hiện sau {'—' if s.shown_s is None else f'{s.shown_s:.1f} s'}{moved}", flush=True)
-        offer_left_task(rec, cancel, answered_at_once(steps))
+        print(f"  kiểu: {session.mode or '—'}", flush=True)   # T15 F: why a one-turn side question was offered or not
+        offer_left_task(rec, cancel, answered_at_once(steps, session.mode))
 
     def begin(mode: str | None) -> None:
         """A new request replaces whatever was going on. Also runs on the input thread: widgets only via the bridge."""

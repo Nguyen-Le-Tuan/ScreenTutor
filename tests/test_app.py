@@ -377,12 +377,22 @@ def test_answered_at_once():
     from screentutor.app import answered_at_once
     from screentutor.session import Step
 
-    assert answered_at_once([Step(1, "Nút micro là của phần hướng dẫn, bạn cứ để yên.", None, target="none")])
-    assert not answered_at_once([Step(1, "Bạn bấm File.", (10, 10), target="click")])   # she never clicked it
-    assert not answered_at_once([Step(1, "Bạn bấm Ctrl+C.", None, target="keys")])       # a shortcut has no place
-    assert not answered_at_once([Step(1, "", None, error="timeout")])
-    assert not answered_at_once([Step(1, "Chờ trang tải.", None), Step(2, "Xong.", None)])
-    assert not answered_at_once([])
+    assert answered_at_once([Step(1, "Nút micro là của phần hướng dẫn, bạn cứ để yên.", None, target="none")], "answer")
+    assert not answered_at_once([Step(1, "Bạn bấm File.", (10, 10), target="click")], "answer")   # she never clicked it
+    assert not answered_at_once([Step(1, "Bạn bấm Ctrl+C.", None, target="keys")], "answer")   # a shortcut: no place
+    assert not answered_at_once([Step(1, "", None, error="timeout")], "answer")
+    assert not answered_at_once([Step(1, "Chờ trang tải.", None), Step(2, "Xong.", None)], "answer")
+    assert not answered_at_once([], "answer")
+
+
+def test_a_one_turn_reply_that_leaves_her_something_to_do_is_not_over():
+    from screentutor.app import answered_at_once
+    from screentutor.session import Step
+
+    # founder 03/11, "Siết theo mode": the side question is not over, so "Làm tiếp" must not come up yet
+    for say in ("Bạn mở Zalo trước nhé.", "Trang đang tải, bạn chờ một chút nhé.", "Bạn muốn mở file nào?"):
+        assert not answered_at_once([Step(1, say, None, target="none")], "guide")
+    assert not answered_at_once([Step(1, "Bạn mở Zalo trước nhé.", None, target="none")], "")   # no mode: not offered
 
 
 class FakeCompanion:
