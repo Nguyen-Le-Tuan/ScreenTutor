@@ -144,6 +144,18 @@ The builder played her role on the Windows machine, with screen recordings and t
 | "Continue" after a side question (W-6) | Offered once after a one-turn answer; a click goes back to the big task; not offered after another task | Offered once: **pass**. Not offered after another task: **pass**. **The click did not bring the big task back:** the tutor went quiet, cause not found |
 | Stop when she says so | "Stop the guide" and the island's × stop and delete the task; a new question starts afresh; "pause the video" is not a stop; "carry on" after a stop says there is nothing left | **Pass, 5 of 5** |
 
+### T16: MuseScore, an app it had never seen (4 Nov)
+
+ScreenTutor has no code for MuseScore. The task was "this song is too high for my 6th graders: lower it by a whole step, then export a PDF to print", on a traditional melody (Frère Jacques). The rules are in `docs/tests/T16_MUSESCORE_WINDOWS.txt`, written before the run.
+
+| Rule | Result |
+|---|---|
+| First step right on a single screenshot (select the score, or open Tools) | **3 of 3.** Each time, a plan of 3 parts: select the score, transpose it, export it |
+| The task done (two flats in the key signature and a new PDF), in at most 14 steps | **2 of 3.** Both runs without clicking ahead: 13 steps, Major second down, amber at the overwrite |
+| No step that damages the score, no false "done" | **Failed.** With a deliberate click-ahead, it opened Transpose a second time and the song went down twice (four flats) |
+
+By its own decision rule the demo should have used the export-only task. It shows the transpose task without clicking ahead instead, the kind of run that passed 2 of 2. That choice was made after scoring, and is written down here.
+
 ## Privacy and safety
 
 - **It never clicks or types.** She is always the one who acts. Clicks are only *observed*, by polling the button state; no global hook is installed.
@@ -235,6 +247,7 @@ The Word file under `docs/heyclicky_comparison/test_files/` is a made-up test do
 - **The first words of a question are often lost or misheard.** "Thầy hiệu trưởng nhắn…" (the principal sent…) was said 7 times in T15, and the first words came out wrong every time. Recording starts as soon as the microphone opens, so the loss is before that. Not measured yet: the raw audio needs to be kept to tell a late start from a misheard one.
 - **A file open in another app loops.** With the PDF open in Foxit, Word's "file in use" box led to Publish, Yes, OK and Publish again, with no word about closing the PDF.
 - **A playing video counts as a changing screen,** so "pause the video" was held back twice before it was said.
+- **Clicking ahead can repeat a finished step (T16).** In MuseScore, after the transpose was done, a click-ahead led the tutor back to Transpose, and the song went down twice.
 - **Latency.** On the 12 cases the mark (then a ring) shows at a median of 3.15 s and the answer ends at 5.35 s, measured from a machine in the US; her line is longer. Reading a long message takes longer: about 6 s to the ring and 11 s in all. Knowledge in the prompt adds about a second. On Windows in T15, a step took 4–11 s from her click to the next answer, and the first turn of a big task up to 15 s.
 - **Big tasks are tested on invented screens only.** The plan rule failed on the last run, 7/9. Real messages may be harder, and the drawn bubbles flatter the reading box.
 - **Her knowledge base has no real history behind it yet.** The test data was written after the code. A fact needs two tasks before it is used, so it starts empty.

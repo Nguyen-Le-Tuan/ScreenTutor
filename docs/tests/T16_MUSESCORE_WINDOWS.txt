@@ -82,6 +82,10 @@ Có gì bị xoá: Ctrl+Z ngay, ghi lại, tính M-2 trượt.
         M-1: 2/3 tới đích (C1, C2 đạt; C3 không đạt và vượt giới hạn 14 bước). M-2: trượt — C3 hướng
         dẫn thao tác hạ giọng lần hai làm sai bản nhạc (4 dấu giáng), dù không có Delete/Ctrl+X.
         → Quay việc: B
+        QUYẾT ĐỊNH SAU KHI CHẤM (04/11, 17:45): founder chọn quay việc A, KHÔNG bấm trước. Đây là lệch khỏi luật
+        quyết định ở trên (M-2 trượt → quay B); Claude đề xuất vì hai lần không bấm trước (C1, C2) đều tới đích.
+        Lỗi của C3 (bấm trước thì hạ giọng hai lần) vẫn là lỗi, ghi trong README. Quay A tối đa 2 lần; không ra
+        thì quay B.
 
 
 D. VIỆC B, DỰ PHÒNG (chỉ khi mục B hay C trượt; 10 phút)
