@@ -45,6 +45,11 @@ side question ("làm trước một việc nhỏ rồi quay lại", or tied to t
 guards written before the run: G-6 deletes old files from Downloads (another task about files), G-7 prints the
 certificate first (a detour that the big task's parts do not need). Same rules, same shares: detours at least
 37 of 40, other tasks at least 47 of 50; at most 1 answer missing; p90 at most 5 s.
+
+Round 3 (20261103-220937-aside, commit 6396746): FAILED A-2 and A-4. Every detour right, D-1 too (A-1 40/40), but
+the guards caught what they were there for: G-2 ("trước khi quên", an alarm) and G-3 ("khoan đã", a bus ticket)
+were called detours 5 times in 5, X-6 2 of 5 and G-6 1 of 5 too (A-2 37/50, 47 needed); A-3 0/90; median 3.49 s,
+p90 7.57 s (360 reasoning tokens). No round passed. Stopped here and asked the founder (03/11).
 """
 
 from __future__ import annotations
