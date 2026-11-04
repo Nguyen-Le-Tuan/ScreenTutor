@@ -168,7 +168,7 @@ ASIDE_BIG_SAID = " Lúc bị ngắt, tutor vừa nói: \"{said}\""
 ASIDE_SIDE_SAID = " Tutor mở đầu việc đó bằng: \"{said}\""
 ASIDE_SCHEMA = {"type": "object", "properties": {"aside": {"type": "boolean"}}, "required": ["aside"],
                 "additionalProperties": False}
-FOLLOW_PLAN ="\n\nViệc này đã được chia thành các phần: {parts}. Bước vừa rồi thuộc phần {part}."
+FOLLOW_PLAN = "\n\nViệc này đã được chia thành các phần: {parts}. Bước vừa rồi thuộc phần {part}."
 FOLLOW_NOTES = "\n\nNhững gì đã đọc được ở các lượt trước: \"{notes}\""
 MODES = ("answer", "guide")
 TARGETS = ("click", "read", "scroll", "drag", "keys", "type", "none")
