@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/hero.png" alt="ScreenTutor" width="100%"></p>
+
 # ScreenTutor (tiếng Việt)
 
 Tác tử nhiều bước trên Windows: nhìn màn hình, chỉ từng chỗ một, tự kiểm từng bước, để một cô giáo lớn tuổi mới dùng máy tính tự làm xong việc của mình. Nó không bao giờ bấm thay. Dự án thi Meta Global AI Developer Hackathon (hạn nộp 4/11/2026).

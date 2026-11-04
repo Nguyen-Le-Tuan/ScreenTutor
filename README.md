@@ -1,10 +1,30 @@
+<p align="center"><img src="docs/assets/hero.png" alt="ScreenTutor. She asks in Vietnamese. It shows her every click. She does the clicking." width="100%"></p>
+
+<p align="center">
+<img alt="Meta Muse Spark 1.3" src="https://img.shields.io/badge/Meta-Muse%20Spark%201.3-5E5CE6">
+<img alt="Meta Muse Voice Transcribe" src="https://img.shields.io/badge/Meta-Muse%20Voice%20Transcribe-5E5CE6">
+<img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-1B1E31">
+<img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB">
+<img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2EA043">
+</p>
+
+<p align="center">
+<a href="#how-it-works"><b>How it works</b></a> ·
+<a href="#evidence"><b>Evidence</b></a> ·
+<a href="#run-it"><b>Run it</b></a> ·
+<a href="#limitations"><b>Limitations</b></a> ·
+<a href="docs/README.vi.md"><b>Tiếng Việt</b></a>
+</p>
+
 # ScreenTutor
 
 **A multi-step agent for Windows that watches the screen, points at one thing at a time, and checks each step, so an older teacher who is new to computers can finish today's task herself. It never clicks for her.**
 
 Built for the Meta Global AI Developer Hackathon on two Meta models: **Muse Spark 1.3** sees the screen, plans big tasks and checks each step, and **Muse Voice Transcribe** hears her questions in Vietnamese.
 
-*Tiếng Việt: [docs/README.vi.md](docs/README.vi.md)*
+> **Tested on Windows, 4 Nov 2026** ([T15](docs/tests/T15_WINDOWS.txt), every rule committed before its run):
+> it said nothing about a screen that had moved on in **3 of 3** cases built for it, stopped when told to on **5 of 5** rules, and the dot passed **4 of 4**.
+> What failed is listed too, under [Limitations](#limitations).
 
 ---
 
@@ -22,18 +42,25 @@ Each of these is a few clicks for someone who knows where to click, and a dead e
 
 1. She presses the **round microphone button**, or holds **Ctrl+Alt**, and asks in her own words. She can point at something with the mouse or circle it and say "this one".
 2. The tutor looks at the screen together with a short **Windows state summary**: things a screenshot cannot show, like which window is behind which, the default apps, the real folders and the newest files.
-3. The step appears as soon as its place is known, and a calm Vietnamese voice says what to do and why:
-   - a **red ring** on the one thing to click;
-   - an **amber ring** when the click would send something or replace a file;
+3. A calm Vietnamese voice says what to do and why, and the mark appears **with the first sound**, not before:
+   - a **red dot** that waits beside her mouse while the tutor looks, then flies to the one thing to click;
+   - an **amber dot** when the click would send something or replace a file;
    - a **mint frame** around what to read, with the rest of the screen darkened;
-   - a **small mouse with a turning wheel** where to scroll.
+   - a **small mouse with a turning wheel** where to scroll;
+   - for a few steps, a drag to select, a shortcut shown as keys (**[Ctrl] + [C]**), or what to type into a box.
 4. **She acts.** The tutor never clicks or types. It waits until the screen has settled, checks whether the step worked, shows a **green tick** where she clicked, and points at the next step until the task is done.
 5. **Big tasks.** When the job is in a long message that runs past the screen, the tutor has her scroll to the end, keeps notes, and makes the plan from the message itself. The parts appear on the dynamic island at the top of the screen, and it goes on from part to part without being asked again.
 6. **Side questions.** A new question gets its own task. When it is over, the island offers "Continue" (the button reads *Làm tiếp*), and the big task resumes at the part where it stopped.
 7. **It speaks up when it sees a trap.** When Word is showing Zalo's temporary copy, the tutor says so once, from signals on the machine alone, and then leads her to download the real file if she asks.
 8. **It learns her work.** After each task a short note goes into a knowledge base on her machine, searched locally, so "send this to the print shop like last time" can mean something.
+9. **It says nothing about a screen that has moved on.** Just before it speaks, it compares a fresh screenshot with the one its answer was based on. If she has already clicked ahead, or a box has opened, it stays quiet and looks again.
+10. **It stops when she says so.** A short "stop" or "later", or the × on the island, ends the task on the machine, without the model. Nothing is offered after it.
 
 The aim is that she finishes the task herself, so she also learns the route.
+
+## How it works
+
+<p align="center"><img src="docs/assets/how-it-works.png" alt="How it works: 1 she asks (Muse Voice Transcribe), 2 it reads the screen (Muse Spark 1.3), 3 dot and voice together (on her machine), 4 she clicks and it checks (Muse Spark 1.3)" width="100%"></p>
 
 ## How the Meta models are used
 
@@ -42,9 +69,12 @@ The aim is that she finishes the task herself, so she also learns the route.
 | **Muse Spark 1.3**, image understanding, JSON answer on a 0–1000 grid, streamed, `reasoning_effort: "minimal"` | One call returns where to point, what to say, what kind of step it is, the box to read, the plan and the notes. After she acts, a follow-up call decides whether the step and the task are done and what comes next. A third, words-only call turns each finished task into a note. | Best trade-off on 12 labelled real screenshots: 10/12 hits per run. Muse Wonder hit 9/12, was slower (median 7.9 s), and rejects the computer-use tool. |
 | **Muse Voice Transcribe**, realtime WebSocket | The round button uses ENDPOINTING, so the model hears when she stops. **Ctrl+Alt** uses PUSH_TO_TALK. Both use a Vietnamese bias plus app and family keywords. | Her 8 real questions kept their meaning 8/8 once turns are joined (see T7a). |
 
-**Streaming the structured answer.** The API writes JSON keys in sorted order whatever the schema says, and capitals sort first. So the keys that show the step are named `Box, Caution, Goal_done, Step_done, Target, X, Y`, then come `say` and the rest, and the `task_*` fields last. The ring goes up as soon as `Y` is complete and the voice starts as soon as `say` is, while the plan and the notes finish arriving.
+**Streaming the structured answer.** The API writes JSON keys in sorted order whatever the schema says, and capitals sort first. So the keys that show the step are named `Box, Caution, Goal_done, Step_done, Target, X, Y`, then come `say` and the rest, and the `task_*` fields last. The place is known as soon as `Y` is complete and the voice starts as soon as `say` is, while the plan and the notes finish arriving. The dot flies when the first sound plays, so she hears and sees the step together.
 
 Only Standard-tier models are used, never Contributor variants. The Meta API has no text-to-speech and no embedding model, so the voice is **VieNeu-TTS v3 Turbo** (Apache-2.0), running locally on the CPU (int8), and the knowledge base is searched with BM25 on her machine. **SAM 3.1** was tried for a tight outline around the target and left out, because it failed its test (T11 below).
+
+<details>
+<summary><b>The whole loop, as a diagram</b></summary>
 
 ```mermaid
 flowchart LR
@@ -53,7 +83,8 @@ flowchart LR
     SCR["Screenshot"] --> SPARK
     ST["Windows state sensors<br/>(windows, default apps, folders, new files)"] --> SPARK
     MEM["Her knowledge base<br/>(BM25, on her machine)"] --> SPARK
-    SPARK --> MARK["Overlay, click-through<br/>ring / frame / scroll hint"]
+    SPARK --> FRESH["Screen still the same?<br/>if not, stay quiet, look again"]
+    FRESH --> MARK["Overlay, click-through<br/>dot / frame / scroll hint"]
     SPARK --> TTS["VieNeu TTS<br/>(local)"]
     SPARK --> ISLAND["Dynamic island<br/>state, plan, talk"]
     MARK --> ACT["She clicks, reads or scrolls"]
@@ -65,7 +96,16 @@ flowchart LR
     DONE --> NOTE["Muse Spark, words only:<br/>note and what it says about her"]
     NOTE --> MEM
     GUARD["Guard on the machine:<br/>Word showing Zalo's temporary copy"] --> TTS
+    STOP["'Stop' / × on the island<br/>handled on the machine"] --> DONE
+    classDef meta fill:#5E5CE6,stroke:#8E8CFF,color:#ffffff
+    classDef her fill:#FF453A,stroke:#FF7A70,color:#ffffff
+    classDef local fill:#1B1E31,stroke:#5C6187,color:#F4F5FA
+    class STT,SPARK,CHECK,NOTE meta
+    class Q,ACT her
+    class SCR,ST,MEM,FRESH,MARK,TTS,ISLAND,SETTLE,TICK,DONE,GUARD,STOP local
 ```
+
+</details>
 
 ## Evidence
 
@@ -112,7 +152,7 @@ The builder played her role on the Windows machine, with screen recordings and t
 - **The guard for Zalo's temporary copy** reads the window in front and the names in one folder. It takes no screenshot and sends nothing.
 - **After a task, its words go to Muse Spark** to be summarised, with no picture, and a new question can carry short notes from similar old tasks. A filter on the machine takes out passwords, phone numbers, e-mail addresses and full names first. It is not perfect, and it does not touch screenshots.
 - **What stays on her machine:** screenshots of each step (`tutor_runs/`), her tasks (`history/`) and her knowledge base (`history/memory/`), all gitignored. A button on the island deletes the history and the knowledge base. Real screenshots, recordings and raw API answers are not stored in this repo's branches.
-- The model is told to flag a click that **sends or replaces** something, so the ring shows amber and the voice says so first. See Limitations.
+- The model is told to flag a click that **sends or replaces** something, so the dot turns amber and the sentence says what will happen. See Limitations.
 
 ## Run it
 
@@ -195,11 +235,11 @@ The Word file under `docs/heyclicky_comparison/test_files/` is a made-up test do
 - **The first words of a question are often lost or misheard.** "Thầy hiệu trưởng nhắn…" (the principal sent…) was said 7 times in T15, and the first words came out wrong every time. Recording starts as soon as the microphone opens, so the loss is before that. Not measured yet: the raw audio needs to be kept to tell a late start from a misheard one.
 - **A file open in another app loops.** With the PDF open in Foxit, Word's "file in use" box led to Publish, Yes, OK and Publish again, with no word about closing the PDF.
 - **A playing video counts as a changing screen,** so "pause the video" was held back twice before it was said.
-- **Latency.** On the 12 cases the ring shows at a median of 3.15 s and the answer ends at 5.35 s, measured from a machine in the US; her line is longer. Reading a long message takes longer: about 6 s to the ring and 11 s in all. Knowledge in the prompt adds about a second. On Windows in T15, a step took 4–11 s from her click to the next answer, and the first turn of a big task up to 15 s.
+- **Latency.** On the 12 cases the mark (then a ring) shows at a median of 3.15 s and the answer ends at 5.35 s, measured from a machine in the US; her line is longer. Reading a long message takes longer: about 6 s to the ring and 11 s in all. Knowledge in the prompt adds about a second. On Windows in T15, a step took 4–11 s from her click to the next answer, and the first turn of a big task up to 15 s.
 - **Big tasks are tested on invented screens only.** The plan rule failed on the last run, 7/9. Real messages may be harder, and the drawn bubbles flatter the reading box.
 - **Her knowledge base has no real history behind it yet.** The test data was written after the code. A fact needs two tasks before it is used, so it starts empty.
 - **The filter can miss things:** a name on its own, like "friend Lan", gets through.
-- **Start menu.** Windows draws the Start menu above every normal window, so it can hide the ring.
+- **Start menu.** Windows draws the Start menu above every normal window, so it can hide the dot.
 - **Amber warning comes before its reason.** On real overwrites in Word (T15) the dot turned amber at Publish and Yes and the sentence said the old PDF would be replaced, but in its second half: the amber dot is up before she hears why.
 - **Still-screen check.** It passed 4 of 6 situations in the field run, below its rule of 5 of 6. It did not report a still screen early while Word or a Sheet was opening.
 - **A new chat message can end a reading step.** In a simulation on real Zalo screenshots, a message pushing the chat up by 60 px looks like a scroll (14–21% of the screen against a 5% threshold).
