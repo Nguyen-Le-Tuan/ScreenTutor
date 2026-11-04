@@ -151,14 +151,18 @@ LEARN_SCHEMA = {
 }
 # W-6 (03/11, founder's choice c): a side question that got a plan of its own is offered "Làm tiếp" only if it was a
 # detour of the big task it cut off ("tải file Excel trước" in D3), not another task. Words only, after the side task
-# is done; the measured prompts are untouched. tutor_eval/aside.py measures it.
+# is done; the measured prompts are untouched. tutor_eval/aside.py measures it. Round 1 (questions and plans only)
+# called D3's own case another task 5 times in 5; round 2 adds what the tutor said in each and the words that come back.
 ASIDE_PROMPT = (
-    "Người dùng đang được hướng dẫn làm dở một việc lớn trên máy tính: \"{big}\"{big_plan}.\n"
-    "Giữa chừng, người dùng hỏi sang: \"{side}\"{side_plan}, và việc đó vừa làm xong.\n"
+    "Người dùng đang được hướng dẫn làm dở một việc lớn trên máy tính: \"{big}\"{big_plan}.{big_said}\n"
+    "Giữa chừng, người dùng hỏi sang: \"{side}\"{side_plan}, và việc đó vừa làm xong.{side_said}\n"
     "- aside: true nếu việc vừa hỏi là một bước chen ngang để làm được việc lớn, ví dụ tải về, mở hay tìm một file, "
-    "một trang hay một app mà việc lớn cần, hoặc sửa một chỗ trước khi làm tiếp; false nếu đó là một việc khác hẳn, "
-    "không giúp gì cho việc lớn."
+    "một trang hay một app mà việc lớn cần (kể cả file gửi kèm cùng tin nhắn giao việc), hoặc sửa một chỗ trước khi "
+    "làm tiếp. Người dùng nói \"trước\", \"khoan đã\", \"tạm\" về một việc nhỏ thường là sẽ quay lại việc lớn. false nếu "
+    "đó là một việc khác hẳn, không giúp gì cho việc lớn."
 )
+ASIDE_BIG_SAID = " Lúc bị ngắt, tutor vừa nói: \"{said}\""
+ASIDE_SIDE_SAID = " Tutor mở đầu việc đó bằng: \"{said}\""
 ASIDE_SCHEMA = {"type": "object", "properties": {"aside": {"type": "boolean"}}, "required": ["aside"],
                 "additionalProperties": False}
 FOLLOW_PLAN ="\n\nViệc này đã được chia thành các phần: {parts}. Bước vừa rồi thuộc phần {part}."
@@ -301,18 +305,22 @@ def build_follow_up_body(goal: str, last_say: str, image_data_url: str, state: s
     return _body(text, image_data_url, "tutor_follow_up", FOLLOW_SCHEMA_V2 if task else FOLLOW_SCHEMA, model, effort)
 
 
-def aside_prompt(big: str, big_plan: list[str], big_part: int, side: str, side_plan: list[str]) -> str:
-    """W-6: the big task with its parts and the part it had reached, then the side question with its own parts."""
+def aside_prompt(big: str, big_plan: list[str], big_part: int, big_said: str,
+                 side: str, side_plan: list[str], side_said: str) -> str:
+    """W-6: the big task, its parts, the part it had reached and the tutor's last sentence in it; then the side
+    question, its own parts and the tutor's first sentence in it."""
     parts = lambda plan: "; ".join(f"{i + 1}. {p}" for i, p in enumerate(plan))  # noqa: E731
     head = f" (các phần: {parts(big_plan)}; đang ở phần {min(max(big_part or 1, 1), len(big_plan))})" if big_plan else ""
     return ASIDE_PROMPT.format(big=big, big_plan=head, side=side,
-                               side_plan=f" (các phần: {parts(side_plan)})" if side_plan else "")
+                               side_plan=f" (các phần: {parts(side_plan)})" if side_plan else "",
+                               big_said=ASIDE_BIG_SAID.format(said=big_said.strip()) if big_said.strip() else "",
+                               side_said=ASIDE_SIDE_SAID.format(said=side_said.strip()) if side_said.strip() else "")
 
 
-def aside_body(big: str, big_plan: list[str], big_part: int, side: str, side_plan: list[str],
-               model: str = MODEL, effort: str | None = EFFORT) -> dict:
-    return {"model": model, "reasoning_effort": effort,
-            "messages": [{"role": "user", "content": aside_prompt(big, big_plan, big_part, side, side_plan)}],
+def aside_body(big: str, big_plan: list[str], big_part: int, big_said: str, side: str, side_plan: list[str],
+               side_said: str, model: str = MODEL, effort: str | None = EFFORT) -> dict:
+    text = aside_prompt(big, big_plan, big_part, big_said, side, side_plan, side_said)
+    return {"model": model, "reasoning_effort": effort, "messages": [{"role": "user", "content": text}],
             "response_format": {"type": "json_schema", "json_schema": {"name": "aside", "schema": ASIDE_SCHEMA}}}
 
 
@@ -583,11 +591,12 @@ class Tutor:
         except (httpx.HTTPError, RuntimeError, ValueError, KeyError, IndexError):
             return None
 
-    def aside(self, big: str, big_plan: list[str], big_part: int, side: str, side_plan: list[str]) -> bool | None:
+    def aside(self, big: str, big_plan: list[str], big_part: int, big_said: str,
+              side: str, side_plan: list[str], side_said: str) -> bool | None:
         """W-6: was the side question, done now, a detour of the big task it cut off? None when it cannot be had."""
         try:
-            resp, _ = self._post("/chat/completions", aside_body(big, big_plan, big_part, side, side_plan,
-                                                                 self.model, self.effort))
+            resp, _ = self._post("/chat/completions", aside_body(big, big_plan, big_part, big_said, side, side_plan,
+                                                                 side_said, self.model, self.effort))
             verdict = json.loads(resp["choices"][0]["message"]["content"])["aside"]
         except (httpx.HTTPError, RuntimeError, ValueError, KeyError, IndexError, TypeError):
             return None

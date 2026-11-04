@@ -148,7 +148,8 @@ def detour_of(history, tutor, side, big_id: str, now: float) -> bool:
     big = history.resumable(now, OFFER_AGE_S, skip=side.id)
     if big is None or big.id != big_id:
         return False  # the cut-off task is gone, too old, or done: nothing to offer, no call
-    verdict = tutor.aside(big.question, big.plan, big.part, side.question, side.plan)
+    verdict = tutor.aside(big.question, big.plan, big.part, big.steps[-1].say if big.steps else "",
+                          side.question, side.plan, side.steps[0].say if side.steps else "")
     print(f"Câu phụ có kế hoạch riêng: {ASIDE_SAID[verdict]}", flush=True)
     return verdict is True
 

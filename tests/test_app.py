@@ -355,13 +355,17 @@ def test_the_detour_question_goes_to_the_model_only_for_the_task_still_cut_off(t
     h = History(tmp_path, clock=lambda: now[0])
     big = h.start("tôi muốn làm theo tin nhắn này thì làm như thế nào?")
     h.set_plan(big, ["Đọc dự thảo", "Ghi phiếu góp ý", "Điền biểu mẫu", "Nộp phiếu"], 1)
+    h.add_step(big, "Bạn bấm vào nút mũi tên tải xuống của file dự thảo.")
     h.finish(big, "interrupted")
     side = h.start("bây giờ tôi muốn tải file Excel trước thì làm thế nào?")
     h.set_plan(side, ["Tải file", "Mở file"], 2)
+    h.add_step(side, "Bạn bấm vào nút mũi tên tải xuống của file bảng tổng hợp.")
+    h.add_step(side, "Xong rồi bạn nhé.", goal_done=True)
     h.finish(side, "done")
     yes, no, unknown = Asker(True), Asker(False), Asker(None)
     assert detour_of(h, yes, side, big.id, now[0]) is True
-    assert yes.calls == [(big.question, big.plan, 1, side.question, ["Tải file", "Mở file"])]
+    assert yes.calls == [(big.question, big.plan, 1, "Bạn bấm vào nút mũi tên tải xuống của file dự thảo.",
+                          side.question, ["Tải file", "Mở file"], "Bạn bấm vào nút mũi tên tải xuống của file bảng tổng hợp.")]
     assert detour_of(h, no, side, big.id, now[0]) is False and detour_of(h, unknown, side, big.id, now[0]) is False
     late = Asker(True)
     assert detour_of(h, late, side, "another", now[0]) is False                    # not the task that was cut off

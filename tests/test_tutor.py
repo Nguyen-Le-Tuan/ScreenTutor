@@ -430,12 +430,15 @@ def test_a_raced_pair_falls_back_to_the_other_when_the_first_fails():
 def test_the_detour_question_has_both_tasks_their_parts_and_no_picture():
     from screentutor.tutor import aside_body, aside_prompt
 
-    text = aside_prompt("tôi muốn làm theo tin nhắn này", ["Đọc dự thảo", "Ghi phiếu góp ý"], 1,
-                        "tôi muốn tải file Excel trước", ["Tải file", "Mở file"])
-    assert '"tôi muốn làm theo tin nhắn này" (các phần: 1. Đọc dự thảo; 2. Ghi phiếu góp ý; đang ở phần 1)' in text
-    assert '"tôi muốn tải file Excel trước" (các phần: 1. Tải file; 2. Mở file), và việc đó vừa làm xong' in text
-    assert "đang ở phần 2" in aside_prompt("a", ["x", "y"], 9, "b", [])   # a part past the end is the last one
-    body = aside_body("a", [], 0, "b", ["p", "q"])
+    text = aside_prompt("tôi muốn làm theo tin nhắn này", ["Đọc dự thảo", "Ghi phiếu góp ý"], 1, "Bạn bấm tải dự thảo.",
+                        "tôi muốn tải file Excel trước", ["Tải file", "Mở file"], "Bạn bấm tải bảng tổng hợp.")
+    assert ('"tôi muốn làm theo tin nhắn này" (các phần: 1. Đọc dự thảo; 2. Ghi phiếu góp ý; đang ở phần 1). '
+            'Lúc bị ngắt, tutor vừa nói: "Bạn bấm tải dự thảo."') in text
+    assert ('"tôi muốn tải file Excel trước" (các phần: 1. Tải file; 2. Mở file), và việc đó vừa làm xong. '
+            'Tutor mở đầu việc đó bằng: "Bạn bấm tải bảng tổng hợp."') in text
+    short = aside_prompt("a", ["x", "y"], 9, " ", "b", [], "")
+    assert "đang ở phần 2" in short and "tutor vừa nói" not in short and "mở đầu" not in short   # nothing said: no line
+    body = aside_body("a", [], 0, "", "b", ["p", "q"], "")
     assert isinstance(body["messages"][0]["content"], str) and body["reasoning_effort"] == EFFORT
     assert body["response_format"]["json_schema"]["schema"]["required"] == ["aside"]
 
@@ -454,4 +457,4 @@ def test_the_detour_answer_is_true_false_or_none():
                                      (json.dumps({"aside": "có"}), 200, None), ("không phải json", 200, None),
                                      ("{}", 200, None), ("", 400, None)):
         tutor._http = answering(content, status)
-        assert tutor.aside("a", ["x", "y"], 1, "b", ["p", "q"]) is verdict
+        assert tutor.aside("a", ["x", "y"], 1, "", "b", ["p", "q"], "") is verdict
