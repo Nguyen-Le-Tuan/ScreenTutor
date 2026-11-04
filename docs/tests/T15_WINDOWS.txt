@@ -198,25 +198,35 @@ thì tự bắt đầu việc mới; sau khi dừng tutor nói một câu ngắn
 Trước đây câu "tôi muốn dừng hướng dẫn" đi thẳng tới model: thử 6 lần, model hỏi lại 3 lần và 1 lần chỉ vào nút
 đóng Zalo; sau bản sửa W-6 còn hiện ô "Làm tiếp". Giờ câu dừng ngắn ("dừng", "dừng lại", "thôi không làm nữa",
 "để sau nhé", "tạm dừng đã", "đủ rồi cảm ơn"...) được nhận ngay trên máy, không gửi cho model. Câu có đối tượng
-("tạm dừng video", "dừng tải file") vẫn đi tới model như câu hỏi thường. Việc đã dừng được ghi là "dropped": không
-bao giờ được mời lại và nói "làm tiếp" cũng không quay về nó.
+("tạm dừng video", "dừng tải file") vẫn đi tới model như câu hỏi thường. Việc đã dừng bị xoá hẳn (bạn chốt 03/11):
+file việc trong C:\ScreenTutor\history, dòng "Việc trước" trên ô ghim và ghi chú trong kho kiến thức đều mất, nên
+không bao giờ được mời lại và nói "làm tiếp" cũng không quay về nó. Nói "làm tiếp" mà không còn việc nào đang dở
+thì tutor nói "Không còn việc nào đang dở. Bạn cứ hỏi việc mới nhé." (không gọi model). Câu này chỉ nói khi bạn
+nói "làm tiếp", không tự nói sau khi dừng. Ảnh chụp gỡ lỗi trong tutor_runs\ vẫn giữ để phân tích T15.
 
 Luật chấm (ghi trước khi chạy; đề xuất của Claude):
   - S-1 đạt: đang giữa một việc lớn, nói "dừng hướng dẫn": chấm biến mất, tutor nói "Được, mình dừng nhé. Khi nào
     cần bạn cứ bấm nút tròn.", ô thu lại, cửa sổ đen in "Dừng theo lời người dùng; bỏ: ...". Trong 30 giây sau
-    KHÔNG có ô "Làm tiếp", kể cả khi rê chuột vào ô rồi bấm để ghim.
+    KHÔNG có ô "Làm tiếp", kể cả khi rê chuột vào ô rồi bấm để ghim. Ô ghim, phần "Việc trước": KHÔNG có câu
+    của việc vừa dừng.
   - S-2 đạt: ngay sau đó hỏi một câu mới: tutor làm việc mới, không nhắc việc cũ.
   - S-3 đạt: đang có việc, rê chuột vào ô, bấm để ghim, bấm dấu × ở góc trên bên phải của ô: việc dừng như S-1.
     Không có việc gì thì × chỉ thu ô lại.
   - S-4 đạt: "tạm dừng video" lúc đang xem một video trên Brave KHÔNG bị coi là lệnh dừng (tutor không nói "mình
     dừng nhé", mà chỉ chỗ tạm dừng hoặc trả lời).
-  - Chỉ ghi lại: sau khi dừng mà nói "làm tiếp" thì tutor nói gì (việc đã bỏ nên không có gì để quay lại).
+  - S-5 đạt: sau khi dừng, nói "làm tiếp": tutor nói "Không còn việc nào đang dở. Bạn cứ hỏi việc mới nhé.",
+    không chỉ vào đâu, không quay lại việc đã dừng. Cần lịch sử không có việc lớn nào khác bỏ dở trong 7 ngày,
+    nên xoá lịch sử trước G1 (xem G0). Nếu tutor quay lại một việc KHÁC còn dở thì ghi tên việc đó, không tính trượt.
 
+[ ] G0. Rê chuột vào ô, bấm ghim, bấm "Xoá lịch sử" (S-5 cần lịch sử trống). Chỉ làm sau khi đã chép
+        cửa sổ đen của các mục trước.
 [ ] G1. (S-1, S-2) Việc 2 trong "Cloud của tôi", hỏi "Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?". Khi
         tutor chỉ bước đầu, bấm nút tròn nói "dừng hướng dẫn". Câu tutor nói? Có ô "Làm tiếp" trong 30 giây
-        không, kể cả khi bấm ghim ô? ______ Rồi hỏi "mở File Explorer cho tôi": tutor làm việc mới? ______
+        không, kể cả khi bấm ghim ô? ______ Phần "Việc trước" trên ô ghim có câu Việc 2 không? ______
+        Rồi hỏi "mở File Explorer cho tôi": tutor làm việc mới? ______
 [ ] G2. (S-3) Hỏi lại câu Việc 2. Khi tutor chỉ bước đầu: rê chuột vào ô, bấm ghim, bấm ×. Việc có dừng
         như G1 không? ______ Không có việc gì, ghim ô rồi bấm ×: ô chỉ thu lại? ______
 [ ] G3. (S-4) Mở một video YouTube bất kỳ trên Brave, cho chạy, rồi hỏi "tạm dừng video". Tutor làm gì? ______
-[ ] G4. (ghi lại) Ngay sau G1, nói "làm tiếp". Tutor nói gì? ______
+[ ] G4. (S-5) Hỏi lại câu Việc 2, nói "dừng" khi tutor chỉ bước đầu, rồi nói "làm tiếp". Tutor nói gì? Có chỉ vào
+        đâu không? ______
 [ ] G5. Chép chữ trong cửa sổ đen của mục G vào console_G.txt, để cùng chỗ với video (KHÔNG qua GitHub).

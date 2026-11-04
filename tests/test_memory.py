@@ -146,6 +146,23 @@ def test_clearing_the_history_takes_the_knowledge_base_with_it(tmp_path):
     assert m.context("xuất giáo án") is None and not m.facts and not m.notes
 
 
+def test_a_task_she_told_to_stop_leaves_no_note_and_teaches_nothing(tmp_path):
+    m = Memory(tmp_path, clock=lambda: NOW)
+    m.remember(Note("t1", "Xuất giáo án ra PDF", started_at=NOW, outcome="done"), ["Hay gửi file cho tiệm in"])
+    m.remember(Note("t2", "Gửi giáo án qua Zalo", started_at=NOW, outcome="stopped"),
+               ["Hay gửi file cho tiệm in", "Hay dùng Zalo nhóm tổ"])
+    m.forget_task("t2")
+    assert list(m.notes) == ["t1"] and not (tmp_path / "note-t2.json").exists()
+    assert [(f.text, f.seen, f.tasks) for f in m.facts] == [("Hay gửi file cho tiệm in", 1, ["t1"])]
+    assert "Zalo" not in (tmp_path / "profile.json").read_text(encoding="utf-8")
+    assert "t2" not in [doc for doc, _ in m.index.search("gửi giáo án qua Zalo", now=NOW)]
+    learn(m, _rec("t2"), lambda text: {"title": "Gửi giáo án", "facts": ["Hay dùng Zalo nhóm tổ"]})
+    assert "t2" not in m.notes and len(m.facts) == 1                      # a summary that comes back late is dropped
+    again = Memory(tmp_path, clock=lambda: NOW)
+    again.load()
+    assert list(again.notes) == ["t1"]
+
+
 def test_notes_are_not_mistaken_for_tasks(tmp_path):
     h = History(tmp_path)
     rec = h.start("Xuất giáo án ra PDF")

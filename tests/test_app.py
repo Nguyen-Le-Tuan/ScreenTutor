@@ -228,6 +228,14 @@ def test_the_sentence_that_offers_a_task_follows_the_rules_for_speech():
     assert say_problems(OFFER_SAY) == [] and "bấm vào ô" in OFFER_SAY
 
 
+def test_the_sentences_for_stopping_and_for_nothing_left_follow_the_rules_for_speech():
+    from screentutor.app import NOTHING_LEFT, STOP_SAY, STOP_SAY_KEYS
+    from tutor_eval.run import say_problems
+
+    for text in (STOP_SAY, STOP_SAY_KEYS, NOTHING_LEFT):
+        assert say_problems(text) == [], text
+
+
 class Rec:
     def __init__(self, id, plan=(), outcome="done"):
         self.id, self.plan, self.outcome = id, list(plan), outcome

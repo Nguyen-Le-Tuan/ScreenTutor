@@ -134,12 +134,24 @@ def test_a_task_picked_up_again_keeps_its_file_and_its_steps(tmp_path):
     assert back[0].outcome == "done" and back[0].notes == "Ghi chú đã đọc" and h.resumable(1000.0, 3600) is None
 
 
-def test_a_task_she_told_to_stop_is_dropped_and_never_picked_up(tmp_path):
+def test_a_task_she_told_to_stop_is_deleted_and_never_picked_up(tmp_path):
     h = History(tmp_path, clock=Clock())
+    older = h.start("Đổi hình nền")
     big = h.start("Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?")
     h.set_plan(big, ["Đọc dự thảo", "Ghi phiếu", "Điền biểu mẫu", "Nộp phiếu"], 1)
     h.finish(big, "interrupted")
     assert h.resumable(big.started_at + 60, 3600).id == big.id
     assert h.drop(big.id) and h.resumable(big.started_at + 60, 3600) is None
-    assert [r.outcome for r in h.tasks()] == ["dropped"]
+    assert [r.id for r in h.tasks()] == [older.id] and [r.id for r in h.recent()] == [older.id]
+    assert not (tmp_path / f"{big.id}.json").exists()
     assert not h.drop("no-such-task")
+
+
+def test_a_thread_still_on_a_deleted_task_cannot_write_it_back(tmp_path):
+    h = History(tmp_path, clock=Clock())
+    rec = h.start("Gửi giáo án cho tổ trưởng")
+    h.drop(rec.id)
+    h.add_step(rec, "Bạn bấm Zalo.")
+    h.set_plan(rec, ["Mở Zalo", "Gửi file"], 1)
+    h.finish(rec, "interrupted")
+    assert h.tasks() == [] and list(tmp_path.iterdir()) == []

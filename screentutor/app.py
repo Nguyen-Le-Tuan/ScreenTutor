@@ -54,6 +54,7 @@ PEEK_S, PART_PEEK_S = 5.0, 3.0   # the island opens by itself: on a new plan, an
 OFFER_SAY = "Bạn muốn làm tiếp việc lúc nãy thì bấm vào ô trên cùng màn hình nhé."   # approved by the founder, 02/11
 STOP_SAY = "Được, mình dừng nhé. Khi nào cần bạn cứ bấm nút tròn."                   # founder 03/11: a short sentence
 STOP_SAY_KEYS = "Được, mình dừng nhé. Khi nào cần bạn cứ giữ phím Ctrl và Alt rồi nói."   # the round button is hidden
+NOTHING_LEFT = "Không còn việc nào đang dở. Bạn cứ hỏi việc mới nhé."   # founder 03/11: only when she says "làm tiếp"
 OFFER_AGE_S = 12 * 3600          # B7: how old a half-done task may be for the island to offer it by itself...
 RESUME_AGE_S = 7 * 86400         # ...and for her to ask for it in words
 OFFER_AFTER_S = 3.2              # leave the green "done" on the island for its 3 s first
@@ -584,26 +585,29 @@ def main(argv=None) -> None:
         if asks_to_stop(heard.text):   # founder 03/11: never to the model, which asked back or pointed at a close button
             stop_task()
             return
-        left = history.resumable(time.time(), RESUME_AGE_S) if asks_to_resume(heard.text) else None
-        if left is not None:
-            pick_up(left, cancel)
+        if asks_to_resume(heard.text):
+            left = history.resumable(time.time(), RESUME_AGE_S)
+            if left is not None:
+                pick_up(left, cancel)
+            else:   # nothing to go back to, a stopped task neither: one sentence, no model
+                print("Không còn việc nào đang dở để làm tiếp.", flush=True)
+                post("status", "idle")
+                say(NOTHING_LEFT)
             return
         pointer = pointing(trail.between(asked_at - PRE_ASK_S, time.monotonic()), screen_size, own_rects())
         print(f"Chuột lúc hỏi: {pointer or 'không chỉ vào đâu'}", flush=True)
         run_task(history.start(heard.text), cancel, pointer, memory.context(heard.text))
 
-    dropped: set[str] = set()   # tasks she told to stop; a thread still finishing must not write them back as half done
-
     def stop_task() -> None:
-        """She said "dừng" or pressed × (founder 03/11): the tasks of the moment go, nothing is offered after them,
-        the island lets go of them, and one short sentence. What she asks next starts afresh."""
+        """She said "dừng" or pressed × (founder 03/11): the tasks of the moment are deleted, notes and all, nothing is
+        offered after them, the island lets go of them, and one short sentence. What she asks next starts afresh."""
         gone = offers.drop()
         latest = history.resumable(time.time(), OFFER_AGE_S)   # the big task a side question had cut off, too
         if latest is not None and latest.id not in gone:
             gone.append(latest.id)
         for task_id in gone:
-            dropped.add(task_id)
             history.drop(task_id)
+            memory.forget_task(task_id)
         print(f"Dừng theo lời người dùng; bỏ: {', '.join(gone) or 'không có việc nào'}", flush=True)
         post("stopped")
         post("recent", recent_items())
@@ -685,9 +689,9 @@ def main(argv=None) -> None:
             save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer, on_plan=on_plan,
             known=known, plan=list(rec.plan), part=rec.part, notes=rec.notes)
         steps = session.run(rec.question, last_say=last_say)
-        history.finish(rec, "dropped" if rec.id in dropped else outcome_of(steps, cancel.is_set()), session.notes)
+        history.finish(rec, outcome_of(steps, cancel.is_set()), session.notes)   # not written if she said "dừng"
         post("recent", recent_items())
-        if rec.outcome != "error":  # in the background: she does not wait for her own notes
+        if rec.outcome != "error" and rec.id not in history.dropped:  # in the background: she does not wait for notes
             threading.Thread(target=learn, args=(memory, rec, tutor.summarise), daemon=True).start()
         for s in steps:
             moved = "" if s.whole is None else (f" | màn hình {'ĐÃ ĐỔI, không nói' if s.stale else 'còn như cũ'} "

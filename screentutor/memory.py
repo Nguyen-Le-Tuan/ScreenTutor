@@ -253,6 +253,7 @@ class Memory:
         self.notes: dict[str, Note] = {}
         self.facts: list[Fact] = []
         self.index = Index()
+        self.dropped: set[str] = set()   # tasks she told the tutor to stop; a summary still on its way is not kept
 
     def load(self, tasks: list[TaskRecord] = ()) -> None:
         """At start: the saved notes, a broken file skipped, and a plain note for tasks that have none."""
@@ -277,6 +278,8 @@ class Memory:
     def remember(self, note: Note, facts: list[str] = ()) -> None:
         """A finished task: its note goes in the index, what it says about her into the profile."""
         with self._lock:
+            if note.id in self.dropped:
+                return
             self._keep(note)
             self.root.mkdir(parents=True, exist_ok=True)
             self._write(f"note-{note.id}.json", asdict(note))
@@ -322,6 +325,23 @@ class Memory:
             kept.append(line)
             size += len(line) + 1
         return "\n".join(kept) or None
+
+    def forget_task(self, task_id: str) -> None:
+        """She told the tutor to stop (founder 03/11): the task's note goes, and what it taught about her counts one
+        task less; a fact seen in that task alone is gone."""
+        with self._lock:
+            self.dropped.add(task_id)
+            self.notes.pop(task_id, None)
+            self.index.remove(task_id)
+            (self.root / f"note-{task_id}.json").unlink(missing_ok=True)
+            touched = [f for f in self.facts if task_id in f.tasks]
+            for fact in touched:
+                fact.tasks.remove(task_id)
+                fact.seen -= 1
+            if touched:
+                self.facts = [f for f in self.facts if f.seen > 0]
+                if self.root.is_dir():
+                    self._write("profile.json", [asdict(f) for f in self.facts])
 
     def forget(self) -> None:
         """"Xoá lịch sử" takes all of this with it (founder, 02/11)."""

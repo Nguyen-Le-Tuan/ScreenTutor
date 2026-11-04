@@ -7,6 +7,7 @@ folder is gitignored, and the pinned island can delete it all.
 
 B5 indexes these files into her own knowledge base. B7 picks up a big task left half done: its
 plan, the part it had reached and its notes are here, and the same file goes on being written.
+A task she told the tutor to stop is deleted outright (founder 03/11).
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ import json
 import os
 import secrets
 import shutil
+import threading
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -24,8 +26,8 @@ from .settings import ROOT
 
 DIR = ROOT / "history"
 KEEP = 500                       # the newest tasks kept; older files are removed
-OUTCOMES = ("done", "unfinished", "stopped", "error", "interrupted", "dropped")
-LEFT_HALF_DONE = ("interrupted", "stopped", "unfinished")   # not "dropped": she told the tutor to stop (03/11)
+OUTCOMES = ("done", "unfinished", "stopped", "error", "interrupted")
+LEFT_HALF_DONE = ("interrupted", "stopped", "unfinished")
 
 
 @dataclass
@@ -67,6 +69,8 @@ class History:
         self.root = Path(root)
         self._clock = clock
         self.keep = keep
+        self.dropped: set[str] = set()   # deleted on her word: a thread still on one must not write it back
+        self._lock = threading.Lock()
 
     def start(self, question: str) -> TaskRecord:
         now = self._clock()
@@ -91,14 +95,17 @@ class History:
         self.write(rec)
 
     def drop(self, task_id: str) -> bool:
-        """She told the tutor to stop (founder 03/11): the task is gone, never offered or picked up again. It stays
-        in the history as "dropped", so what she did is not lost. False when there is no such task."""
-        for rec in self.tasks():
-            if rec.id == task_id:
-                rec.outcome, rec.ended_at = "dropped", rec.ended_at or self._clock()
-                self.write(rec)
-                return True
-        return False
+        """She told the tutor to stop (founder 03/11): the task is deleted, as if never asked, so it is never offered,
+        picked up or listed under "Việc trước". False when there was no such file."""
+        path = self.root / f"{task_id}.json"
+        with self._lock:
+            self.dropped.add(task_id)
+            path.with_suffix(".tmp").unlink(missing_ok=True)
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                return False
+            return True
 
     def resumable(self, now: float, max_age_s: float, skip: str | None = None) -> TaskRecord | None:
         """The latest big task left half done, if it is recent enough to mean anything to her."""
@@ -114,11 +121,14 @@ class History:
 
     def write(self, rec: TaskRecord) -> None:
         """Whole file at once (write a temporary file, then replace), so a crash never leaves half a task."""
-        self.root.mkdir(parents=True, exist_ok=True)
-        path = self.root / f"{rec.id}.json"
-        tmp = path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(asdict(rec), ensure_ascii=False, indent=2), encoding="utf-8")
-        os.replace(tmp, path)
+        with self._lock:
+            if rec.id in self.dropped:
+                return
+            self.root.mkdir(parents=True, exist_ok=True)
+            path = self.root / f"{rec.id}.json"
+            tmp = path.with_suffix(".tmp")
+            tmp.write_text(json.dumps(asdict(rec), ensure_ascii=False, indent=2), encoding="utf-8")
+            os.replace(tmp, path)
 
     def tasks(self) -> list[TaskRecord]:
         """All readable tasks, newest first; a broken file is skipped, never fatal."""
