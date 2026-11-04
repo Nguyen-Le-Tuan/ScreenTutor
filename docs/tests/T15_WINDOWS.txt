@@ -22,14 +22,14 @@ bản này: vòng vàng vẫn hiện lúc câu bắt đầu, tức trước ph�
 
 A. CHUẨN BỊ (5 phút)
 --------------------
-[ ] A1. Trong PowerShell ở thư mục repo:
+[x] A1. Trong PowerShell ở thư mục repo:
           git fetch
           git status          (có file đang sửa dở thì DỪNG, chụp lại, nhắn Claude; đừng xoá)
           git switch mvp
           git pull --ff-only
         git log --oneline -1   (phải là commit mới nhất Claude báo): ______
-[ ] A2. py -m pytest -q      (toàn bộ passed): ______
-[ ] A3. Bấm đúp ScreenTutor.bat. Để viền sáng BẬT trong cài đặt: script đo dùng nó để chia lượt.
+[x] A2. py -m pytest -q      (toàn bộ passed): ______
+[x] A3. Bấm đúp ScreenTutor.bat. Để viền sáng BẬT trong cài đặt: script đo dùng nó để chia lượt.
 
 
 B. C1: QUAY HAI VIỆC ĐÃ CÓ SỐ LIỆU CŨ (15 phút)
@@ -37,14 +37,45 @@ B. C1: QUAY HAI VIỆC ĐÃ CÓ SỐ LIỆU CŨ (15 phút)
 Quay màn hình CÓ tiếng của máy (OBS hoặc Win+Alt+R, như video D1-D4). Mỗi việc một video.
 Làm như mẹ: chờ nghe rồi mới bấm; riêng B3 thì bấm nhanh.
 
-[ ] B1. Như D1: mở phiếu góp ý từ Zalo (bản tạm), hỏi "tải file về", làm tới khi tutor báo xong.
-        Tên video: C1_D1.mp4.  Ghi chú: ______
-[ ] B2. Như D4: xuất giáo án ra PDF, có ghi đè file PDF cũ (bước vàng ở Publish và Yes).
-        Tên video: C1_D4.mp4.  Vòng vàng hiện lúc câu bắt đầu, hay trước đó? ______
-[ ] B3. Một việc ngắn bất kỳ (ví dụ "mở File > Export"), nhưng bấm NGAY khi thấy vòng.
-        Tên video: C1_nhanh.mp4. Trước khi câu bị cắt, bạn nghe được mấy chữ đầu? ______
-[ ] B4. (V-1) Cảm nhận chung: vòng và tiếng có đi cùng nhau không? Khoảng chờ trước khi có
-        vòng và tiếng có làm sốt ruột không? ______
+[x] B1. Như D1: mở phiếu góp ý từ Zalo (bản tạm), hỏi "tải file về", làm tới khi tutor báo xong.
+        Tên video: `C:\Users\Lenovo\Downloads\C1_D1.mp4`.
+        KẾT QUẢ (04/11/2026): Tutor chỉ đúng mũi tên tải ở file Phiếu góp ý GIA, sau đó chỉ nút
+        Save và cuối cùng báo file đã tải xong. Cả ba bước hoàn tất; console không có dòng `ĐÃ ĐỔI,
+        không nói`, không lặp lại bước đã làm và không hướng dẫn về thành phần đã biến mất.
+        Bộ đo trên riêng C1_D1 phát hiện 1 lượt có cả điểm chỉ và tiếng, với tiếng bắt đầu sau vòng
+        0,3 giây. Chạy bộ đo chung `C1_D1.mp4` + `C1_D4.mp4` cho 3 lượt có đủ vòng và tiếng:
+        trung vị lệch -0,95 giây; 0 lượt lệch trên +1,0 giây; 2 lượt vòng tới sau tiếng quá 0,5 giây;
+        0 lượt có vòng mà không có tiếng. Kết quả tổng hợp C1: S-1 ĐẠT, S-2 ĐẠT,
+        S-3 CHƯA ĐẠT, S-4 ĐẠT. Cảm nhận V-1 đã ghi ở B4 là ĐẠT.
+[x] B2. Như D4: xuất giáo án ra PDF, có ghi đè file PDF cũ (bước vàng ở Publish và Yes).
+        Tên video: `C:\Users\Lenovo\Downloads\C1_D4.mp4`.
+        KẾT QUẢ (04/11/2026): Chấm chuyển sang màu vàng ở các bước cẩn thận Publish/ghi đè.
+        Người dùng cảm nhận chấm vàng xuất hiện đúng lúc câu bắt đầu, không xuất hiện trước tiếng.
+        Console cho thấy tutor có nói hậu quả trong chính câu hướng dẫn: ở Publish, "file PDF cũ cùng
+        tên sẽ bị thay bằng file mới"; ở Yes cũng nói file cũ sẽ bị thay. Tuy nhiên, hậu quả nằm ở
+        nửa sau của câu, nên tại thời điểm chấm vàng bắt đầu xuất hiện người dùng chưa nghe tới phần
+        hậu quả. Điều này đúng với giới hạn đã ghi trước test: chấm vàng hiện từ đầu câu, trước phần
+        hậu quả. Không có dòng `ĐÃ ĐỔI, không nói` trong ca làm bình thường này.
+        Kiểm tra video theo khung hình: lúc tiếng bắt đầu, chấm đã bắt đầu đường bay; vòng đáp/toả
+        xuất hiện sau đó. Chạy `py -m tutor_eval.voice_sync C1_D4.mp4` phát hiện 2 lượt có cả điểm
+        chỉ và tiếng: lệch tiếng-trừ-vòng lần lượt -1,9 s và -1,0 s, trung vị -1,45 s; không có lượt
+        chấm/vòng mà không có tiếng. Kết quả riêng trên video B2: S-1 ĐẠT, S-2 ĐẠT, S-3 CHƯA ĐẠT
+        (2 lượt vòng đáp tới sau tiếng quá 0,5 s), S-4 ĐẠT. Đây là kết quả tạm thời trên C1_D4;
+        cần thêm C1_D1 để tổng hợp đầy đủ phần C1.
+[x] B3. Một việc ngắn bất kỳ (ví dụ "mở File > Export"), nhưng bấm NGAY khi thấy vòng.
+        Tên video dự kiến: C1_nhanh.mp4. File quay thực tế được tìm thấy tại:
+        `C:\Users\Lenovo\Videos\Screen Recordings\Screen Recording 2026-11-04 132705.mp4`.
+        ĐẠT (04/11/2026): Khi bấm ngay lúc chấm xuất hiện, người dùng nghe được khoảng 2–3 chữ
+        đầu trước khi câu nói bị cắt. Không có lượt nào chấm xuất hiện mà hoàn toàn không có tiếng.
+        Tiếng bắt đầu cùng lúc với lúc chấm đáp xuống. Quan sát này đáp ứng S-4 trong ca B3 và
+        ghi nhận đồng bộ trực quan/âm thanh theo mô tả của bài thử. Video chưa được đổi tên.
+[x] B4. (V-1) Cảm nhận chung: vòng và tiếng có đi cùng nhau không? Khoảng chờ trước khi có
+        vòng và tiếng có làm sốt ruột không?
+        ĐẠT (04/11/2026): Người dùng cảm nhận chấm và tiếng nói thực sự đi cùng nhau, không còn
+        cảnh thấy chấm rồi phải chờ mới nghe tutor nói. Khoảng chờ trước khi chấm và tiếng xuất hiện
+        không làm người dùng sốt ruột đáng kể. Ghi chú riêng về nhịp độ: với việc dài, người dùng
+        cảm thấy luồng bị khựng giữa các lần viền sáng xuất hiện để đọc trạng thái hiện tại và tutor
+        suy nghĩ. Đây là độ trễ giữa các bước, không phải độ lệch giữa chấm và tiếng theo V-1.
 
 Chép ba video vào thư mục OneDrive của dự án, KHÔNG qua GitHub (video có danh sách chat thật).
 Bên Ubuntu, Claude đặt chúng vào tutor_eval/t15_data/ (đã gitignore, cùng mọi file .mp4) rồi chạy:
@@ -70,19 +101,61 @@ Luật chấm (ghi trước khi chạy; đề xuất của Claude):
   - Chỉ ghi lại: mỗi lần xem lại làm chậm bao lâu; có lúc nào tutor im quá lâu khiến bạn tưởng treo.
 
 Quay màn hình có tiếng như mục B. Ba ca, mỗi ca dựng cho màn hình đổi TRONG LÚC viền sáng đang chạy:
-[ ] C1. Thông báo tự tắt. Trong Zalo bấm mũi tên tải một file, chọn chỗ lưu, bấm Save. Khi thông báo
+[x] C1. Thông báo tự tắt. Trong Zalo bấm mũi tên tải một file, chọn chỗ lưu, bấm Save. Khi thông báo
         "Đã tải xong · Mở thư mục" vừa hiện, bấm nút tròn hỏi ngay: "mở chỗ file vừa tải".
-        Tutor có nói "bấm Mở thư mục" sau khi thông báo đã tắt không? ______
-        Cửa sổ đen có dòng "ĐÃ ĐỔI, không nói" không? Sau đó nó chỉ vào đâu? ______
-        Tên video: C2_toast.mp4
-[ ] C2. Tự làm trước. Trong Word hỏi "xuất giáo án ra PDF". Khi viền sáng đang chạy (tutor đang xem),
-        bạn tự bấm File rồi Export. Câu tiếp theo tutor nói là về File, hay về màn hình Export? ______
-        Tên video: C2_ahead.mp4
-[ ] C3. Hộp hiện ra. Đi tới hộp Publish (file PDF cùng tên đã có). Khi viền sáng đang chạy, tự bấm
-        Publish để hộp "already exists, replace?" hiện ra. Tutor có bảo "bấm Publish" nữa không? ______
-        Tên video: C2_box.mp4
-[ ] C4. Chép toàn bộ chữ trong cửa sổ đen vào file console.txt, để cùng chỗ với video (có tên file và
+        Tutor có nói "bấm Mở thư mục" sau khi thông báo đã tắt không?
+        ĐẠT M-1 (04/11/2026): Sau khi toast biến mất, tutor KHÔNG phát câu yêu cầu bấm chữ
+        "Mở thư mục" trên toast đã mất. Câu tutor thực sự nói sau khi xem lại là bấm biểu tượng
+        thư mục cạnh tên file trong Zalo.
+        Cửa sổ đen có dòng "ĐÃ ĐỔI, không nói" không? Sau đó nó chỉ vào đâu?
+        Console ghi `màn hình ĐÃ ĐỔI, không nói` ở bước 1 (vùng 0.048, cả màn 0.0018), xác nhận
+        câu cũ về toast đã được chặn. Sau khi xem lại, bước 2 chỉ đúng vào biểu tượng thư mục bên
+        cạnh tên file trong Zalo; người
+        dùng bấm và tutor báo chỗ file tải về đang mở. Việc xem lại mất khoảng 10 giây. Người dùng
+        cảm thấy khoảng im dài; ước lượng tổng thời gian từ lúc hỏi tới tiếng đầu tiên khoảng 12–14
+        giây và có cảm giác gần mức gây sốt ruột, dù không báo app treo hoàn toàn.
+        Tên video: `C:\Users\Lenovo\Downloads\C2_toast.mp4` (22.224.801 byte).
+        Tổng hợp phần C hiện tại: M-1 ĐẠT trên C1, C2 và C3 — không ca nào phát lời về thành phần
+        đã biến mất hoặc bước người dùng đã tự làm. B1 và B2 mỗi việc đều có 0 dòng báo nhầm
+        `ĐÃ ĐỔI, không nói`, nên M-2 ĐẠT trên hai ca làm bình thường.
+[x] C2. Tự làm trước. Trong Word hỏi "xuất giáo án ra PDF". Khi viền sáng đang chạy (tutor đang xem),
+        bạn tự bấm File rồi Export. Câu tiếp theo tutor nói là về File, hay về màn hình Export?
+        ĐẠT cho mục tiêu màn hình đổi (04/11/2026): Trước khi tutor kịp nói, người dùng tự mở
+        File > Export và dừng ở màn hình Export. Console của bước 1 ghi `màn hình ĐÃ ĐỔI, không nói`
+        (vùng 0.284, cả màn 0.1086), nên câu chỉ vào File của ảnh cũ không được phát. Sau khi xem lại,
+        tutor cập nhật chấm sang nút `Create PDF/XPS` trên màn hình hiện tại; bước 2 nói bấm nút này,
+        không yêu cầu người dùng bấm lại File/Export. Tutor vẫn nói "Việc này có 3 phần" và Dynamic
+        Island còn hiển thị kế hoạch gồm các bước File/Export đã làm, nhưng bước đang hướng dẫn bằng
+        lời và điểm chỉ đã đúng màn hình mới. Lượt xem lại mất khoảng 6 giây; người dùng không có lúc
+        nào thấy im quá lâu đến mức tưởng app bị treo.
+        LỖI PHÁT HIỆN THÊM — vòng lặp khi file PDF đang bị khoá: PDF cùng tên đang mở trong Foxit,
+        nên sau Publish > Yes, Word hiện lỗi `The file is in use by another application or user.`
+        Tutor hướng dẫn bấm OK, nhưng sau khi đóng lỗi lại yêu cầu Publish, rồi Yes, rồi OK và lặp lại,
+        không suy luận rằng cần đóng PDF trong Foxit hoặc chọn tên file khác. Console thể hiện chuỗi:
+        bước 3 Publish (`settled`) → bước 4 Yes (`unchanged`) → bước 5 OK (`settled`) → bước 6
+        Publish (`settled`). Đây là lỗi phục hồi ngoại lệ/vòng lặp, tách biệt với mục tiêu stale-screen C2.
+        Bằng chứng ảnh: `codex-clipboard-96ca057f-dd73-46c9-b19a-bf3881372c7a.png` (màn hình Export,
+        Foxit đang mở ở taskbar) và `codex-clipboard-fe626d85-8cc7-45da-b8ae-929db60def62.png`
+        (hộp lỗi file đang được ứng dụng/người dùng khác sử dụng).
+        File quay thực tế: `C:\Users\Lenovo\Videos\Screen Recordings\Screen Recording 2026-11-04 135844.mp4`
+        (tên dự kiến: C2_ahead.mp4).
+[x] C3. Hộp hiện ra. Đi tới hộp Publish (file PDF cùng tên đã có). Khi viền sáng đang chạy, tự bấm
+        Publish để hộp "already exists, replace?" hiện ra. Tutor có bảo "bấm Publish" nữa không?
+        ĐẠT VỀ HÀNH VI, CHƯA HOÀN TẤT BẰNG CHỨNG VIDEO (04/11/2026): Khi viền sáng đang chạy,
+        người dùng tự bấm Publish để hộp xác nhận ghi đè xuất hiện. Bước 4 ghi `màn hình ĐÃ ĐỔI,
+        không nói` (vùng 0.000, cả màn 0.0291), nên tutor không phát lại câu yêu cầu bấm Publish.
+        Sau khi xem lại, bước 5 chỉ thẳng vào nút Yes và nói đồng ý thay file mới. Tutor không bảo
+        bấm Publish thêm lần nữa. Việc xem lại khi hộp Yes xuất hiện mất khoảng 13–15 giây;
+        người dùng không tưởng app bị
+        treo vì viền sáng và hoạt ảnh xoay trên Dynamic Island vẫn thể hiện app đang xử lý.
+        Console sau đó ghi bước Yes là `stale`, rồi bước 6 báo file PDF đã lưu và việc xong True.
+        Bằng chứng video đã có: `C:\Users\Lenovo\Downloads\C2_box.mp4` (28.135.776 byte;
+        xác nhận 04/11/2026). Tên video: C2_box.mp4
+[x] C4. Chép toàn bộ chữ trong cửa sổ đen vào file console.txt, để cùng chỗ với video (có tên file và
         chat thật nên cũng KHÔNG qua GitHub).
+        ĐÃ PHỤC HỒI (04/11/2026): Cửa sổ PowerShell gốc đã bị clear, nên Codex ghép lại các đoạn
+        console C1–C3 mà người dùng đã chép nguyên văn trong chat. File được lưu tại
+        `C:\Users\Lenovo\Downloads\console.txt`; đầu file ghi rõ nguồn phục hồi và giới hạn này.
 
 
 D. C4: DẤU CHẤM ĐI THEO CHUỘT (15 phút)
@@ -106,16 +179,39 @@ Luật chấm (ghi trước khi chạy; đề xuất của Claude):
   - Chỉ ghi lại: chấm tắt thoáng lúc chụp có khó chịu không; bay có dễ nhìn theo không; chấm có che
     mất chữ hay biểu tượng cần bấm không.
 
-[ ] D1. Hỏi một việc ngắn (ví dụ "mở File > Export" trong Word). Chấm hiện từ lúc nào? Thở khi viền
+[x] D1. Hỏi một việc ngắn (ví dụ "mở File > Export" trong Word). Chấm hiện từ lúc nào? Thở khi viền
         sáng chạy? Bay từ cạnh chuột tới chỗ chỉ đúng lúc tutor bắt đầu nói? Bấm xong thì quay lại
-        cạnh chuột? Việc xong thì biến mất? ______
-[ ] D2. (P-3) Mở Task Manager. Hỏi một việc, trong lúc viền sáng chạy thì rê chuột liên tục.
-        CPU của python cao nhất: ______ %
-[ ] D3. (P-4) Ở một bước có bấm, bấm xong thì rê chuột vòng vòng 3 giây. Tutor có sang bước tiếp
-        trong khoảng thường lệ (dưới 15 giây) không? ______
-[ ] D4. (P-1) Mở thư mục tutor_runs\ của lần chạy mới nhất, xem vài ảnh stepNN.png: có chấm đỏ
-        cạnh chuột không? ______
-[ ] D5. Cảm nhận: chấm có che chữ hay nút cần bấm không? Tắt thoáng lúc chụp có khó chịu không? ______
+        cạnh chuột? Việc xong thì biến mất?
+        ĐẠT (04/11/2026): Chấm xuất hiện khi người dùng nhấn giữ Ctrl+Alt. Khi viền sáng chạy,
+        chấm có hiệu ứng thở. Ngay lúc tutor bắt đầu nói, chấm bay từ cạnh chuột tới vùng cần chỉ.
+        Sau khi người dùng hoàn thành từng bước trong kế hoạch, chấm quay lại cạnh chuột. Khi tutor
+        báo hoàn tất công việc, chấm tự biến mất. Toàn bộ diễn biến đúng với mô tả cần kiểm tra ở D1.
+[x] D2. (P-3) Mở Task Manager. Hỏi một việc, trong lúc viền sáng chạy thì rê chuột liên tục.
+        CPU của python cao nhất: 1,5%. ĐẠT (04/11/2026): Task Manager chỉ hiển thị một tiến trình
+        `python.exe`; khi viền sáng chạy và người dùng rê chuột liên tục, mức CPU cao nhất quan sát
+        được là 1,5%, đúng bằng giới hạn tối đa của luật P-3 (không quá 1,5%).
+[x] D3. (P-4) Ở một bước có bấm, bấm xong thì rê chuột vòng vòng 3 giây. Tutor có sang bước tiếp
+        trong khoảng thường lệ (dưới 15 giây) không?
+        ĐẠT (04/11/2026, ca chuẩn "mở File > Export"): Sau cú bấm ở bước đầu, người dùng rê chuột
+        liên tục 3 giây; chấm vẫn đi theo chuột bình thường. Tutor chuyển sang bước tiếp theo sau
+        khoảng 4–5 giây, không có hiện tượng viền sáng chạy mãi và không hướng dẫn lại bước vừa làm.
+        Ghi chú ca thử thêm, không tính vào kết quả P-4: Với câu hỏi "Tôi đang sử dụng mạng Wi-Fi
+        hay mạng có dây?", tutor không hoàn thành được việc. Dù Wi-Fi đang tắt và ô trạng thái ghi
+        "Not connected", tutor vẫn yêu cầu bấm mũi tên cạnh Wi-Fi để vào trang "Wi-Fi is off";
+        sau đó lại yêu cầu bấm mũi tên quay về. Hai hướng dẫn qua lại này lặp khoảng 2 lần. Quan sát
+        của người chạy: đây là vấn đề model không biết xử lý ca Wi-Fi, không phải do cú rê chuột 3 giây.
+[x] D4. (P-1) Mở thư mục tutor_runs\ của lần chạy mới nhất, xem vài ảnh stepNN.png: có chấm đỏ
+        cạnh chuột không?
+        ĐẠT (04/11/2026): Đã kiểm tra toàn bộ 19 ảnh `*_stepNN.png` trong lần chạy có dữ liệu
+        mới nhất `tutor_runs\20261104-175715-app` (gồm các ảnh từ 130117_step03.png đến
+        180105_step02.png). Không ảnh nào có chấm đỏ bám cạnh con trỏ chuột. Các chấm tím thuộc
+        chỉ báo trạng thái của giao diện ScreenTutor ở mép trên màn hình, không phải chấm đỏ cạnh chuột.
+[x] D5. Cảm nhận: chấm có che chữ hay nút cần bấm không? Tắt thoáng lúc chụp có khó chịu không?
+        ĐÃ GHI NHẬN (04/11/2026; mục này không có luật đạt/trượt riêng): Chấm có che chữ và
+        biểu tượng cần bấm; ví dụ chấm đáp ngay giữa chữ "File" trong Word. Tuy vậy, người dùng
+        vẫn có thể bấm được nút đó. Chấm tắt thoáng khi app chụp màn hình không gây khó chịu vì
+        diễn ra quá nhanh, người dùng gần như không kịp nhận ra. Đường bay của chấm dễ nhìn theo.
+        Đây là quan sát cần lưu ý cho kiểu đáp A (chấm đáp lên chính chỗ chỉ) so với kiểu B (đứng cạnh).
 
 
 E. K: KÉO BÔI ĐEN, PHÍM TẮT, GÕ VÀO Ô (20 phút)
@@ -140,17 +236,70 @@ Luật chấm trên Windows (ghi trước khi chạy; đề xuất của Claude)
   - K-W3 đạt: cú kéo bôi đen được nhận là cú kéo (cửa sổ đen in bước kéo), cú bấm run tay vẫn là cú bấm.
   - Chỉ ghi lại: giọng đọc "con trôn xê" nghe có tự nhiên không; vệt kéo có khớp chỗ cần bôi đen không.
 
-[ ] E0. (thử nhanh phần nghe, không cần tutor) Trong PowerShell: py -m screentutor.inputs --seconds 30
+[x] E0. (thử nhanh phần nghe, không cần tutor) Trong PowerShell: py -m screentutor.inputs --seconds 30
         rồi: bấm, kéo bôi đen một dòng, Ctrl+C, Ctrl+V, Enter, gõ vài chữ thường. Dòng in ra:
-        kéo in "KÉO từ ... tới ..."? Ctrl+C in "PHÍM Ctrl+C"? Gõ chữ thường KHÔNG in gì? ______
+        kéo in "KÉO từ ... tới ..."? Ctrl+C in "PHÍM Ctrl+C"? Gõ chữ thường KHÔNG in gì?
+        04/11/2026: Console in 4 dòng "KÉO từ ... tới ..." (804,271→1198,282;
+        837,603→1399,605; 1332,775→1885,784; 1077,384→1429,412) và "PHÍM Ctrl+C"
+        2 lần. Console cũng in Ctrl+V 2 lần, Ctrl+A 2 lần, Ctrl+X 1 lần, Enter 2 lần,
+        Tab 2 lần và nhiều bấm trái. Trong log được cung cấp không có dòng in riêng cho
+        chữ thường; đã gõ chữ thường trong khun chat Zalo.  ĐẠT
 [ ] E1. (K-W1) Tin T12 Việc 1 trong "Cloud của tôi", hỏi: "Mở trang bồi dưỡng trong tin nhắn này giúp tôi".
         Làm theo tới khi trang mở (trang giả nên Brave sẽ báo không tìm thấy trang: vẫn tính là tới nơi).
-        Tutor có lần nào bảo bấm vào chữ đó không? Vệt kéo có đúng nguyên địa chỉ không? ______
-        Tên video: K_link.mp4
+        Tutor có lần nào bảo bấm vào chữ đó không? Vệt kéo có đúng nguyên địa chỉ không?
+        CHƯA ĐẠT — lỗi nghiêm trọng, trải nghiệm gây bực mình (04/11/2026): Video dài 3 phút 47 giây.
+        Hai câu hỏi đầu tiên khiến tutor bảo bấm một link màu xanh riêng ở góc dưới
+        (`https://bieumau-thunghiem.example/...`), không phải địa chỉ chữ thường
+        `boiduong-thunghiem.example` trong thông báo. Chỉ sau khi người dùng giải thích lần thứ ba,
+        tutor mới lập kế hoạch 6 phần và yêu cầu kéo bôi đen địa chỉ đúng.
+        Lần kéo đầu theo vệt tutor chọn đúng toàn bộ `boiduong-thunghiem.example`; Ctrl+C được nhận,
+        console ghi `unchanged`, bước xong True và tutor chuyển bước. Tuy nhiên ngay sau đó tutor lại
+        bảo bấm vào "chữ màu xanh boiduong thunghiem" tại chính dòng chữ thường này. Vì vậy K-W1
+        CHƯA ĐẠT: tutor đã yêu cầu bấm vào địa chỉ chữ thường thay vì tiếp tục quy trình copy/paste.
+        Tutor tiếp tục yêu cầu kéo lại nhiều lần. Một vệt kéo sai chỉ bôi đen chữ `trang`; người dùng
+        xác nhận đây là do đường kéo tutor hướng dẫn sai, không phải người dùng tự kéo lệch. Một lượt
+        sau mới chọn lại đúng toàn bộ URL. Do kéo không ổn định, bị lặp và không được xác nhận nhất
+        quán, K-W3 CHƯA ĐẠT trong ca E1.
+        Sau lần Ctrl+C thứ hai, tutor mở Brave bằng biểu tượng sư tử nhưng chỉ đưa người dùng tới tab
+        Meta Model API Billing đang hoạt động. Tutor không hề hướng dẫn Ctrl+L, Ctrl+V hay Enter.
+        Thay vào đó, nó bảo quay lại Zalo, copy URL thêm lần nữa, mở Brave thêm lần nữa, rồi nhầm sang
+        tab Facebook Messenger, mở một cuộc trò chuyện cá nhân và chỉ nút Tìm kiếm trong cuộc trò
+        chuyện. Tutor tự dừng tại đây; trang bồi dưỡng giả chưa bao giờ được mở.
+        K-W2 chỉ có bằng chứng cục bộ rằng hai lượt Ctrl+C làm tutor chuyển bước; Ctrl+V và Enter
+        không được thực hiện vì tutor không bao giờ hướng dẫn tới các thao tác đó. Toàn bộ luồng E1
+        không đạt mục tiêu và không thể dùng để xác nhận K-W2 trọn vẹn.
+        Console có 12 bước trong lượt cuối, gồm kéo/copy lặp, chuyển Zalo–Brave, mở nhầm Messenger
+        và tìm kiếm chat. Tên video: `C:\Users\Lenovo\Downloads\K_link.mp4`
+        (133.761.297 byte; thời lượng 227 giây).
 [ ] E2. (K-W2) Word mở giáo án, hỏi: "Tôi muốn đổi cỡ chữ cả bài thành 15". Tutor có bảo Ctrl+A, rồi
-        gõ 15 vào ô cỡ chữ và Enter không? Chấm có đáp vào phần chữ của ô (không phải mũi tên)? ______
-        Tên video: K_word.mp4
-[ ] E3. Cảm nhận: phím hiện ra có dễ hiểu không? Giọng đọc tên phím có tự nhiên không? ______
+        gõ 15 vào ô cỡ chữ và Enter không? Chấm có đáp vào phần chữ của ô (không phải mũi tên)?
+        CHƯA ĐẠT (04/11/2026, lỗi nghiêm trọng — xoá nội dung tài liệu): Tutor lập kế hoạch 2 phần:
+        Ctrl+A để chọn toàn bộ tài liệu, rồi đổi cỡ chữ thành 15. Chấm chỉ đúng vào phần có chữ của
+        ô cỡ chữ. Sau Ctrl+A, toàn bộ tài liệu được chọn và các ô tên font/cỡ chữ hiển thị trống.
+        Ở bước 3, tutor đã nói đầy đủ: bấm ô cỡ chữ, gõ 15 rồi bấm Enter. Người dùng làm đúng;
+        cỡ chữ trong tài liệu thực tế tăng lên 15, nhưng vùng chọn toàn tài liệu vẫn còn và các ô
+        font/cỡ chữ vẫn trống nên ảnh màn hình không cho model thấy số 15.
+        Tutor sau đó tạo bước 4, yêu cầu bấm Enter thêm lần nữa. Vì focus đã trở lại tài liệu trong
+        khi toàn bộ nội dung vẫn đang được chọn, cú Enter thừa thay toàn bộ vùng chọn bằng một dấu
+        xuống dòng: tài liệu từ 168 từ trở thành trang trống 0 từ. Dù vậy, bước 5 vẫn tuyên bố
+        "Xong rồi bạn nhé, tài liệu đã để cỡ chữ 15" và ghi việc xong True. Đây vừa là hướng dẫn
+        thao tác phá huỷ nội dung, vừa là xác nhận hoàn thành sai trạng thái.
+        Log console: bước 1 (keys/Ctrl+A) ghi `sau cú bấm —`; bước 2 click ghi `settled`, xong True;
+        bước 3 type đã bao gồm gõ 15 + Enter, ghi `settled`, xong True; bước 4 keys yêu cầu Enter
+        lần hai, ghi `unchanged`, bước xong False; bước 5 none vẫn ghi bước xong True, việc xong True.
+        Vì các phím Ctrl+A/Enter không được phản ánh đúng theo yêu cầu "sau cú bấm" và Enter thừa
+        gây mất toàn bộ nội dung, K-W2 CHƯA ĐẠT trong ca này.
+        Ghi chú UX phụ: bấm ô cỡ chữ, gõ 15 và Enter nên là một bước liền mạch; hiện tutor tách cú
+        bấm ô khỏi nhập liệu bằng thêm một lượt viền sáng/model, tạo độ trễ không cần thiết.
+        Bằng chứng ảnh: `codex-clipboard-cb021223-caaf-488d-8d8f-009c2f07a931.png` (tài liệu còn
+        nội dung và cỡ 15), `codex-clipboard-0fa70e4a-d730-41b0-a097-4bad36357755.png` (Ctrl+A,
+        ô font/cỡ chữ trống), `codex-clipboard-fe00ce2e-1142-4453-a4ff-c4591b3bdf59.png`
+        (sau Enter thừa: trang trống, 0 từ).
+        File quay thực tế: `C:\Users\Lenovo\Videos\Screen Recordings\Screen Recording 2026-11-04 133719.mp4`
+        (tên dự kiến: K_word.mp4).
+[x] E3. Cảm nhận: phím hiện ra có dễ hiểu không? Giọng đọc tên phím có tự nhiên không?
+        ĐÃ GHI NHẬN (04/11/2026; mục này không có luật đạt/trượt riêng): Hình phím dễ hiểu và
+        cách tutor đọc tên phím, gồm cách đọc Ctrl+A, nghe tự nhiên.
 
 
 F. LÀM TIẾP (W-6) (10 phút)
@@ -181,14 +330,95 @@ Việc lớn cho cả ba ca: Việc 2 trong "Cloud của tôi", hỏi "Thầy hi
 gì?", chờ tutor nói "Việc này có ... phần" và chỉ bước đầu. Chưa bấm theo, hỏi câu phụ ngay.
 [ ] F1. (L-1, L-2) Câu phụ: "cái nút micro này là để làm gì". Nghe xong: ô có hiện "Làm tiếp: ..." không,
         mấy lần? ______ Bấm vào ô: tutor quay lại đúng phần nào? ______
-[ ] F2. (L-3) Sau F1 việc lớn đang chạy lại; khi tutor chờ bạn bấm, hỏi câu phụ: "chỉ tôi cách xem ổ đĩa
+        KẾT QUẢ (04/11/2026): Việc lớn được nhận là `kiểu: guide`; tutor lập 4 phần và ở bước 1
+        yêu cầu đọc tin nhắn màu xanh. Câu phụ về nút micro được trả lời trong một bước `none`, nói
+        đây là nút của chương trình hướng dẫn, không phải nút Zalo; console in `kiểu: answer`.
+        Nút "Làm tiếp" sau đó có hiện trên Dynamic Island. Khi người dùng bấm trực tiếp vào nút,
+        tutor ngừng nói và không tự nói tiếp phần đang làm. Người dùng phải hỏi lại "Bây giờ làm tiếp
+        là làm cái gì?" thì model mới hướng dẫn tải file. Sau đó người dùng chủ động dừng test và
+        xoá việc lớn; dòng `Dừng theo lời người dùng; bỏ: 20261104-135044-d9fd` là hành động chủ động,
+        KHÔNG phải app nhận nhầm câu hỏi trên thành lệnh dừng.
+        L-1 ĐẠT: nút "Làm tiếp" xuất hiện đúng một lần và tutor nói câu mời đúng một lần.
+        L-2 CHƯA ĐẠT: bấm nút "Làm tiếp" không tự đưa luồng nói trở lại việc lớn; cú bấm ngắt lời
+        tutor và sau đó tutor im lặng, nên người dùng phải hỏi lại mới nhận được hướng dẫn tải file.
+        Vì F1 gồm cả L-1 và L-2, test case vẫn để chưa đánh dấu hoàn tất.
+[x] F2. (L-3) Sau F1 việc lớn đang chạy lại; khi tutor chờ bạn bấm, hỏi câu phụ: "chỉ tôi cách xem ổ đĩa
         còn trống bao nhiêu", làm theo TỚI KHI tutor báo xong (chỉ xem, không đổi gì trên máy; câu phụ
-        không xong thì app không hỏi model). Có ô "Làm tiếp" không? Cửa sổ đen in gì? ______
+        không xong thì app không hỏi model). Có ô "Làm tiếp" không? Cửa sổ đen in gì?
+        ĐẠT L-3 (04/11/2026): Người dùng bắt đầu lại việc lớn; tutor nhận là `kiểu: guide`, lập 4
+        phần và chờ ở bước đọc khung tin nhắn. Câu phụ xem dung lượng ổ đĩa được thực hiện đầy đủ:
+        mở File Explorer, vào This PC và hiển thị cột Free Space (C: còn 30,3 GB; D: còn 193 GB).
+        Tutor báo việc phụ xong. Video xác nhận sau khi hoàn tất không có ô "Làm tiếp" và không có
+        lời mời quay lại việc lớn. Console in đúng `Câu phụ có kế hoạch riêng: việc khác hẳn, không mời`.
+        Không có thay đổi hay xoá dữ liệu trên máy. Video: `C:\Users\Lenovo\Downloads\F2.mp4`
+        (31.449.117 byte; thời lượng 70,2 giây).
 [ ] F3. (chỉ ghi lại) Bấm nút tròn, nói "làm tiếp" để về lại việc lớn. Khi tutor chờ bạn bấm, hỏi câu phụ
         như D3: "bây giờ tôi muốn tải file Excel trước thì làm thế nào?", làm tới khi tutor báo xong.
-        Có ô "Làm tiếp" không? Cửa sổ đen in gì? ______
-        Rồi bấm nút tròn, nói "làm tiếp": tutor quay lại đúng phần nào? ______
-[ ] F4. Chép chữ trong cửa sổ đen của mục F vào file console_F.txt, để cùng chỗ với video (KHÔNG qua GitHub).
+        Có ô "Làm tiếp" không? Cửa sổ đen in gì?
+        CHƯA ĐẠT/CHƯA KIỂM TRA ĐƯỢC CƠ CHẾ F3 (04/11/2026): Lần nói đầu bị nhận sai thành yêu cầu
+        chuyển tiếp tin nhắn; người dùng dừng hai việc cũ rồi hỏi lại việc lớn. Lần hai tutor nhận đúng,
+        lập 4 phần và đang chờ tải file Dự thảo quy chế thì người dùng hỏi tải Excel trước.
+        Tutor chỉ đúng file Excel `Bảng tổng hợp GIA`, mở Save và file được lưu. Sau đó tutor lại bảo
+        bấm chữ "Mở thư mục" trên toast đã biến mất. Khi người dùng nói không có nút đó, tutor tạo
+        một luồng sửa sai 8 bước nhưng nhắm nhầm sang file Word `Dự thảo quy chế GIA`: bấm biểu tượng
+        thư mục của file Word, mở Word thay vì Excel, gặp hộp tím báo file bị khoá, bấm Cancel, quay
+        lại Zalo, rồi lặp qua lại giữa biểu tượng Zalo và các biểu tượng thư mục Word/Excel.
+        Sau khi luồng sửa sai kết thúc với `kiểu: answer`, kế hoạch Excel cũ mới tự chạy tiếp: tutor
+        bảo bấm đúp `Bảng tổng hợp GIA` trong Downloads; Excel cuối cùng mở và tutor báo xong.
+        Tổng thời gian video 239 giây; kết quả cuối có mở đúng Excel nhưng đường đi dài, sai đối tượng,
+        lặp và gây thất vọng rõ rệt.
+        Trong luồng sửa sai có một ô "Làm tiếp" xuất hiện và tutor có nói lời mời. Khi người dùng bấm
+        ô này, tutor tiếp tục bước kế tiếp của việc Excel: chuyển sang phần mở file Excel đã tải
+        (bước số 2 của việc Excel), chứ không quay về việc lớn ban đầu. Đây là lần tiếp tục trung gian
+        sau câu hỏi sửa sai "làm gì có nút Mở thư mục", và nó nối lại đúng kế hoạch Excel đang dở.
+        Console vẫn KHÔNG có dòng `Câu phụ có kế hoạch riêng: ...`; do đó theo luật đã ghi trước, ca
+        này không kích hoạt phép phân loại Excel là việc chen ngang hay việc khác hẳn. Ô "Làm tiếp"
+        trung gian không thay thế phép kiểm tra cuối. Sau khi file Excel mở thành công và tutor báo
+        xong, KHÔNG có ô hay lời mời "Làm tiếp" thứ hai; tutor dừng hẳn và không quay lại việc lớn.
+        Vì vậy F3 CHƯA ĐẠT và giữ chưa đánh dấu hoàn tất.
+        Video: `C:\Users\Lenovo\Downloads\F3.mp4` (118.589.413 byte; thời lượng 239,04 giây).
+        Rồi bấm nút tròn, nói "làm tiếp": chưa thực hiện sau khi Excel mở; chưa có kết quả quay lại.
+[x] F4. Chép chữ trong cửa sổ đen của mục F vào file console_F.txt, để cùng chỗ với video (KHÔNG qua GitHub).
+        ĐÃ PHỤC HỒI (04/11/2026): Cửa sổ PowerShell gốc đã bị clear, nên Codex ghép lại console
+        F1–F3 từ các đoạn người dùng đã chép trong chat. File lưu tại
+        `C:\Users\Lenovo\Downloads\console_F.txt`. Đoạn F1 cuối bị cắt ngay trong tin nhắn nguồn
+        được đánh dấu rõ trong file; F2 và F3 có đầy đủ log người dùng đã cung cấp.
+
+
+Ý TƯỞNG ĐỘC LẬP CẦN CLAUDE THỬ — DỰ ĐOÁN TRƯỚC BƯỚC KẾ TIẾP
+----------------------------------------------------------------
+Đề xuất của người dùng sau ca F3 (04/11/2026): trong lúc tutor đang chờ người dùng thực hiện một
+thao tác, cho model dự đoán trước màn hình có khả năng cao sẽ xuất hiện tiếp theo và soạn sẵn câu
+hướng dẫn kế tiếp như một "đáp án hờ". Ngay sau cú bấm, app chụp màn hình mới và chạy một phép xác
+minh nhanh: nếu giao diện mới đúng với trạng thái đã dự đoán thì phát ngay câu đã soạn, thay vì chờ
+một lượt suy luận đầy đủ; nếu khác dự đoán thì bỏ đáp án hờ và quay về luồng xem lại bình thường.
+
+Mục tiêu cần thử: giảm cảm giác khựng 5–15 giây giữa các bước mà vẫn không nói về màn hình cũ.
+Ràng buộc an toàn đề xuất:
+  - Tuyệt đối không phát đáp án hờ trước khi ảnh mới được xác minh là khớp.
+  - Hộp lỗi, cảnh báo, file bị khoá, hộp ghi đè và mọi trạng thái bất ngờ phải huỷ dự đoán ngay.
+  - Bước cẩn thận vẫn phải nói hậu quả trước hoặc cùng lúc với lời mời bấm; không dùng dự đoán để
+    bỏ qua phần cảnh báo.
+  - Ghi log trạng thái dự đoán, mức khớp, dùng/bỏ đáp án hờ và thời gian tiết kiệm để phân tích.
+
+Thử nghiệm gợi ý cho Claude: chạy A/B trên các chuỗi ổn định File > Export > Create PDF/XPS và các
+chuỗi có nhánh bất ngờ như PDF bị Foxit khoá hoặc toast tự biến mất. Đo thời gian từ cú bấm tới tiếng
+đầu tiên, tỷ lệ dự đoán đúng, tỷ lệ câu stale/lặp và số lần người dùng phải chờ xem lại đầy đủ.
+
+
+GHI CHÚ ĐỘC LẬP CHO CLAUDE — CTRL+ALT/ASR HAY MẤT HOẶC NHẬN SAI CHỮ ĐẦU
+----------------------------------------------------------------------------
+Phản hồi của người dùng ngày 04/11/2026: khi giữ Ctrl+Alt rồi bắt đầu nói, phần nhận dạng giọng nói có vẻ
+vào chậm; hệ thống thường làm mất vài chữ đầu hoặc nhận sai các chữ đầu dù người dùng đã cố phát âm rất kỹ.
+Hai log gần nhất minh hoạ: câu về "thầy hiệu trưởng nhắn..." có lần chỉ còn "trưởng nhắn..."; ở G2 lại thành
+"dữ chữ nhấn như thế này thì tôi phải làm gì?". Đây là vấn đề lặp lại theo cảm nhận sử dụng, không chỉ là một
+lỗi nội dung của model sau ASR, và làm câu hỏi bị đổi nghĩa hoặc thiếu chủ thể ngay từ đầu.
+
+Đề nghị Claude điều tra riêng đường thu âm khi kích hoạt bằng Ctrl+Alt: kiểm tra thời điểm bắt đầu ghi/VAD so
+với thời điểm hotkey được nhận, có bị cắt pre-roll hay không, và lưu cả audio thô cùng transcript để phân biệt
+lỗi thu âm với lỗi giải mã. Thử lặp cùng một câu ít nhất 10 lần theo hai nhóm: nói ngay khi giữ Ctrl+Alt và chờ
+300–500 ms rồi mới nói; so sánh số âm tiết đầu bị mất/sai và độ trễ. Hướng khắc phục nên thử là giữ một audio
+pre-roll ngắn hoặc mở luồng thu sớm hơn, nhưng chỉ chốt sau khi waveform xác nhận đúng nguyên nhân.
 
 
 G. DỪNG KHI BẠN BẢO DỪNG (10 phút)
@@ -218,15 +448,44 @@ Luật chấm (ghi trước khi chạy; đề xuất của Claude):
     không chỉ vào đâu, không quay lại việc đã dừng. Cần lịch sử không có việc lớn nào khác bỏ dở trong 7 ngày,
     nên xoá lịch sử trước G1 (xem G0). Nếu tutor quay lại một việc KHÁC còn dở thì ghi tên việc đó, không tính trượt.
 
-[ ] G0. Rê chuột vào ô, bấm ghim, bấm "Xoá lịch sử" (S-5 cần lịch sử trống). Chỉ làm sau khi đã chép
+[x] G0. Rê chuột vào ô, bấm ghim, bấm "Xoá lịch sử" (S-5 cần lịch sử trống). Chỉ làm sau khi đã chép
         cửa sổ đen của các mục trước.
-[ ] G1. (S-1, S-2) Việc 2 trong "Cloud của tôi", hỏi "Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?". Khi
+        Kết quả 04/11: cửa sổ đen xác nhận "Đã xoá 73 việc trong lịch sử và kho kiến thức." Các log cần giữ
+        của phần trước đã được chép ra file riêng trước khi xoá.
+[x] G1. (S-1, S-2) Việc 2 trong "Cloud của tôi", hỏi "Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?". Khi
         tutor chỉ bước đầu, bấm nút tròn nói "dừng hướng dẫn". Câu tutor nói? Có ô "Làm tiếp" trong 30 giây
         không, kể cả khi bấm ghim ô? ______ Phần "Việc trước" trên ô ghim có câu Việc 2 không? ______
         Rồi hỏi "mở File Explorer cho tôi": tutor làm việc mới? ______
-[ ] G2. (S-3) Hỏi lại câu Việc 2. Khi tutor chỉ bước đầu: rê chuột vào ô, bấm ghim, bấm ×. Việc có dừng
-        như G1 không? ______ Không có việc gì, ghim ô rồi bấm ×: ô chỉ thu lại? ______
-[ ] G3. (S-4) Mở một video YouTube bất kỳ trên Brave, cho chạy, rồi hỏi "tạm dừng video". Tutor làm gì? ______
-[ ] G4. (S-5) Hỏi lại câu Việc 2, nói "dừng" khi tutor chỉ bước đầu, rồi nói "làm tiếp". Tutor nói gì? Có chỉ vào
-        đâu không? ______
-[ ] G5. Chép chữ trong cửa sổ đen của mục G vào console_G.txt, để cùng chỗ với video (KHÔNG qua GitHub).
+        Kết quả một phần 04/11 — video C:\Users\Lenovo\Downloads\G1.mp4 và console: tutor nhận câu
+        "dừng hướng dẫn" ngay trên máy, nói "Được, mình dừng nhé. Khi nào cần bạn cứ bấm nút tròn.", chấm/viền
+        chỉ dẫn biến mất, Dynamic Island thu lại; cửa sổ đen in
+        "Dừng theo lời người dùng; bỏ: 20261104-150455-a1b4". Video dài 28,9 giây tính từ đầu nên chưa đủ bằng
+        chứng cho 30 giây sau khi dừng. Bổ sung sau khi đã chờ: không có ô "Làm tiếp" xuất hiện. Khi ghim ô,
+        ảnh chụp cho thấy trạng thái "Sẵn sàng", vẫn giữ đúng câu xác nhận dừng và dòng "Việc trước: chưa có";
+        như vậy việc về tin nhắn thầy hiệu trưởng đã bị xoá khỏi việc trước. Hỏi tiếp "mở File Explorer cho tôi":
+        tutor bắt đầu việc mới, chỉ đúng biểu tượng thư mục màu vàng trên taskbar, sau đó xác nhận File Explorer
+        đang mở thư mục Downloads; hoàn toàn không nhắc lại việc cũ. S-1 và S-2 đạt.
+[x] G2. (S-3) Hỏi lại câu Việc 2. Khi tutor chỉ bước đầu: rê chuột vào ô, bấm ghim, bấm ×. Việc có dừng
+        như G1 không? Có. Không có việc gì, ghim ô rồi bấm ×: ô chỉ thu lại? Có.
+        Kết quả 04/11 — video C:\Users\Lenovo\Downloads\G2.mp4 và console: khi việc 4 phần đang chạy,
+        người dùng ghim Dynamic Island rồi bấm ×; việc dừng ngay, tutor nói câu xác nhận "Được, mình dừng nhé.
+        Khi nào cần bạn cứ bấm nút tròn.", chấm/viền chỉ dẫn biến mất và ô thu lại. Cửa sổ đen in
+        "Dừng theo lời người dùng; bỏ: 20261104-151612-b30e". Khi đã hết việc, ghim ô rồi bấm × lần nữa thì
+        Dynamic Island chỉ thu nhỏ, không phát sinh việc hay hành động mới. S-3 đạt.
+[x] G3. (S-4) Mở một video YouTube bất kỳ trên Brave, cho chạy, rồi hỏi "tạm dừng video". Tutor làm gì?
+        Kết quả 04/11: ASR nhận "tạm dừng video này cho tôi"; tutor hiểu đúng đây là yêu cầu điều khiển video,
+        chỉ vào giữa khung video để tạm dừng và cuối cùng xác nhận video đã tạm dừng. Tutor không nói câu
+        "Được, mình dừng nhé", không xoá việc như lệnh dừng hướng dẫn; S-4 đạt.
+        Video đã lưu tại C:\Users\Lenovo\Downloads\G3.mp4 (không cần xem lại để chấm kết quả này).
+        Ghi chú UX ngoài tiêu chí S-4: sau khi người dùng thao tác, console hai lần ghi màn hình "ĐÃ ĐỔI,
+        không nói" với trạng thái stale, nhưng tutor vẫn lặp lại lời mời bấm vào giữa video tổng cộng ba lần
+        trước khi xác nhận hoàn tất. Không tính hiện tượng lặp này làm G3 trượt, nhưng cần Claude xem lại.
+[x] G4. (S-5) Hỏi lại câu Việc 2, nói "dừng" khi tutor chỉ bước đầu, rồi nói "làm tiếp". Tutor nói gì? Có chỉ vào
+        đâu không?
+        Kết quả 04/11: khi đang ở bước đầu của việc 4 phần, nói "dừng" làm console in
+        "Dừng theo lời người dùng; bỏ: 20261104-152319-ff95". Sau đó nói "làm tiếp", tutor phát đúng câu
+        "Không còn việc nào đang dở. Bạn cứ hỏi việc mới nhé."; console ghi dạng rút gọn
+        "Không còn việc nào đang dở để làm tiếp." Tutor không hiện chấm, không chỉ vào đâu và không khôi phục
+        việc vừa dừng. S-5 đạt.
+[x] G5. Chép chữ trong cửa sổ đen của mục G vào console_G.txt, để cùng chỗ với video (KHÔNG qua GitHub).
+        Đã tổng hợp log G0–G4 vào C:\Users\Lenovo\Downloads\console_G.txt ngày 04/11/2026.
