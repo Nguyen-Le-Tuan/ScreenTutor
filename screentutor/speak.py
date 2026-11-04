@@ -38,6 +38,11 @@ _COPY_NO = re.compile(r"\s*\((\d+)\)")
 _OK = re.compile(r"\bO\s?K\b")
 _TIME = re.compile(r"\b(\d{1,2}):(\d{2})\b")
 _PDF_XPS = re.compile(r"\bPDF\s*/\s*XPS\b", re.IGNORECASE)  # "XPS" read aloud only confused the listener
+# K (03/11): keys the way people here say them; "Ctrl" alone would be spelt out letter by letter.
+_LETTERS = {"A": "a", "C": "xê", "V": "vê", "X": "ích xì", "Z": "dét", "L": "e lờ", "T": "tê"}
+_COMBO = re.compile(r"\bCtrl\s*\+\s*([ACVXZLT])\b")
+_KEY_LETTER = re.compile(r"\b(phím|chữ) ([ACVXZLT])\b")
+_KEY_WORDS = [(re.compile(r"\bCtrl\b"), "con trôn"), (re.compile(r"\bEnter\b"), "en tơ"), (re.compile(r"\bTab\b"), "táp")]
 _DROP = re.compile(r"[\"“”‘’'()\[\]{}*#_`<>→•]")
 
 
@@ -48,6 +53,10 @@ def for_speech(text: str) -> str:
     t = _OK.sub("ô kê", t)
     t = _PDF_XPS.sub("PDF", t)
     t = _TIME.sub(lambda m: f"{int(m.group(1))} giờ {int(m.group(2))}", t)
+    t = _COMBO.sub(lambda m: "Ctrl " + _LETTERS[m.group(1)], t)
+    t = _KEY_LETTER.sub(lambda m: f"{m.group(1)} {_LETTERS[m.group(2)]}", t)
+    for pattern, said in _KEY_WORDS:
+        t = pattern.sub(said, t)
     t = t.replace("/", " ").replace("&", " và ").replace("...", ".").replace("…", ".")
     t = _DROP.sub("", t)
     t = re.sub(r"\s+([,.!?])", r"\1", t)

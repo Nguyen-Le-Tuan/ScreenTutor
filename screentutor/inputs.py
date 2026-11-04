@@ -11,7 +11,11 @@ lasts 50-150 ms, so a 15 ms poll does not miss it.
 B1b (founder 02/11): the same poll keeps the last seconds of the mouse path, so
 gesture.py can tell what she was pointing at when she asked. Nothing is drawn.
 
-  py -m screentutor.inputs --seconds 30     # Windows: print every click and Ctrl+Alt hold
+K (03/11): a press and release more than DRAG_PX apart is a Drag (she selected
+something), not a Click; and a few shortcuts the tutor may teach are seen as Combo
+events. Only the nine keys in KEYS_POLLED are ever read, so what she types is not.
+
+  py -m screentutor.inputs --seconds 30     # Windows: print every click, drag, shortcut and Ctrl+Alt hold
 """
 
 from __future__ import annotations
@@ -29,6 +33,9 @@ DOUBLE_CLICK_S = 0.5     # Windows default double-click time
 DOUBLE_CLICK_PX = 10     # physical px between the two clicks of a double click
 HOLD_S = 0.3             # Ctrl+Alt must stay down this long, so quick shortcuts are not mistaken for it
 TRAIL_S = 60.0           # mouse path kept: a question lasts at most 45 s (listen.MAX_TURN_S), plus the 3 s before it
+DRAG_PX = 12             # physical px between press and release: a shaky click stays a click
+KEYS_POLLED = {0x41: "A", 0x43: "C", 0x56: "V", 0x58: "X", 0x5A: "Z", 0x4C: "L", 0x54: "T", 0x0D: "Enter",
+               0x09: "Tab"}   # with Ctrl for the letters; tutor.KEYS
 
 
 @dataclass
@@ -40,6 +47,7 @@ class Sample:
     alt: bool
     x: int
     y: int
+    keys: frozenset = frozenset()   # which of KEYS_POLLED are down
 
 
 @dataclass
@@ -49,6 +57,21 @@ class Click:
     y: int
     button: str       # "left" or "right"
     double: bool = False
+
+
+@dataclass
+class Drag:
+    t: float          # when the button went down
+    x: int            # where it went down, physical pixels
+    y: int
+    x2: int           # where it was let go
+    y2: int
+
+
+@dataclass
+class Combo:
+    t: float
+    keys: str         # "Ctrl+C", "Enter": as in tutor.KEYS
 
 
 @dataclass
@@ -67,7 +90,7 @@ class InputTracker:
         self._combo_since: float | None = None
         self._holding = False
 
-    def feed(self, s: Sample) -> list[Click | Hold]:
+    def feed(self, s: Sample) -> list[Click | Drag | Combo | Hold]:
         events: list[Click | Hold] = []
         prev = self._prev
         for button in ("left", "right"):
@@ -76,6 +99,10 @@ class InputTracker:
                 self._down[button] = (s.t, s.x, s.y)
             elif was and not now and button in self._down:
                 t, x, y = self._down.pop(button)
+                if button == "left" and math.hypot(s.x - x, s.y - y) > DRAG_PX:
+                    events.append(Drag(t, x, y, s.x, s.y))
+                    self._last_left = None
+                    continue
                 click = Click(t, x, y, button)
                 if button == "left":
                     last = self._last_left
@@ -83,6 +110,13 @@ class InputTracker:
                                         and math.hypot(x - last.x, y - last.y) <= DOUBLE_CLICK_PX)
                     self._last_left = click
                 events.append(click)
+
+        before = prev.keys if prev else frozenset()
+        for key in sorted(s.keys - before):          # pressed since the last poll
+            if key in ("Enter", "Tab"):
+                events.append(Combo(s.t, key))
+            elif s.ctrl and not s.alt:
+                events.append(Combo(s.t, f"Ctrl+{key}"))
 
         combo = s.ctrl and s.alt
         if combo and self._combo_since is None:
@@ -125,7 +159,8 @@ def read_sample() -> Sample:
     down = lambda vk: bool(user32.GetAsyncKeyState(vk) & 0x8000)  # noqa: E731
     pt = wintypes.POINT()
     user32.GetCursorPos(ctypes.byref(pt))
-    return Sample(time.monotonic(), down(0x01), down(0x02), down(0x11), down(0x12), pt.x, pt.y)
+    keys = frozenset(name for vk, name in KEYS_POLLED.items() if down(vk))
+    return Sample(time.monotonic(), down(0x01), down(0x02), down(0x11), down(0x12), pt.x, pt.y, keys)
 
 
 def watch(on_event, stop: threading.Event, read=read_sample, poll_s: float = POLL_S, trail: Trail | None = None) -> None:
@@ -154,12 +189,16 @@ def main(argv=None) -> None:
         if isinstance(e, Click):
             kind = "BẤM ĐÚP" if e.double else ("bấm trái" if e.button == "left" else "bấm phải")
             print(f"{kind} tại ({e.x}, {e.y})")
+        elif isinstance(e, Drag):
+            print(f"KÉO từ ({e.x}, {e.y}) tới ({e.x2}, {e.y2})")
+        elif isinstance(e, Combo):
+            print(f"PHÍM {e.keys}")
         else:
             print("GIỮ Ctrl+Alt: bắt đầu" if e.started else "GIỮ Ctrl+Alt: thả ra")
 
     stop = threading.Event()
     threading.Timer(args.seconds, stop.set).start()
-    print(f"Đang nghe {args.seconds:.0f} giây. Bấm, bấm đúp, bấm phải, giữ Ctrl+Alt...")
+    print(f"Đang nghe {args.seconds:.0f} giây. Bấm, bấm đúp, bấm phải, kéo bôi đen, Ctrl+C/V/A, Enter, giữ Ctrl+Alt...")
     watch(show, stop)
 
 

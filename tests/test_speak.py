@@ -108,3 +108,9 @@ def test_on_sound_still_comes_when_no_sound_went_out():
     except RuntimeError:
         pass
     assert calls == ["stopped", "nothing to read", "failed"]
+
+
+def test_keys_are_said_the_way_people_here_say_them():
+    assert for_speech("Bạn bấm giữ phím Ctrl rồi bấm phím C.") == "Bạn bấm giữ phím con trôn rồi bấm phím xê."
+    assert for_speech("Bấm Ctrl+V rồi bấm Enter.") == "Bấm con trôn vê rồi bấm en tơ."
+    assert for_speech("Bấm Ctrl + A để chọn hết.") == "Bấm con trôn a để chọn hết."

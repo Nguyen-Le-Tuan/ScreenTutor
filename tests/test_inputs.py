@@ -111,3 +111,25 @@ def test_watch_writes_the_trail_only_when_given_one():
 
     watch(lambda e: None, stop, read=read, poll_s=0, trail=trail)
     assert trail.between(0.0, 0.1) == [(0.0, 5, 6), (0.1, 7, 8)]
+
+
+def test_a_press_and_release_far_apart_is_a_drag_not_a_click():
+    from screentutor.inputs import DRAG_PX, Drag
+
+    events = _run([(0.0, True, False, False, False, 100, 200), (0.4, True, False, False, False, 300, 205),
+                    (0.5, False, False, False, False, 300, 205)])
+    assert events == [Drag(0.0, 100, 200, 300, 205)]
+    shaky = _run([(0.0, True, False, False, False, 100, 200), (0.1, False, False, False, False, 100 + DRAG_PX - 2, 203)])
+    assert [type(e).__name__ for e in shaky] == ["Click"] and shaky[0].x == 100
+
+
+def test_only_the_taught_shortcuts_are_seen_never_what_she_types():
+    from screentutor.inputs import Combo
+
+    tracker = InputTracker()
+    seen = []
+    for t, ctrl, keys in [(0.0, False, {"C"}), (0.1, False, set()),          # typing "c": nothing
+                          (0.2, True, set()), (0.3, True, {"C"}), (0.4, True, {"C"}),   # Ctrl+C, held
+                          (0.5, False, set()), (0.6, False, {"Enter"}), (0.7, False, set())]:
+        seen += tracker.feed(Sample(t, False, False, ctrl, False, 0, 0, frozenset(keys)))
+    assert seen == [Combo(0.3, "Ctrl+C"), Combo(0.6, "Enter")]

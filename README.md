@@ -138,7 +138,7 @@ python -m tutor_eval.sam run --yes          # T11 (about $0.06)
 |---|---|
 | `screentutor/app.py` | The whole app: button, hotkey, listening, session, overlay, island, voice, guards, memory |
 | `screentutor/tutor.py` | The Muse Spark calls: first turn (`ask`), the step check (`follow_up`), the note (`summarise`); the streaming reader |
-| `screentutor/session.py` | The agent loop: plan, parts, click, read, scroll, wait, picking a task up again; each step goes up with the first sound of its sentence |
+| `screentutor/session.py` | The agent loop: plan, parts, click, drag to select, shortcut keys, typing into a box, read, scroll, wait, picking a task up again; each step goes up with the first sound of its sentence |
 | `screentutor/island.py`, `conversation.py`, `ui.py` | The dynamic island, its talk and its 12 states; the round button |
 | `screentutor/overlay.py` | Click-through overlay: the dot that waits beside her mouse and flies to the target, reading frame, scroll hint, tick, edge light |
 | `screentutor/guards.py` | Speaking up without being asked: Zalo's temporary copy |
@@ -146,9 +146,12 @@ python -m tutor_eval.sam run --yes          # T11 (about $0.06)
 | `screentutor/gesture.py` | What her mouse path says: stopped at a point, or circled a region |
 | `screentutor/listen.py`, `levels.py` | Muse Voice Transcribe realtime client, with turn joining; sound levels for the island |
 | `screentutor/state.py`, `winstate.py` | Windows state sensors (ctypes, no extra dependencies) |
-| `screentutor/inputs.py`, `still.py` | Observing clicks and the mouse path; waiting for a still screen or a change |
+| `screentutor/inputs.py`, `still.py` | Observing clicks, drags, nine shortcut keys (never what she types) and the mouse path; waiting for a still screen or a change |
+| `screentutor/textsnap.py` | Moves a drag's two ends to the edges of the words, counting the words the model says to select, so a selection never cuts a word |
 | `screentutor/speak.py` | Local VieNeu voice, with fixes for how file names and times are read; says when its first sound goes out |
 | `tutor_eval/voice_sync.py` | Measures, on a screen recording with sound, how far the voice comes after the mark. Before the fix, on the four T13 videos: a median of 2.85 s over 29 turns |
+| `tutor_eval/actions.py` | More than clicks, on real screens from the T13 run: a plain-text web address (select, copy, paste), Ctrl+A, typing a font size. Each case 5 times: the old prompt passed 1 of 7 (it said to click the plain-text address again 5 times in 5); the K prompt passes all 8, 39 of 40, and the 12 grounding cases still pass every rule |
+| `tutor_eval/speed.py`, `tutor_eval/hedge.py` | E1: fewer pixels or less thinking, is it faster? (No: half-size images missed 5 of 12 and were slower; the time follows the thinking.) E2: racing two calls |
 | `screentutor/fresh.py`, `tutor_eval/stale_replay.py` | Before a step is said, is the screen still the one it is about? If not, the tutor says nothing and looks again. Replayed on the T13 videos: 5 of 5 stale turns caught, 1 of 24 fresh ones flagged (thresholds chosen on those turns) |
 | `grounding_test/`, `tutor_eval/`, `stt_eval/`, `tts_eval/` | The tests above, each with its pre-registered rule in the file's docstring |
 | `docs/tests/` | Checklists and results of the hands-on Windows runs. T2–T8 are filled in; T13 is the next run. T10 is her own first trial, on her own tasks; the filled-in sheet holds her words and stays private |

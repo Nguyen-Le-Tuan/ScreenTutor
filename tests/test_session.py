@@ -660,3 +660,85 @@ def test_our_own_widgets_changing_is_not_the_screen_moving_on():
         s.glance, s.own = _moved, (lambda own=own: own)
         s.run("x")
         assert len(tutor.calls) == (1 if said else 3)
+
+
+def test_a_drag_step_shows_the_drag_and_waits_for_her_drag():
+    from screentutor.inputs import Drag
+
+    shown, waited = [], []
+    tutor = FakeTutor([Reply(say="Bạn bôi đen địa chỉ.", found=True, point=(500, 400), end=(640, 400), target="drag"),
+                       Reply(say="Xong.", target="none", step_done=True, goal_done=True)])
+    s, log = _session(tutor, [], ["settled"])
+    s.show_drag = lambda a, b, caution: shown.append((a, b))
+    s.wait_drag = lambda since, t: (waited.append("drag"), Drag(2.0, 960, 432, 1229, 432))[1]
+    steps = s.run("Mở trang bồi dưỡng")
+    assert shown == [((960, 432), (1229, 432))] and waited == ["drag"]
+    assert tutor.turns[0]["acted"] == "dragged" and steps[0].target == "drag"
+
+
+def test_a_shortcut_may_have_no_place_and_ends_on_its_keys_or_a_click():
+    from screentutor.inputs import Combo
+
+    for event, acted in ((Combo(2.0, "Ctrl+C"), "keys"), (CLICK, "click")):
+        shown = []
+        tutor = FakeTutor([Reply(say="Bạn bấm giữ phím Ctrl rồi bấm phím C.", found=True, target="keys", keys="Ctrl+C"),
+                           Reply(say="Xong.", target="none", step_done=True, goal_done=True)])
+        s, log = _session(tutor, [], ["unchanged"])
+        s.show_keys = lambda px, keys, caution: shown.append((px, keys))
+        s.wait_keys = lambda since, t, keys, e=event: e
+        s.run("Sao chép địa chỉ")
+        assert shown == [(None, "Ctrl+C")] and tutor.turns[0]["acted"] == acted
+        assert [x[1] for x in log if x[0] == "say"][0].startswith("Bạn bấm giữ phím Ctrl")
+
+
+def test_a_typing_step_shows_what_to_type_and_waits_for_enter():
+    from screentutor.inputs import Combo
+
+    shown, asked = [], []
+    tutor = FakeTutor([Reply(say="Bạn bấm vào ô cỡ chữ, gõ 15 rồi bấm Enter.", found=True, point=(150, 113),
+                             target="type", keys="15"),
+                       Reply(say="Xong.", target="none", step_done=True, goal_done=True)])
+    s, log = _session(tutor, [], ["settled"])
+    s.show_type = lambda px, text: shown.append((px, text))
+    s.wait_typed = lambda since, t, point: (asked.append(point), Combo(3.0, "Enter"))[1]
+    s.run("Đổi cỡ chữ thành 15")
+    assert shown == [((288, 122), "15")] and asked == [(288, 122)] and tutor.turns[0]["acted"] == "typed"
+
+
+def test_without_the_new_waits_a_k_step_falls_back_to_a_click():
+    tutor = FakeTutor([Reply(say="Bạn bôi đen.", found=True, point=(500, 400), end=(640, 400), target="drag"),
+                       Reply(say="Xong.", target="none", step_done=True, goal_done=True)])
+    s, log = _session(tutor, [CLICK], ["settled"])
+    s.run("x")
+    assert ("show", 960, 432) in log and tutor.turns[0]["acted"] == "click"
+
+
+def test_the_box_hands_a_step_only_what_it_waits_for():
+    from screentutor.inputs import Combo, Drag
+
+    box = ClickBox()
+    box.put(Combo(1.0, "Ctrl+V"))
+    box.put(Drag(2.0, 1, 1, 90, 1))
+    assert box.wait(0.0, 0.01, accept=lambda e: isinstance(e, Combo) and e.keys == "Ctrl+C") is None
+    box.put(Combo(3.0, "Ctrl+C"))
+    assert box.wait(0.0, 0.01, accept=lambda e: isinstance(e, Combo) and e.keys == "Ctrl+C") == Combo(3.0, "Ctrl+C")
+    box.put(Drag(4.0, 1, 1, 90, 1))
+    assert box.wait(0.0, 0.01) == Drag(4.0, 1, 1, 90, 1)      # by default a click or a drag: she did something
+
+
+def test_the_drag_shown_is_snapped_to_whole_words_on_the_screenshot():
+    from screentutor.inputs import Drag
+    from tests.test_textsnap import _line
+
+    img, edges = _line()                     # 900 x 120: one line of words at y 50-68
+    address = edges[2]
+    shown = []
+    tutor = FakeTutor([Reply(say="Bạn bôi đen địa chỉ.", found=True, target="drag", keys="boiduong-thunghiem.example",
+                             point=((address[0] + 30) * 1000 / 900, 500), end=(990, 500)),     # overshoots to the edge
+                       Reply(say="Xong.", target="none", step_done=True, goal_done=True)])
+    s, log = _session(tutor, [], ["settled"])
+    s.look = lambda: (img, "state")
+    s.show_drag = lambda a, b, caution: shown.append((a[0], b[0]))
+    s.wait_drag = lambda since, t: Drag(2.0, 0, 0, 50, 0)
+    s.run("x")
+    assert shown == [(address[0] - 2, address[1] + 2)]

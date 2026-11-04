@@ -18,6 +18,11 @@ nothing is said and the tutor looks again, waiting first for a click she made me
 look again in silence). At most MAX_STALE times in a row. Replayed on the T13 videos: 5 of 5
 stale turns caught, 1 of 24 fresh turns flagged (tutor_eval/stale_replay.py).
 
+K (03/11, founder's T13 notes): three more kinds of step, so the tutor can teach more than clicks:
+  drag    select by pressing and dragging; the mark shows the drag; it ends on her drag (or click)
+  keys    a shortcut such as Ctrl+C; it ends on those keys (or a click: she did it another way)
+  type    type into a box and press Enter; it ends on Enter or Tab (clicks into the box do not end it)
+
 B2 (02/11): the session keeps the plan of a big task, the part being done and the notes
 of a long message, and hands them to every later turn, so she never has to ask again.
 Each step says what it wants:
@@ -46,7 +51,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 
-from . import fresh
+from . import fresh, textsnap
 from .still import BIG_CHANGE, CHANGE_MIN, STILL_S
 
 MAX_STEPS = 12        # T6 (02/11): exporting a PDF after backing out of a wrong dialog took 8 steps and hit 8
@@ -106,6 +111,12 @@ class Session:
     on_plan: object = None         # (plan, part) -> None: the parts of the task and the part being done, from 1
     confirm: object = None         # (x, y) physical px: the step she clicked there has been checked and is done
     glance: object = None          # C2: () -> PIL image of the screen now, to check an answer against before it is said
+    show_drag: object = None       # K: (start, end, caution) physical px
+    show_keys: object = None       # K: (point or None, keys, caution): a shortcut, shown as keys
+    show_type: object = None       # K: (point, text): what to type into the box at point
+    wait_drag: object = None       # K: (since, timeout_s) -> Drag, or a Click, or None
+    wait_keys: object = None       # K: (since, timeout_s, keys) -> Combo, or a Click, or None
+    wait_typed: object = None      # K: (since, timeout_s, point) -> Combo Enter/Tab, a Click away from point, or None
     own: object = None             # C2: () -> [(x1, y1, x2, y2)] physical px of our own widgets, left out of that check
     steps: list[Step] = field(default_factory=list)
     plan: list[str] = field(default_factory=list)
@@ -220,11 +231,20 @@ class Session:
             if self.shown_at is not None:
                 return
             self.shown_at = time.monotonic()
+            end = reply.end_px(self.screen_size) if reply.target == "drag" else None
             if self.reading and self.show_box:
                 self.show_box(box, reply.caution)
             elif reply.target == "scroll" and self.wait_change and self.show_scroll:
                 self.show_scroll(px)
-            else:
+            elif end is not None and self.show_drag:
+                if self.seen is not None:   # K: whole words, not the model's 20-30 px
+                    px, end = textsnap.snap_drag(self.seen, px, end, reply.keys)
+                self.show_drag(px, end, reply.caution)
+            elif reply.target == "keys" and self.show_keys:
+                self.show_keys(px, reply.keys, reply.caution)
+            elif reply.target == "type" and self.show_type:
+                self.show_type(px, reply.keys)
+            elif px is not None:
                 self.show(px[0], px[1], reply.caution)
             self._status("caution" if reply.caution else "reading" if self.reading else "turn")  # as the mark's colour
             self.on_screen.set()
@@ -303,6 +323,22 @@ class Session:
             return None  # she stopped, or asked something new; she can ask again any time
         self.clicked = click
         return self._settle(click)
+
+    def _act(self, reply, px, wait, done: str) -> tuple[str | None, str]:
+        """K: a drag, a shortcut or typing, as _click: words and mark together, what she does, a still screen.
+        Returns (outcome, what she did): done if she did what was asked, "click" if she clicked instead."""
+        self._prepare_step(reply, px, None)
+        self._speak(reply.say)
+        if self.moved_on:
+            return STALE, done
+        event = wait(self.shown_at, CLICK_WAIT_S) if self._wait_shown() else None
+        self.hide()
+        if event is None or self._cancelled():
+            return None, done
+        clicked = type(event).__name__ == "Click"
+        if hasattr(event, "x"):
+            self.clicked = event   # its tick, once the next turn has checked the step
+        return self._settle(event), "click" if clicked else done
 
     def _read(self, reply, px, box) -> tuple[str | None, str]:
         """A region to read. Returns (outcome, what she did); outcome None as in _click."""
@@ -385,7 +421,7 @@ class Session:
                 self._status("error")
                 self.say("Mình chưa xem được màn hình. Bạn hỏi lại nhé.")
                 break
-            if reply.goal_done or px is None:
+            if reply.goal_done or (px is None and reply.target != "keys"):
                 self._drop_step()
                 self._speak(reply.say)
                 if not self._is_waiting(reply) or waits >= MAX_WAITS or self.wait_screen is None:
@@ -404,6 +440,12 @@ class Session:
                 outcome, acted = self._read(reply, px, reply.box_px(img.size))
             elif reply.target == "scroll" and self.wait_change:
                 outcome, acted = self._scroll(reply, px), "moved"
+            elif reply.target == "drag" and self.wait_drag:
+                outcome, acted = self._act(reply, px, self.wait_drag, "dragged")
+            elif reply.target == "keys" and self.wait_keys:
+                outcome, acted = self._act(reply, px, lambda since, t: self.wait_keys(since, t, reply.keys), "keys")
+            elif reply.target == "type" and self.wait_typed:
+                outcome, acted = self._act(reply, px, lambda since, t: self.wait_typed(since, t, px), "typed")
             else:
                 outcome, acted = self._click(reply, px), "click"
             if self.change is not None:
@@ -424,26 +466,31 @@ class Session:
 
 
 class ClickBox:
-    """Collects clicks from the input watcher thread; the session takes the first one after the ring appears."""
+    """Collects clicks, drags and shortcuts from the input watcher thread; a step takes the first that fits after it
+    went up (K: a drag or a shortcut can be what she was asked to do)."""
 
     def __init__(self):
         self._clicks = []
         self._cv = threading.Condition()
 
     def put(self, event) -> None:
-        from .inputs import Click
+        from .inputs import Click, Combo, Drag
 
-        if isinstance(event, Click):
+        if isinstance(event, (Click, Drag, Combo)):
             with self._cv:
                 self._clicks.append(event)
                 self._cv.notify_all()
 
-    def wait(self, since: float, timeout_s: float, cancel: threading.Event | None = None, ignore=None):
-        """First click after since, skipping clicks ignore(click) says are not on the app (the Hỏi button)."""
+    def wait(self, since: float, timeout_s: float, cancel: threading.Event | None = None, ignore=None, accept=None):
+        """First event after since that accept(event) takes (by default a click or a drag: she did something with the
+        mouse), skipping those ignore(event) says are not on the app (the Hỏi button)."""
+        from .inputs import Click, Drag
+
+        accept = accept or (lambda e: isinstance(e, (Click, Drag)))
         deadline = time.monotonic() + timeout_s
         with self._cv:
             while True:
-                fresh = [c for c in self._clicks if c.t >= since and not (ignore and ignore(c))]
+                fresh = [c for c in self._clicks if c.t >= since and accept(c) and not (ignore and ignore(c))]
                 if fresh:
                     self._clicks.clear()
                     return fresh[0]

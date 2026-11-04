@@ -154,6 +154,101 @@ def paint_dot(p: QPainter, d: Dot, scale: float = 1.0, color: QColor = COLOR) ->
     p.drawEllipse(c, r, r)
 
 
+DRAG_HOLD_S, DRAG_MOVE_S, DRAG_REST_S = 0.35, 0.9, 0.7   # K: press, drag along, let go and rest; then again
+BAND = 22.0                          # logical px: a line of text, the height of the selection the drag lays down
+BAND_ALPHA = 80
+KEY_H, KEY_PAD, KEY_GAP, KEY_FONT = 30.0, 10.0, 8.0, 15   # K: the keys shown for a shortcut (logical px)
+KEY_FROM = (20.0, 16.0)              # where the keys sit, from the point they act on
+
+
+@dataclass
+class DragFrame:
+    dot: Dot
+    band: tuple[tuple[float, float], tuple[float, float]] | None   # from where the drag starts to where it is now
+    band_alpha: int = 0
+
+
+def drag_at(t: float, start: tuple[float, float], a: tuple[float, float], b: tuple[float, float]) -> DragFrame:
+    """K: the dot flies to a, then over and over: is pressed, drags to b laying a selection behind it, lets go."""
+    if t < DOT_TRAVEL_S:
+        return DragFrame(dot_at(t, start, a, "on"), None)
+    u = (t - DOT_TRAVEL_S) % (DRAG_HOLD_S + DRAG_MOVE_S + DRAG_REST_S)
+    if u < DRAG_HOLD_S:
+        k, alpha = 0.0, BAND_ALPHA
+    elif u < DRAG_HOLD_S + DRAG_MOVE_S:
+        k, alpha = ease_in_out((u - DRAG_HOLD_S) / DRAG_MOVE_S), BAND_ALPHA
+    else:
+        k, alpha = 1.0, round(BAND_ALPHA * (1 - (u - DRAG_HOLD_S - DRAG_MOVE_S) / DRAG_REST_S))
+    pos = (a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k)
+    held = u < DRAG_HOLD_S + DRAG_MOVE_S
+    return DragFrame(Dot(pos[0], pos[1], DOT_R * (0.8 if held else 1.0), True), (a, pos), alpha)
+
+
+def paint_drag(p: QPainter, f: DragFrame, scale: float = 1.0, color: QColor = COLOR) -> None:
+    if f.band is not None and f.band_alpha > 0:
+        band = QColor(color)
+        band.setAlpha(f.band_alpha)
+        pen = QPen(band, BAND * scale)
+        pen.setCapStyle(Qt.FlatCap)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setPen(pen)
+        p.drawLine(QPointF(*f.band[0]), QPointF(*f.band[1]))
+    paint_dot(p, f.dot, scale, color)
+
+
+def key_parts(keys: str, typing: bool = False) -> tuple[list[str], str]:
+    """The keys to draw and what goes between them: 'Ctrl+C' -> (['Ctrl', 'C'], '+'); typing '15' -> (['gõ 15', 'Enter'], '→')."""
+    if typing:
+        return [f"gõ {keys}", "Enter"], "→"
+    return [k for k in keys.split("+") if k], "+"
+
+
+def paint_keys(p: QPainter, x: float, y: float, parts: list[str], joiner: str, t: float, scale: float = 1.0,
+               color: QColor = COLOR, bounds: tuple[float, float] | None = None) -> tuple[float, float, float, float]:
+    """Keys like the real ones beside (x, y), popping up then breathing in the step's colour. Returns their box."""
+    from PySide6.QtGui import QFont, QFontMetricsF
+
+    font = QFont()
+    font.setPixelSize(round(KEY_FONT * scale))
+    font.setBold(True)
+    fm = QFontMetricsF(font)
+    h, pad, gap = KEY_H * scale, KEY_PAD * scale, KEY_GAP * scale
+    widths = [fm.horizontalAdvance(s) + 2 * pad for s in parts]
+    jw = fm.horizontalAdvance(joiner)
+    total = sum(widths) + (len(parts) - 1) * (jw + 2 * gap)
+    left, top = x + KEY_FROM[0] * scale, y + KEY_FROM[1] * scale
+    if bounds is not None:   # keep the keys on the screen
+        left = min(left, bounds[0] - total - 4 * scale) if left + total > bounds[0] else left
+        top = y - KEY_FROM[1] * scale - h if top + h > bounds[1] else top
+    pop = ease_out(t / 0.2)
+    breath = (1 - math.cos(2 * math.pi * (t % PULSE_S) / PULSE_S)) / 2
+    p.setRenderHint(QPainter.Antialiasing)
+    p.setOpacity(pop)
+    p.setFont(font)
+    cx = left
+    for i, (part, w) in enumerate(zip(parts, widths)):
+        rect = QRectF(cx, top, w, h)
+        edge = QColor(color)
+        edge.setAlpha(round(140 + 115 * breath))
+        p.setPen(QPen(edge, 2.5 * scale))
+        p.setBrush(QColor(28, 28, 30, 235))
+        p.drawRoundedRect(rect, 7 * scale, 7 * scale)
+        p.setPen(QColor(255, 255, 255))
+        p.drawText(rect, Qt.AlignCenter, part)
+        cx += w
+        if i < len(parts) - 1:   # on a dark disc of its own: plain white is lost on a white page
+            r = min(h * 0.4, (jw + 2 * gap) / 2 + 2 * scale)
+            mid = QPointF(cx + (jw + 2 * gap) / 2, top + h / 2)
+            p.setPen(Qt.NoPen)
+            p.setBrush(QColor(28, 28, 30, 215))
+            p.drawEllipse(mid, r, r)
+            p.setPen(QColor(255, 255, 255))
+            p.drawText(QRectF(cx, top, jw + 2 * gap, h), Qt.AlignCenter, joiner)
+            cx += jw + 2 * gap
+    p.setOpacity(1.0)
+    return left, top, left + total, top + h
+
+
 @dataclass
 class Focus:
     box: tuple[float, float, float, float]
@@ -334,6 +429,8 @@ class Overlay:
         self._target = None            # the ring's target
         self._box = None               # or the frame's box
         self._hint = None              # or where to scroll
+        self._drag_to = None           # K: with _target, where a drag ends
+        self._keys = None              # K: (parts, joiner, at): keys to show, at a fixed point when there is no target
         self._start = (0.0, 0.0)
         self._until_ms = None
         self._color = COLOR
@@ -361,12 +458,33 @@ class Overlay:
         self._color = CAUTION_COLOR if caution else COLOR
         x, y = to_logical(px, py, self._screen.devicePixelRatio())
         self._start = self._from()
-        self._box = self._hint = None
+        self._box = self._hint = self._drag_to = self._keys = None
         self._target = (x, y)
         self._clock.restart()
         self._until_ms = None if seconds is None else seconds * 1000
         self._publish()
         self._run()
+
+    def drag(self, px: float, py: float, ex: float, ey: float, caution: bool = False) -> None:
+        """K: press at (px, py) and drag to (ex, ey), physical pixels, shown over and over."""
+        self.point_at(px, py, caution=caution)
+        self._drag_to = to_logical(ex, ey, self._screen.devicePixelRatio())
+
+    def keys(self, px: float | None, py: float | None, keys: str, caution: bool = False, typing: bool = False) -> None:
+        """K: a shortcut (keys 'Ctrl+C') or text to type and Enter (typing). With a point the dot flies there and
+        the keys sit beside it; without one the keys come up beside where the dot waits, by her mouse."""
+        parts, joiner = key_parts(keys, typing)
+        if px is not None and py is not None:
+            self.point_at(px, py, caution=caution)
+            self._keys = (parts, joiner, None)
+        else:
+            self._color = CAUTION_COLOR if caution else COLOR
+            self._target = self._box = self._hint = self._drag_to = None
+            self._keys = (parts, joiner, self._from())
+            self._clock.restart()
+            self._until_ms = None
+            self._publish()
+            self._run()
 
     def focus_on(self, x1: float, y1: float, x2: float, y2: float, caution: bool = False) -> None:
         """A region to read, in physical pixels: the frame opens out of the mouse and the rest darkens."""
@@ -413,7 +531,7 @@ class Overlay:
 
     def clear(self) -> None:
         """Gone at once: the session takes a screenshot right after this, and the ticks stay out of its way."""
-        self._target = self._box = self._hint = None
+        self._target = self._box = self._hint = self._drag_to = self._keys = None
         self._publish()
         if not self._busy():
             self._stop()
@@ -430,7 +548,7 @@ class Overlay:
         return cursor.x() - geo.x(), cursor.y() - geo.y()
 
     def _busy(self) -> bool:
-        return any(v is not None for v in (self._target, self._box, self._hint)) or bool(self._ticks) \
+        return any(v is not None for v in (self._target, self._box, self._hint, self._keys)) or bool(self._ticks) \
             or self._glowing or self._glow_level > 0 or self._flash_at is not None
 
     def _moving(self) -> bool:
@@ -460,7 +578,10 @@ class Overlay:
             self.after_topmost()
 
     def _frame(self) -> Dot:
-        return dot_at(self._clock.elapsed() / 1000, self._start, self._target)
+        t = self._clock.elapsed() / 1000
+        if self._drag_to is not None:
+            return drag_at(t, self._start, self._target, self._drag_to).dot
+        return dot_at(t, self._start, self._target)
 
     def _paint(self, p: QPainter) -> None:
         now = self._steady.elapsed() / 1000
@@ -476,8 +597,18 @@ class Overlay:
             paint_focus(p, focus_at(t, self._start, self._box), (self._w.width(), self._w.height()), color=self._color)
         if self._hint is not None:
             paint_hint(p, hint_at(t, self._start, self._hint), color=self._color)
-        if self._target is not None:
+        if self._target is not None and self._drag_to is not None:
+            paint_drag(p, drag_at(t, self._start, self._target, self._drag_to), color=self._color)
+        elif self._target is not None:
             paint_dot(p, self._frame(), color=self._color)
+        if self._keys is not None:
+            parts, joiner, at = self._keys
+            if at is None:   # beside the dot, once it has landed
+                f = self._frame()
+                at = (f.x, f.y) if f.arrived else None
+            if at is not None:
+                paint_keys(p, at[0], at[1], parts, joiner, max(t - (0 if self._target is None else DOT_TRAVEL_S), 0),
+                           color=self._color, bounds=(self._w.width(), self._w.height()))
         for t0, x, y in self._ticks:
             paint_tick(p, x, y, now - t0)
 

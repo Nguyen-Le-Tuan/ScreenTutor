@@ -44,6 +44,7 @@ import httpx
 
 BASE_URL = "https://api.meta.ai/v1"
 MODEL = "muse-spark-1.3"  # Standard tier; never a Contributor variant
+HEDGE = False   # E2 (03/11): race two identical calls and keep the first to know where to point; see tutor_eval/hedge.py
 EFFORT = "minimal"  # T12 R5 (02/11): "low" thought 650 tokens on the task prompt; the 12 cases stayed on target at this
 TIMEOUT_S = 30
 RETRY_STATUSES = (429, 500, 502, 503, 504)
@@ -100,7 +101,22 @@ PLAN_FOLLOW = ("- task_plan: rỗng nếu kế hoạch không đổi. Chỉ đi�
                "tối đa 8 chữ, lấy từ chính nội dung đó.\n")
 TARGET_RULES = ("- Target: \"click\" (X, Y là tâm chỗ bấm); \"read\" (đọc một vùng; Box là khung vùng đó, X, Y là tâm); "
                 "\"scroll\" (nội dung cần đọc bị cắt ở mép dưới; phải kéo xuống đọc hết trước khi read hay click; say bảo "
-                "kéo xuống, X, Y là giữa vùng cần kéo); \"none\" (found=false). Không phải read thì Box bốn số 0.\n")
+                "kéo xuống, X, Y là giữa vùng cần kéo); \"drag\" (nhấn giữ chuột rồi kéo, ví dụ để bôi đen chữ: X, Y nằm ngay "
+                "trên chữ cái đầu tiên, End ngay trên chữ cái cuối cùng của đoạn cần chọn, không lấn sang chữ bên cạnh; "
+                "một địa chỉ web không có dấu cách là một chữ; Keys là đúng đoạn chữ cần chọn, chép y nguyên); \"keys\" (bấm tổ hợp phím, Keys ghi như \"Ctrl+C\"; X, Y là chỗ phím có tác dụng nếu "
+                "có, không thì 0); \"type\" (gõ vào một ô: X, Y là phần chữ của ô, không phải mũi tên cạnh nó; Keys là đúng "
+                "chữ hay số cần gõ; say bảo bấm vào ô, gõ, rồi bấm Enter); \"none\" (found=false). Không phải read thì Box "
+                "bốn số 0; không phải drag thì End hai số 0; không phải drag, keys hay type thì Keys rỗng.\n")
+# K (03/11): founder's T13 notes. Plain-text addresses were clicked 5 times out of 5 instead of selected and copied,
+# and Word was driven by mouse alone (Editing > Select All, not Ctrl+A). tutor_eval/actions.py measures these.
+KEYS_RULE = ("- Khi phím tắt quen thuộc nhanh hơn chuột thì dùng keys: Ctrl+A chọn hết, Ctrl+C sao chép, Ctrl+V dán, "
+             "Ctrl+Z hoàn tác, Ctrl+L vào thanh địa chỉ trình duyệt, Enter. Trong say đọc phím như \"bấm giữ phím Ctrl "
+             "rồi bấm phím C\".\n")
+LINK_RULE = ("- Link bấm được là chữ màu xanh, thường gạch chân hay bắt đầu bằng http. Địa chỉ trang web viết cùng màu chữ "
+             "thường thì KHÔNG bấm được: bôi đen nó (drag từ chữ đầu tới chữ cuối), sao chép (Ctrl+C), rồi dán vào thanh "
+             "địa chỉ của trình duyệt.\n")
+RETRY_RULE = ("- Nếu sau bước vừa rồi màn hình không thay đổi, đừng bảo làm lại y hệt lần nữa; tìm cách khác, ví dụ chữ "
+              "đó không phải link thì bôi đen rồi sao chép.\n")
 NOTES_RULE = "- task_notes: khi đọc nội dung dài, ghi tối đa 80 chữ điều cần nhớ; còn lại để rỗng.\n"
 NOTES_FOLLOW = "- task_notes: nếu vừa đọc thêm, viết lại đủ ghi chú cũ cộng phần mới (tối đa 80 chữ); nếu không thì rỗng.\n"
 PART_RULE = "- task_part: số thứ tự (từ 1) của phần chứa bước tiếp theo; xong hết thì bằng số phần; chưa có phần nào thì 0.\n"
@@ -133,7 +149,10 @@ LEARN_SCHEMA = {
 FOLLOW_PLAN = "\n\nViệc này đã được chia thành các phần: {parts}. Bước vừa rồi thuộc phần {part}."
 FOLLOW_NOTES = "\n\nNhững gì đã đọc được ở các lượt trước: \"{notes}\""
 MODES = ("answer", "guide")
-TARGETS = ("click", "read", "scroll", "none")
+TARGETS = ("click", "read", "scroll", "drag", "keys", "type", "none")
+KEYS = ("Ctrl+A", "Ctrl+C", "Ctrl+V", "Ctrl+X", "Ctrl+Z", "Ctrl+L", "Ctrl+T", "Enter", "Tab")   # what inputs.py can see
+MAX_TYPE_CHARS = 40
+MAX_SELECT_CHARS = 200   # K: the words a drag selects
 MAX_PARTS, MAX_PART_WORDS = 6, 12
 BOX_SCHEMA = {
     "type": "object",
@@ -172,6 +191,10 @@ FOLLOW_ACTED = {
     "stale": "Sau đó, trong lúc tutor đang xem, màn hình đã đổi mà không có cú bấm nào (một thông báo tự tắt, một hộp "
              "mới hiện ra, hoặc người dùng đã tự làm tiếp), nên câu trả lời trước chưa được nói ra và người dùng chưa "
              "nghe gì mới; ảnh trên là màn hình lúc này.",
+    "dragged": "Sau đó người dùng đã nhấn giữ chuột và kéo (để bôi đen); ảnh trên được chụp khi màn hình đã đứng yên.",
+    "keys": "Sau đó người dùng đã bấm tổ hợp phím vừa hướng dẫn; sao chép (Ctrl+C) không làm màn hình đổi gì. Ảnh trên "
+            "là màn hình lúc này.",
+    "typed": "Sau đó người dùng đã gõ vào ô rồi bấm Enter; ảnh trên được chụp khi màn hình đã đứng yên.",
     "moved": "Sau đó màn hình đã thay đổi mà không có cú bấm nào, thường là người dùng đã kéo xuống; "
              "ảnh trên được chụp sau đó.",
     "resume": "Sau đó người dùng đã làm việc khác và giờ quay lại làm tiếp việc này; ảnh trên là màn hình lúc này, có "
@@ -188,8 +211,11 @@ FOLLOW_SCHEMA = {
     "required": ["step_done", "goal_done", *REPLY_SCHEMA["required"]],
     "additionalProperties": False,
 }
+END_SCHEMA = {"type": "object", "properties": {"x": {"type": "number"}, "y": {"type": "number"}},
+              "required": ["x", "y"], "additionalProperties": False}
 _REPLY_PROPS = {
-    "Box": BOX_SCHEMA, "Caution": {"type": "boolean"}, "Target": {"type": "string", "enum": list(TARGETS)},
+    "Box": BOX_SCHEMA, "Caution": {"type": "boolean"}, "End": END_SCHEMA, "Keys": {"type": "string"},
+    "Target": {"type": "string", "enum": list(TARGETS)},
     "X": {"type": "number"}, "Y": {"type": "number"},   # the keys up to here show the step
     "element": {"type": "string"}, "found": {"type": "boolean"}, "mode": {"type": "string", "enum": list(MODES)},
     "say": {"type": "string"},                          # then the voice; the rest can come last
@@ -211,7 +237,8 @@ def point_prompt(question: str, state: str | None = None) -> str:
 def task_rules(pointer: str | None = None) -> str:
     """The first turn: answer or guide, the parts, what the next step is, notes, logins."""
     head = TASK_HEAD + (POINTER_LINE.format(pointer=pointer) if pointer else "")
-    return head + STATE_RULE + SAY_SELF_RULE + MODE_RULE + PLAN_RULE + TARGET_RULES + NOTES_RULE + LOGIN_RULE
+    return (head + STATE_RULE + SAY_SELF_RULE + MODE_RULE + PLAN_RULE + TARGET_RULES + KEYS_RULE + LINK_RULE + NOTES_RULE
+            + LOGIN_RULE)
 
 
 def follow_task_rules(plan: list[str] | None, part: int | None, notes: str) -> str:
@@ -222,7 +249,8 @@ def follow_task_rules(plan: list[str] | None, part: int | None, notes: str) -> s
         text += FOLLOW_PLAN.format(parts=parts, part=min(max(part or 1, 1), len(plan)))
     if notes:
         text += FOLLOW_NOTES.format(notes=notes)
-    return text + TASK_HEAD + SAY_SELF_RULE + PART_RULE + PLAN_FOLLOW + TARGET_RULES + NOTES_FOLLOW + LOGIN_RULE
+    return (text + TASK_HEAD + SAY_SELF_RULE + PART_RULE + PLAN_FOLLOW + TARGET_RULES + KEYS_RULE + LINK_RULE + RETRY_RULE
+            + NOTES_FOLLOW + LOGIN_RULE)
 
 
 def build_prompt(question: str, state: str | None = None, task: bool = True, pointer: str | None = None,
@@ -235,7 +263,9 @@ def build_follow_up_prompt(goal: str, last_say: str, state: str | None = None,
                            screen_changed: bool | None = None, task: bool = True,
                            plan: list[str] | None = None, part: int | None = None, notes: str = "",
                            acted: str = "click") -> str:
-    changed = "" if acted in ("moved", "resume") else SCREEN_CHANGED[screen_changed]  # no click to talk about
+    changed = "" if acted in ("moved", "resume", "stale") else SCREEN_CHANGED[screen_changed]  # no click to talk about
+    if acted in ("dragged", "keys", "typed"):
+        changed = changed.replace("sau cú bấm", "sau đó")
     text = (point_prompt(goal, state)
             + FOLLOW_BLOCK.format(last_say=last_say, acted=FOLLOW_ACTED[acted], changed=changed) + SAY_RULES)
     return text + follow_task_rules(plan, part, notes) if task else text
@@ -284,6 +314,8 @@ class Reply:
     part: int | None = None        # later turns: the part (from 1) the next step belongs to
     target: str = ""               # "click", "read", "scroll" or "none"; "" from a v1 prompt
     box: tuple[float, float, float, float] | None = None  # target "read": x1, y1, x2, y2 on the grid
+    end: tuple[float, float] | None = None   # K, target "drag": where the drag ends, on the grid
+    keys: str = ""                 # K, target "keys": the combo, as in KEYS; "type": what to type; "drag": what it selects
     notes: str = ""
     latency_s: float = 0.0
     usage: dict = field(default_factory=lambda: {"input": 0, "output": 0, "cached": 0, "reasoning": 0})
@@ -296,6 +328,12 @@ class Reply:
         w, h = size
         x1, y1, x2, y2 = self.box
         return round(x1 * w / 1000), round(y1 * h / 1000), min(round(x2 * w / 1000), w - 1), min(round(y2 * h / 1000), h - 1)
+
+    def end_px(self, size: tuple[int, int]) -> tuple[int, int] | None:
+        if self.end is None:
+            return None
+        w, h = size
+        return min(round(self.end[0] * w / 1000), w - 1), min(round(self.end[1] * h / 1000), h - 1)
 
     def point_px(self, size: tuple[int, int]) -> tuple[int, int] | None:
         """Pixel of the screenshot that was sent. Screenshot pixels are physical screen pixels."""
@@ -353,6 +391,16 @@ def spoken(say: str, target: str = "") -> str:
     return " ".join(s for s in re.split(r"(?<=[.!?])\s+", say) if not _ABOUT_ITSELF.match(s)) or say
 
 
+def combo(text: str) -> str:
+    """'ctrl + c', 'Control+C', 'CTRL-C' -> 'Ctrl+C'; '' when it is not one of KEYS (inputs.py could not see it)."""
+    t = re.sub(r"\s*[+\-]\s*", "+", text.strip()).lower().replace("control", "ctrl")
+    t = {"return": "enter", "↵": "enter"}.get(t, t)
+    for k in KEYS:
+        if t == k.lower():
+            return k
+    return ""
+
+
 def _grid(v) -> float:
     return min(max(float(v), 0.0), 1000.0)
 
@@ -375,11 +423,38 @@ def _parse_task(answer: dict, res: Reply) -> None:
         y1, y2 = sorted((_grid(box["y1"]), _grid(box["y2"])))
         if x2 - x1 >= 5 and y2 - y1 >= 5:  # four zeros, or a sliver, is no box
             res.box = (x1, y1, x2, y2)
+    end = answer.get("end")
+    if isinstance(end, dict) and all(isinstance(end.get(k), (int, float)) for k in ("x", "y")) and any(end.values()):
+        res.end = (_grid(end["x"]), _grid(end["y"]))   # two zeros: no end, as the prompt asks
+    res.keys = " ".join(str(answer.get("keys") or "").split())
     target = answer.get("target")
     if target is None:
         return  # a v1 answer
     if target not in TARGETS:
         target = "click" if res.point else "none"
+    if target == "drag" and (res.point is None or res.end is None
+                             or abs(res.end[0] - res.point[0]) + abs(res.end[1] - res.point[1]) < 5):
+        target = "click" if res.point else "none"   # no second end: point at where it starts
+    if target != "drag":
+        res.end = None
+    if target == "keys":
+        res.keys = combo(res.keys)
+        if res.point == (0.0, 0.0):
+            res.point = None       # "0 when it acts on no place in particular"
+        if not res.keys:
+            target = "click" if res.point else "none"
+        elif res.point is None:
+            res.found = True       # a shortcut needs no place on the screen
+            res.target = "keys"
+            return
+    elif target == "type":
+        res.keys = res.keys[:MAX_TYPE_CHARS]
+        if not res.keys:
+            target = "click" if res.point else "none"
+    elif target == "drag":
+        res.keys = res.keys[:MAX_SELECT_CHARS]
+    if target not in ("keys", "type", "drag"):
+        res.keys = ""
     if target == "read":
         if res.box is None:
             target = "click" if res.point else "none"  # nothing to frame: a plain ring, or nothing
@@ -431,15 +506,19 @@ class EarlyAnswer:
 
 class Tutor:
     def __init__(self, api_key: str, model: str = MODEL, effort: str | None = EFFORT,
-                 base_url: str = BASE_URL, timeout: float = TIMEOUT_S, task: bool = True):
+                 base_url: str = BASE_URL, timeout: float = TIMEOUT_S, task: bool = True, hedge: bool = HEDGE):
         if not api_key:
             raise ValueError("MODEL_API_KEY is empty")
-        self.model, self.effort, self.task = model, effort, task
-        self._http = httpx.Client(base_url=base_url, timeout=timeout,
-                                  headers={"Authorization": f"Bearer {api_key}"})
+        self.model, self.effort, self.task, self.hedge = model, effort, task, hedge
+        make = lambda: httpx.Client(base_url=base_url, timeout=timeout,  # noqa: E731
+                                    headers={"Authorization": f"Bearer {api_key}"})
+        self._http = make()
+        self._http2 = make() if hedge else None   # the second of a raced pair, on its own connection
 
     def close(self) -> None:
         self._http.close()
+        if self._http2 is not None:
+            self._http2.close()
 
     def warm(self) -> None:
         """Open the connection (DNS, TLS) before the first question; the pool keeps it for the first answer."""
@@ -478,8 +557,11 @@ class Tutor:
         early = EarlyAnswer(on_mark, on_say) if on_mark or on_say else None
         for attempt in range(2):
             try:
-                resp, elapsed = self._stream("/chat/completions", body, early) if early else \
-                    self._post("/chat/completions", body)
+                if early and self.hedge:
+                    resp, elapsed = self._race("/chat/completions", body, early)
+                else:
+                    resp, elapsed = self._stream("/chat/completions", body, early) if early else \
+                        self._post("/chat/completions", body)
             except (httpx.HTTPError, RuntimeError, ValueError) as e:
                 if attempt == 0 and isinstance(e, httpx.TransportError):
                     time.sleep(RETRY_LINE_S)  # the line dropped (seen 02/11, her line is longer than ours): once more
@@ -492,12 +574,54 @@ class Tutor:
                 break
         return res
 
-    def _stream(self, path: str, body: dict, early: EarlyAnswer, max_attempts: int = 3) -> tuple[dict, float]:
-        """As _post, reading the answer while it arrives."""
+    def _race(self, path: str, body: dict, early: EarlyAnswer) -> tuple[dict, float]:
+        """E2: the same call twice at once. The first to know where to point wins: only its step and sentence reach
+        the screen and the voice, its answer is returned, and the other is cut off. If the winner fails, the other."""
+        import threading
+
+        lock, winner, done = threading.Lock(), [None], [threading.Event(), threading.Event()]
+        stops, results = [threading.Event(), threading.Event()], [None, None]
+
+        def gate(i, fn):
+            def call(arg):
+                with lock:
+                    if winner[0] is None:
+                        winner[0] = i
+                        stops[1 - i].set()
+                    mine = winner[0] == i
+                if mine and fn:
+                    fn(arg)
+            return call
+
+        def run(i):
+            try:
+                mine = EarlyAnswer(gate(i, early.on_mark), gate(i, early.on_say))
+                results[i] = self._stream(path, body, mine, http=(self._http, self._http2)[i], stop=stops[i])
+            except Exception as e:   # noqa: BLE001 - the other call may still answer
+                results[i] = e
+            finally:
+                done[i].set()
+
+        for i in (0, 1):
+            threading.Thread(target=run, args=(i,), daemon=True).start()
+        while not (done[0].is_set() and done[1].is_set()):
+            w = winner[0]
+            if w is not None and done[w].is_set() and not isinstance(results[w], Exception):
+                return results[w]
+            done[0].wait(0.02)
+        good = [r for r in (results[winner[0] or 0], results[1 - (winner[0] or 0)]) if not isinstance(r, Exception)]
+        if not good:
+            raise results[0]
+        return good[0]
+
+    def _stream(self, path: str, body: dict, early: EarlyAnswer, max_attempts: int = 3, http=None,
+                stop=None) -> tuple[dict, float]:
+        """As _post, reading the answer while it arrives. stop: an Event that cuts the answer off (E2's loser)."""
+        http = http or self._http
         delay = 0.5
         for attempt in range(1, max_attempts + 1):
             started = time.perf_counter()
-            with self._http.stream("POST", path, json={**body, "stream": True,
+            with http.stream("POST", path, json={**body, "stream": True,
                                                        "stream_options": {"include_usage": True}}) as r:
                 if r.status_code in RETRY_STATUSES and attempt < max_attempts:
                     time.sleep(delay)
@@ -507,6 +631,8 @@ class Tutor:
                     raise RuntimeError(f"HTTP {r.status_code}: {r.read().decode(errors='replace')[:300]}")
                 text, usage = "", {}
                 for line in r.iter_lines():
+                    if stop is not None and stop.is_set():
+                        break
                     if not line.startswith("data:") or line[5:].strip() == "[DONE]":
                         continue
                     chunk = json.loads(line[5:])

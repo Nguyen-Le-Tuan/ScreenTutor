@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import math
 import os
 import sys
 import threading
@@ -44,6 +45,7 @@ MACHINE_NOTES = "\n".join([
 ])
 WAIT_GRACE_S = 5.0    # a loading page may stay blank this long before anything changes
 PRE_ASK_S = 3.0       # B1b: she may point just before she presses the button or holds Ctrl+Alt
+TYPE_NEAR_PX = 120    # K: a click this close to the box she types into is her clicking into it, not moving on
 VEIL_S = 0.05         # C4: a hidden window leaves the screen on the compositor's next frame or two (60 Hz)
 NOT_HEARD = "Mình chưa nghe rõ. Bạn hỏi lại nhé."
 NO_MIC = "Mình chưa nghe được micro. Bạn kiểm tra lại micro nhé."
@@ -279,7 +281,7 @@ def main(argv=None) -> None:
     from . import guards, screen, winstate
     from . import settings as settings_mod
     from .history import History, when_label
-    from .inputs import Click, Hold, Trail, watch
+    from .inputs import Click, Combo, Drag, Hold, Trail, watch
     from .island import Island
     from .listen import Mic, _api_key, listen
     from .memory import Memory, asks_to_resume, learn
@@ -345,6 +347,8 @@ def main(argv=None) -> None:
         glow = Signal(bool)
         clear = Signal()
         veil = Signal(bool)
+        drag = Signal(int, int, int, int, bool)
+        keys = Signal(int, int, str, bool, bool)
         call = Signal(str, object)
 
     bridge = Bridge()
@@ -371,6 +375,20 @@ def main(argv=None) -> None:
     bridge.tick.connect(overlay.tick_at)
     bridge.glow.connect(overlay.glow)
     bridge.clear.connect(on_clear)
+
+    def on_drag(x1, y1, x2, y2, caution):
+        overlay.drag(x1, y1, x2, y2, caution=caution)
+        feed.ring(x1, y1, caution)
+
+    def on_keys(x, y, keys, caution, typing):
+        if x < 0:   # a shortcut that acts on no place in particular: the keys come up by her mouse
+            overlay.keys(None, None, keys, caution=caution, typing=typing)
+        else:
+            overlay.keys(x, y, keys, caution=caution, typing=typing)
+            feed.ring(x, y, caution)
+
+    bridge.drag.connect(on_drag)
+    bridge.keys.connect(on_keys)
     veiled, veil_done = [False], threading.Event()
 
     def on_veil(on: bool) -> None:
@@ -438,8 +456,10 @@ def main(argv=None) -> None:
     def grab_own_masked():
         return masked(screen.grab(), own_rects())
 
-    def on_own_widget(click: Click) -> bool:
-        """Clicks on the button, or on the open island, are not her step."""
+    def on_own_widget(click) -> bool:
+        """Clicks on the button, or on the open island, are not her step. A shortcut is never on a widget."""
+        if not hasattr(click, "x"):
+            return False
         return inside(button_box[0], click.x, click.y) or inside(to_physical(island.takes_clicks, dpr), click.x, click.y)
 
     def look():
@@ -555,6 +575,26 @@ def main(argv=None) -> None:
                 speaker.stop()  # she has acted; no need to finish the sentence
             return click
 
+        def wait_for(since, timeout_s, accept):
+            event = clicks.wait(since, timeout_s, cancel=cancel, ignore=on_own_widget, accept=accept)
+            if event is not None:
+                speaker.stop()
+            return event
+
+        def wait_drag(since, timeout_s):
+            return wait_for(since, timeout_s, lambda e: isinstance(e, (Drag, Click)))
+
+        def wait_keys(since, timeout_s, keys):
+            """Those keys, or a click: she may copy from the right-click menu instead."""
+            return wait_for(since, timeout_s, lambda e: (isinstance(e, Combo) and e.keys == keys)
+                            or isinstance(e, (Click, Drag)))
+
+        def wait_typed(since, timeout_s, point):
+            """Enter or Tab ends the typing; clicks into the box do not, a click well away from it does."""
+            far = lambda e: point is None or math.hypot(e.x - point[0], e.y - point[1]) > TYPE_NEAR_PX  # noqa: E731
+            return wait_for(since, timeout_s, lambda e: (isinstance(e, Combo) and e.keys in ("Enter", "Tab"))
+                            or (isinstance(e, Click) and far(e)))
+
         session = Session(
             tutor=tutor, look=look, encode=screen.png_data_url,
             show=lambda x, y, caution: bridge.point.emit(x, y, caution), hide=bridge.clear.emit, say=say,
@@ -565,6 +605,10 @@ def main(argv=None) -> None:
             show_box=lambda box, caution: bridge.frame.emit(*box, caution),
             show_scroll=lambda px: bridge.hint.emit(*px),
             confirm=bridge.tick.emit, glance=screen.grab, own=ours_now,
+            show_drag=lambda a, b, caution: bridge.drag.emit(*a, *b, caution),
+            show_keys=lambda px, keys, caution: bridge.keys.emit(*(px or (-1, -1)), keys, caution, False),
+            show_type=lambda px, text: bridge.keys.emit(*px, text, False, True),
+            wait_drag=wait_drag, wait_keys=wait_keys, wait_typed=wait_typed,
             save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer, on_plan=on_plan,
             known=known, plan=list(rec.plan), part=rec.part, notes=rec.notes)
         steps = session.run(rec.question, last_say=last_say)

@@ -1,6 +1,6 @@
-T15: CHUYẾN WINDOWS (lời nói và cái chỉ cùng lúc; kiểm màn hình cũ; dấu chấm)
-=============================================================================
-Soạn 03/11/2026. Ba phần, một chuyến: C1 (mục B), C2 (mục C), C4 (mục D). Khoảng 1 giờ.
+T15: CHUYẾN WINDOWS (lời nói và cái chỉ cùng lúc; kiểm màn hình cũ; dấu chấm; kéo, phím tắt, gõ)
+===============================================================================================
+Soạn 03/11/2026. Bốn phần, một chuyến: C1 (mục B), C2 (mục C), C4 (mục D), K (mục E). Khoảng 1,5 giờ.
 Để cửa sổ đen của ScreenTutor.bat mở suốt chuyến: cuối mỗi việc app in từng bước ra đó.
 Vòng đỏ cũ không còn: từ bản này, cái chỉ là dấu chấm (mục D). Mục B và C vẫn chấm như đã ghi.
 
@@ -116,3 +116,38 @@ Luật chấm (ghi trước khi chạy; đề xuất của Claude):
 [ ] D4. (P-1) Mở thư mục tutor_runs\ của lần chạy mới nhất, xem vài ảnh stepNN.png: có chấm đỏ
         cạnh chuột không? ______
 [ ] D5. Cảm nhận: chấm có che chữ hay nút cần bấm không? Tắt thoáng lúc chụp có khó chịu không? ______
+
+
+E. K: KÉO BÔI ĐEN, PHÍM TẮT, GÕ VÀO Ô (20 phút)
+----------------------------------------------
+K làm gì (ý của bạn trong T13): ngoài bấm chuột, tutor giờ có thể bảo
+  - kéo: nhấn giữ chuột rồi kéo để bôi đen. Chấm bay tới chữ đầu, "nhấn xuống", kéo dọc đoạn chữ để lại vệt
+    như vùng bôi đen, thả ra rồi lặp lại. Hai đầu được "hít" vào ranh giới chữ trên ảnh, để không bôi đen nửa chữ.
+  - phím tắt: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+Z, Ctrl+L, Ctrl+T, Enter, Tab. Hiện phím như phím thật
+    ([Ctrl] + [C]) cạnh chỗ có tác dụng, hoặc cạnh chuột. Giọng đọc: "con trôn xê".
+  - gõ: bấm vào ô, gõ chữ hay số, rồi Enter (ví dụ cỡ chữ 15). Hiện [gõ 15] → [Enter] cạnh ô.
+  - link dạng chữ thường (không xanh, không gạch chân) thì không bảo bấm mà bảo bôi đen, Ctrl+C, rồi dán vào
+    thanh địa chỉ trình duyệt; và bước vừa bảo mà không làm màn hình đổi thì không bảo làm lại y hệt.
+App chỉ đọc đúng 9 phím trên (cùng Ctrl), không đọc chữ bạn gõ.
+Trên Ubuntu, với ảnh thật của T13 (tutor_eval/actions.py), mỗi ca 5 lần: prompt cũ đạt 1/7 ca (bảo bấm lại chữ thường
+5/5 lần); prompt K đạt cả 8/8 ca, 39/40 lượt. 12 ca T4 vẫn đạt mọi luật; vòng hiện chậm hơn khoảng 0,4 s.
+
+Luật chấm trên Windows (ghi trước khi chạy; đề xuất của Claude):
+  - K-W1 đạt: cả việc "mở trang bồi dưỡng" trong tin T12 (Việc 1) đi tới được trang đó trên Brave mà
+    KHÔNG có lần nào tutor bảo bấm vào chữ boiduong-thunghiem.example.
+  - K-W2 đạt: lúc bạn bấm Ctrl+C, Ctrl+V, Ctrl+A hay Enter đúng như tutor bảo, tutor sang bước tiếp
+    (cửa sổ đen in "sau cú bấm" của bước đó là đã nhận). Bấm chữ thường (gõ chữ) thì KHÔNG bị tính.
+  - K-W3 đạt: cú kéo bôi đen được nhận là cú kéo (cửa sổ đen in bước kéo), cú bấm run tay vẫn là cú bấm.
+  - Chỉ ghi lại: giọng đọc "con trôn xê" nghe có tự nhiên không; vệt kéo có khớp chỗ cần bôi đen không.
+
+[ ] E0. (thử nhanh phần nghe, không cần tutor) Trong PowerShell: py -m screentutor.inputs --seconds 30
+        rồi: bấm, kéo bôi đen một dòng, Ctrl+C, Ctrl+V, Enter, gõ vài chữ thường. Dòng in ra:
+        kéo in "KÉO từ ... tới ..."? Ctrl+C in "PHÍM Ctrl+C"? Gõ chữ thường KHÔNG in gì? ______
+[ ] E1. (K-W1) Tin T12 Việc 1 trong "Cloud của tôi", hỏi: "Mở trang bồi dưỡng trong tin nhắn này giúp tôi".
+        Làm theo tới khi trang mở (trang giả nên Brave sẽ báo không tìm thấy trang: vẫn tính là tới nơi).
+        Tutor có lần nào bảo bấm vào chữ đó không? Vệt kéo có đúng nguyên địa chỉ không? ______
+        Tên video: K_link.mp4
+[ ] E2. (K-W2) Word mở giáo án, hỏi: "Tôi muốn đổi cỡ chữ cả bài thành 15". Tutor có bảo Ctrl+A, rồi
+        gõ 15 vào ô cỡ chữ và Enter không? Chấm có đáp vào phần chữ của ô (không phải mũi tên)? ______
+        Tên video: K_word.mp4
+[ ] E3. Cảm nhận: phím hiện ra có dễ hiểu không? Giọng đọc tên phím có tự nhiên không? ______

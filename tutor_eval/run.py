@@ -106,6 +106,12 @@ looks like some of the cases, on purpose: the block must not pull the ring away 
 on the screen.
 - T14a: at least 10/12 hits in each run, and 0 caution flags. If this fails, the block goes.
 - Reported, not scored: latency beside the run before, R5b, R5d, R5e.
+
+Eleventh rule, fixed before the K run (03/11). The prompt gained three kinds of step (drag, keys,
+type, with End and Keys in the schema) and three rules (shortcuts, plain-text addresses, and on
+later turns not repeating a step that changed nothing); tutor_eval/actions.py measures what they are
+for. Same 12 cases, 2 runs, R5a-e and R6 unchanged. If R5a fails, the K rules are cut back; if only
+R5c or R5d fail, they are shortened and the run repeated as a new attempt, reported as such.
 """
 
 from __future__ import annotations

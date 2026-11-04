@@ -273,3 +273,49 @@ def test_the_waiting_dot_moving_with_the_mouse_is_not_the_screen_changing():
         return _shot(paint, bg=(30, 30, 30))
 
     assert changed_fraction(signature(dot(500, 500)), signature(dot(560, 530))) < CHANGE_MIN
+
+
+# K: the drag and the keys
+
+from screentutor.overlay import (DRAG_HOLD_S, DRAG_MOVE_S, DRAG_REST_S, drag_at, key_parts,  # noqa: E402
+                                 paint_keys)
+
+
+def test_the_drag_flies_to_its_start_then_presses_drags_and_lets_go_over_and_over():
+    a, b = (100.0, 200.0), (400.0, 200.0)
+    assert drag_at(0, (0, 0), a, b).band is None                       # still flying to the start
+    t0 = DOT_TRAVEL_S
+    pressed = drag_at(t0 + DRAG_HOLD_S / 2, (0, 0), a, b)
+    assert (pressed.dot.x, pressed.dot.y) == a and pressed.dot.radius < DOT_R
+    mid = drag_at(t0 + DRAG_HOLD_S + DRAG_MOVE_S / 2, (0, 0), a, b)
+    assert 100 < mid.dot.x < 400 and mid.band == (a, (mid.dot.x, mid.dot.y)) and mid.band_alpha > 0
+    rest = drag_at(t0 + DRAG_HOLD_S + DRAG_MOVE_S + DRAG_REST_S * 0.9, (0, 0), a, b)
+    assert (rest.dot.x, rest.dot.y) == b and rest.dot.radius == DOT_R and rest.band_alpha < mid.band_alpha
+    again = drag_at(t0 + DRAG_HOLD_S + DRAG_MOVE_S + DRAG_REST_S + 0.01, (0, 0), a, b)
+    assert (again.dot.x, again.dot.y) == a                             # and again
+
+
+def test_keys_read_like_the_keys_and_typing_ends_in_enter():
+    assert key_parts("Ctrl+C") == (["Ctrl", "C"], "+")
+    assert key_parts("15", typing=True) == (["gõ 15", "Enter"], "→")
+
+
+def test_the_keys_stay_on_the_screen(qt_app):
+    img = QImage(800, 600, QImage.Format_ARGB32)
+    img.fill(QColor(0, 0, 0, 0))
+    p = QPainter(img)
+    x1, y1, x2, y2 = paint_keys(p, 780, 590, ["Ctrl", "C"], "+", 1.0, bounds=(800, 600))
+    p.end()
+    assert 0 <= x1 < x2 <= 800 and 0 <= y1 < y2 <= 600
+
+
+def test_a_drag_or_keys_replace_the_dot_and_clear_removes_them(qt_app):
+    o = Overlay()
+    o.drag(100, 100, 400, 100)
+    assert o._drag_to is not None and o._busy()
+    o.keys(None, None, "Ctrl+C")
+    assert o._drag_to is None and o._target is None and o._keys is not None and o._busy()
+    o.keys(200, 200, "15", typing=True)
+    assert o._target is not None and o._keys[0] == ["gõ 15", "Enter"]
+    o.clear()
+    assert o._keys is None and o._target is None

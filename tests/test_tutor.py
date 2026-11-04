@@ -31,7 +31,9 @@ def test_body_uses_spark_and_asks_for_say():
     assert body["reasoning_effort"] == EFFORT == "minimal"
     schema = body["response_format"]["json_schema"]["schema"]
     assert set(schema["required"]) == {"found", "X", "Y", "element", "say", "Caution", "mode", "Target", "Box",
-                                       "task_plan", "task_notes"}
+                                       "End", "Keys", "task_plan", "task_notes"}
+    assert sorted(schema["required"]).index("End") < sorted(schema["required"]).index("Y")   # a drag shows at once
+    assert sorted(schema["required"]).index("Keys") < sorted(schema["required"]).index("Y")
     assert schema["properties"]["Box"]["required"] == ["x1", "y1", "x2", "y2"]
     assert sorted(schema["required"]).index("Y") < sorted(schema["required"]).index("say")      # the API sorts the keys
     assert sorted(schema["required"]).index("say") < sorted(schema["required"]).index("task_plan")
@@ -343,3 +345,83 @@ def test_a_task_picked_up_again_is_told_as_such_and_claims_no_click():
     text = build_follow_up_prompt("x", "Bạn bấm Lưu.", plan=["Mở Word", "Mở Zalo"], part=2, acted="resume")
     assert "quay lại làm tiếp" in text and "Phần" not in text.split("Lượt trước")[0]
     assert "đã bấm chuột" not in text.split("Lượt trước")[1].split("step_done")[0] and "2. Mở Zalo" in text
+
+
+def test_k_steps_are_read_defensively():
+    from screentutor.tutor import Reply, _read_answer, combo
+
+    def read(**a):
+        return _read_answer({"found": True, "say": "x", "End": {"x": 0, "y": 0}, "Keys": "", **a}, Reply())
+
+    drag = read(X=480, Y=410, Target="drag", End={"x": 630, "y": 412})
+    assert drag.target == "drag" and drag.end == (630, 412) and drag.keys == ""
+    assert read(X=480, Y=410, Target="drag").target == "click"                       # no second end: a click there
+    copy = read(X=0, Y=0, Target="keys", Keys="ctrl + c")
+    assert (copy.target, copy.keys, copy.point, copy.found) == ("keys", "Ctrl+C", None, True)
+    assert read(X=500, Y=500, Target="keys", Keys="Alt+F4").target == "click"         # not a key inputs.py can see
+    size = read(X=150, Y=113, Target="type", Keys="15")
+    assert (size.target, size.keys, size.end) == ("type", "15", None)
+    assert read(X=500, Y=400, Target="click", Keys="15").keys == ""
+    assert combo("Control-V") == "Ctrl+V" and combo("return") == "Enter" and combo("Ctrl+Q") == ""
+
+
+def test_k_rules_are_in_the_prompt_and_the_retry_rule_only_later():
+    from screentutor.tutor import build_follow_up_prompt
+
+    first = build_prompt("Mở trang bồi dưỡng", STATE)
+    later = build_follow_up_prompt("Mở trang bồi dưỡng", "Bạn bấm vào dòng chữ.", STATE, False)
+    assert "Ctrl+A chọn hết" in first and "KHÔNG bấm được" in first and "đừng bảo làm lại y hệt" not in first
+    assert "đừng bảo làm lại y hệt" in later
+    keys = build_follow_up_prompt("x", "Bấm Ctrl C.", STATE, False, acted="keys")
+    assert "sau cú bấm" not in keys and "sau đó, màn hình không thay đổi" in keys
+
+
+def test_a_drag_keeps_the_words_it_selects():
+    from screentutor.tutor import Reply, _read_answer
+
+    drag = _read_answer({"found": True, "say": "x", "X": 480, "Y": 410, "Target": "drag", "End": {"x": 630, "y": 412},
+                         "Keys": "boiduong-thunghiem.example"}, Reply())
+    assert drag.keys == "boiduong-thunghiem.example"
+
+
+def test_a_raced_pair_keeps_the_first_to_point_and_only_its_step_and_sentence_go_out():
+    import time as _time
+
+    import httpx
+
+    from screentutor.tutor import Tutor
+
+    def answer(x, say, delay):
+        def handler(request):
+            _time.sleep(delay)
+            lines = [f"data: {json.dumps({'choices': [{'delta': {'content': b}}]})}"
+                     for b in _bits({**ANSWER, "X": x, "say": say})]
+            return httpx.Response(200, text="\n\n".join(lines + ["data: [DONE]"]))
+        return httpx.Client(base_url="https://x", transport=httpx.MockTransport(handler))
+
+    tutor = Tutor("k", hedge=True)
+    tutor._http, tutor._http2 = answer(150, "Bạn bấm File chậm.", 0.6), answer(400, "Bạn bấm File nhanh.", 0.0)
+    marks, says = [], []
+    started = _time.perf_counter()
+    reply = tutor.ask("x", "data:", on_mark=marks.append, on_say=says.append)
+    assert _time.perf_counter() - started < 0.5                    # it did not wait for the slow one
+    assert reply.point == (400.0, 250.0) and [m.point for m in marks] == [(400.0, 250.0)]
+    assert says == ["Bạn bấm File nhanh."]
+    _time.sleep(0.7)                                                # the slow one finishes: nothing more goes out
+    assert len(marks) == len(says) == 1
+
+
+def test_a_raced_pair_falls_back_to_the_other_when_the_first_fails():
+    import httpx
+
+    from screentutor.tutor import Tutor
+
+    def ok(request):
+        lines = [f"data: {json.dumps({'choices': [{'delta': {'content': b}}]})}" for b in _bits()]
+        return httpx.Response(200, text="\n\n".join(lines + ["data: [DONE]"]))
+
+    tutor = Tutor("k", hedge=True)
+    tutor._http = httpx.Client(base_url="https://x", transport=httpx.MockTransport(lambda r: httpx.Response(400, text="no")))
+    tutor._http2 = httpx.Client(base_url="https://x", transport=httpx.MockTransport(ok))
+    reply = tutor.ask("x", "data:", on_mark=lambda r: None)
+    assert reply.error is None and reply.point == (150.0, 250.0)
