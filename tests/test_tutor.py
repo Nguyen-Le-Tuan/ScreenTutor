@@ -425,3 +425,33 @@ def test_a_raced_pair_falls_back_to_the_other_when_the_first_fails():
     tutor._http2 = httpx.Client(base_url="https://x", transport=httpx.MockTransport(ok))
     reply = tutor.ask("x", "data:", on_mark=lambda r: None)
     assert reply.error is None and reply.point == (150.0, 250.0)
+
+
+def test_the_detour_question_has_both_tasks_their_parts_and_no_picture():
+    from screentutor.tutor import aside_body, aside_prompt
+
+    text = aside_prompt("tôi muốn làm theo tin nhắn này", ["Đọc dự thảo", "Ghi phiếu góp ý"], 1,
+                        "tôi muốn tải file Excel trước", ["Tải file", "Mở file"])
+    assert '"tôi muốn làm theo tin nhắn này" (các phần: 1. Đọc dự thảo; 2. Ghi phiếu góp ý; đang ở phần 1)' in text
+    assert '"tôi muốn tải file Excel trước" (các phần: 1. Tải file; 2. Mở file), và việc đó vừa làm xong' in text
+    assert "đang ở phần 2" in aside_prompt("a", ["x", "y"], 9, "b", [])   # a part past the end is the last one
+    body = aside_body("a", [], 0, "b", ["p", "q"])
+    assert isinstance(body["messages"][0]["content"], str) and body["reasoning_effort"] == EFFORT
+    assert body["response_format"]["json_schema"]["schema"]["required"] == ["aside"]
+
+
+def test_the_detour_answer_is_true_false_or_none():
+    import httpx
+
+    from screentutor.tutor import Tutor
+
+    def answering(content, status=200):
+        return httpx.Client(base_url="https://x", transport=httpx.MockTransport(
+            lambda r: httpx.Response(status, json={"choices": [{"message": {"content": content}}]})))
+
+    tutor = Tutor("k")
+    for content, status, verdict in ((json.dumps({"aside": True}), 200, True), (json.dumps({"aside": False}), 200, False),
+                                     (json.dumps({"aside": "có"}), 200, None), ("không phải json", 200, None),
+                                     ("{}", 200, None), ("", 400, None)):
+        tutor._http = answering(content, status)
+        assert tutor.aside("a", ["x", "y"], 1, "b", ["p", "q"]) is verdict

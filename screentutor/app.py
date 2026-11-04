@@ -56,6 +56,8 @@ OFFER_AGE_S = 12 * 3600          # B7: how old a half-done task may be for the i
 RESUME_AGE_S = 7 * 86400         # ...and for her to ask for it in words
 OFFER_AFTER_S = 3.2              # leave the green "done" on the island for its 3 s first
 OFFER_WAIT_S = 20.0              # the longest it waits for the tutor to finish speaking
+ASIDE_SAID = {True: "chen ngang việc lớn, sẽ mời làm tiếp", False: "việc khác hẳn, không mời",
+              None: "không hỏi được model, không mời"}   # W-6 (c): the console line, for reading T15
 
 
 def masked(img: Image.Image, rects: list[tuple[int, int, int, int]]) -> Image.Image:
@@ -105,11 +107,17 @@ class Offers:
     left on purpose came back again and again. Now: only the big task that a side question cut off,
     once that side question has been answered, and only once. A task she left herself, or that ran
     out of time, is never offered by itself; she can still say "làm tiếp".
+
+    W-6 failed in T13, two ways (founder's choices, 03/11). A side question answered in one turn never
+    came back "done" (the first turn has no goal_done), so it is offered after that too. A side question
+    with a plan of its own was taken for another task; now aside(side, big_id) asks the model whether it
+    was a detour of the big task ("tải file Excel trước" in D3) or another task.
     """
 
-    def __init__(self):
+    def __init__(self, aside=None):
         self.running = None      # the task being walked through now
         self.cut_off = None      # the id of the big task a new question cut off
+        self.aside = aside       # (side task, id of the cut-off task) -> bool; None: a side task with a plan never is
 
     def start(self, rec) -> None:
         self.running = rec
@@ -119,16 +127,35 @@ class Offers:
         if self.running is not None and self.running.plan:
             self.cut_off = self.running.id
 
-    def end(self, rec, cancelled: bool) -> str | None:
-        """The id of the task to offer now that rec is over, or None. A cut-off task is offered once."""
+    def end(self, rec, cancelled: bool, answered: bool = False) -> str | None:
+        """The id of the task to offer now that rec is over, or None. A cut-off task is offered once.
+        answered: rec was one turn that pointed at nothing, so its sentence was all of it."""
         if self.running is rec:
             self.running = None
         if cancelled:
             return None  # another question took over; the one that ends it decides
         cut, self.cut_off = self.cut_off, None
-        if cut is None or rec.plan or rec.outcome != "done":
-            return None  # nothing was cut off, this was a big task of its own, or the side question failed
-        return cut
+        if cut is None:
+            return None
+        if rec.plan:  # a big task of its own: offered only if done and the model calls it a detour of the cut-off one
+            return cut if rec.outcome == "done" and self.aside is not None and self.aside(rec, cut) else None
+        # one turn that answered ends "stopped" (outcome_of); a side question that failed is not followed by the offer
+        return cut if rec.outcome == "done" or (answered and rec.outcome == "stopped") else None
+
+
+def detour_of(history, tutor, side, big_id: str, now: float) -> bool:
+    """W-6 (c): the side question had a plan of its own; the model tells a detour of the cut-off task from another task."""
+    big = history.resumable(now, OFFER_AGE_S, skip=side.id)
+    if big is None or big.id != big_id:
+        return False  # the cut-off task is gone, too old, or done: nothing to offer, no call
+    verdict = tutor.aside(big.question, big.plan, big.part, side.question, side.plan)
+    print(f"Câu phụ có kế hoạch riêng: {ASIDE_SAID[verdict]}", flush=True)
+    return verdict is True
+
+
+def answered_at_once(steps) -> bool:
+    """One turn, nothing to point at and no error: an answer, or a "first open Zalo"; either way the side question is over."""
+    return len(steps) == 1 and steps[0].point_px is None and not steps[0].error and steps[0].target != "keys"
 
 
 class Feed:
@@ -498,7 +525,7 @@ def main(argv=None) -> None:
                                                        encoding="utf-8")
 
     current = {"cancel": None, "stop": None, "mode": None, "listening": False, "thread": None}
-    offers = Offers()
+    offers = Offers(aside=lambda side, big_id: detour_of(history, tutor, side, big_id, time.time()))
     clicks = ClickBox()
     trail = Trail()
 
@@ -543,9 +570,9 @@ def main(argv=None) -> None:
         history.reopen(rec)
         run_task(rec, cancel, last_say=rec.steps[-1].say if rec.steps else "")
 
-    def offer_left_task(rec, cancel: threading.Event) -> None:
+    def offer_left_task(rec, cancel: threading.Event, answered: bool) -> None:
         """A side question is over, and the big task it cut off is still there."""
-        cut = offers.end(rec, cancel.is_set())
+        cut = offers.end(rec, cancel.is_set(), answered)
         left = history.resumable(time.time(), OFFER_AGE_S, skip=rec.id) if cut else None
         if left is None or left.id != cut or cancel.is_set():
             return
@@ -623,7 +650,7 @@ def main(argv=None) -> None:
             print(f"  bước {s.n} ({s.target or 'click'}): {s.say} | trỏ {s.point_px} | sau cú bấm {s.settle or '—'} | "
                   f"bước xong {s.step_done} | việc xong {s.goal_done} | {s.latency_s:.1f} s"
                   f" | hiện sau {'—' if s.shown_s is None else f'{s.shown_s:.1f} s'}{moved}", flush=True)
-        offer_left_task(rec, cancel)
+        offer_left_task(rec, cancel, answered_at_once(steps))
 
     def begin(mode: str | None) -> None:
         """A new request replaces whatever was going on. Also runs on the input thread: widgets only via the bridge."""

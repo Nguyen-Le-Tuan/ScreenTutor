@@ -149,7 +149,19 @@ LEARN_SCHEMA = {
     "required": ["title", "apps", "path", "result", "keywords", "facts"],
     "additionalProperties": False,
 }
-FOLLOW_PLAN = "\n\nViệc này đã được chia thành các phần: {parts}. Bước vừa rồi thuộc phần {part}."
+# W-6 (03/11, founder's choice c): a side question that got a plan of its own is offered "Làm tiếp" only if it was a
+# detour of the big task it cut off ("tải file Excel trước" in D3), not another task. Words only, after the side task
+# is done; the measured prompts are untouched. tutor_eval/aside.py measures it.
+ASIDE_PROMPT = (
+    "Người dùng đang được hướng dẫn làm dở một việc lớn trên máy tính: \"{big}\"{big_plan}.\n"
+    "Giữa chừng, người dùng hỏi sang: \"{side}\"{side_plan}, và việc đó vừa làm xong.\n"
+    "- aside: true nếu việc vừa hỏi là một bước chen ngang để làm được việc lớn, ví dụ tải về, mở hay tìm một file, "
+    "một trang hay một app mà việc lớn cần, hoặc sửa một chỗ trước khi làm tiếp; false nếu đó là một việc khác hẳn, "
+    "không giúp gì cho việc lớn."
+)
+ASIDE_SCHEMA = {"type": "object", "properties": {"aside": {"type": "boolean"}}, "required": ["aside"],
+                "additionalProperties": False}
+FOLLOW_PLAN ="\n\nViệc này đã được chia thành các phần: {parts}. Bước vừa rồi thuộc phần {part}."
 FOLLOW_NOTES = "\n\nNhững gì đã đọc được ở các lượt trước: \"{notes}\""
 MODES = ("answer", "guide")
 TARGETS = ("click", "read", "scroll", "drag", "keys", "type", "none")
@@ -287,6 +299,21 @@ def build_follow_up_body(goal: str, last_say: str, image_data_url: str, state: s
                          part: int | None = None, notes: str = "", acted: str = "click") -> dict:
     text = build_follow_up_prompt(goal, last_say, state, screen_changed, task, plan, part, notes, acted)
     return _body(text, image_data_url, "tutor_follow_up", FOLLOW_SCHEMA_V2 if task else FOLLOW_SCHEMA, model, effort)
+
+
+def aside_prompt(big: str, big_plan: list[str], big_part: int, side: str, side_plan: list[str]) -> str:
+    """W-6: the big task with its parts and the part it had reached, then the side question with its own parts."""
+    parts = lambda plan: "; ".join(f"{i + 1}. {p}" for i, p in enumerate(plan))  # noqa: E731
+    head = f" (các phần: {parts(big_plan)}; đang ở phần {min(max(big_part or 1, 1), len(big_plan))})" if big_plan else ""
+    return ASIDE_PROMPT.format(big=big, big_plan=head, side=side,
+                               side_plan=f" (các phần: {parts(side_plan)})" if side_plan else "")
+
+
+def aside_body(big: str, big_plan: list[str], big_part: int, side: str, side_plan: list[str],
+               model: str = MODEL, effort: str | None = EFFORT) -> dict:
+    return {"model": model, "reasoning_effort": effort,
+            "messages": [{"role": "user", "content": aside_prompt(big, big_plan, big_part, side, side_plan)}],
+            "response_format": {"type": "json_schema", "json_schema": {"name": "aside", "schema": ASIDE_SCHEMA}}}
 
 
 def _body(text: str, image_data_url: str, name: str, schema: dict, model: str, effort: str | None) -> dict:
@@ -555,6 +582,16 @@ class Tutor:
             return json.loads(resp["choices"][0]["message"]["content"])
         except (httpx.HTTPError, RuntimeError, ValueError, KeyError, IndexError):
             return None
+
+    def aside(self, big: str, big_plan: list[str], big_part: int, side: str, side_plan: list[str]) -> bool | None:
+        """W-6: was the side question, done now, a detour of the big task it cut off? None when it cannot be had."""
+        try:
+            resp, _ = self._post("/chat/completions", aside_body(big, big_plan, big_part, side, side_plan,
+                                                                 self.model, self.effort))
+            verdict = json.loads(resp["choices"][0]["message"]["content"])["aside"]
+        except (httpx.HTTPError, RuntimeError, ValueError, KeyError, IndexError, TypeError):
+            return None
+        return verdict if isinstance(verdict, bool) else None
 
     def _call(self, body: dict, on_mark=None, on_say=None) -> Reply:
         """One answer. A sentence without Vietnamese diacritics (4 of 104 so far, T4-T8a) would be read

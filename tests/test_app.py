@@ -296,6 +296,91 @@ def test_a_chain_of_side_questions_keeps_the_offer_for_the_last_one():
     assert o.end(q2, cancelled=False) == "big"
 
 
+def _cut_off(o, big):
+    o.start(big)
+    o.interrupt()
+    o.end(big, cancelled=True)
+
+
+def test_a_side_question_answered_in_one_turn_is_followed_by_the_offer():
+    from screentutor.app import Offers
+
+    o = Offers()
+    big = Rec("big", ["Tải file dự thảo", "Mở file"], "interrupted")
+    _cut_off(o, big)
+    mic = Rec("mic", outcome="stopped")       # T13 C3b-3: "cái nút micro này là để làm gì", one sentence, no ring
+    o.start(mic)
+    assert o.end(mic, cancelled=False) is None             # before 03/11: "stopped" was taken for a failure
+    _cut_off(o, big)
+    o.start(mic)
+    assert o.end(mic, cancelled=False, answered=True) == "big"
+    failed = Rec("failed", outcome="error")
+    _cut_off(o, big)
+    o.start(failed)
+    assert o.end(failed, cancelled=False, answered=True) is None
+
+
+def test_a_side_question_with_a_plan_is_offered_only_if_the_model_calls_it_a_detour():
+    from screentutor.app import Offers
+
+    asked = []
+    verdict = {"excel": True, "wallpaper": False, "nobody": None}
+    o = Offers(aside=lambda side, big_id: asked.append((side.id, big_id)) or verdict[side.id] is True)
+    big = Rec("big", ["Đọc dự thảo", "Ghi phiếu góp ý", "Điền biểu mẫu", "Nộp phiếu"], "interrupted")
+    for side_id, offered in (("excel", "big"), ("wallpaper", None), ("nobody", None)):
+        _cut_off(o, big)
+        side = Rec(side_id, ["Tải file", "Mở file"], "done")
+        o.start(side)
+        assert o.end(side, cancelled=False) == offered
+    assert asked == [("excel", "big"), ("wallpaper", "big"), ("nobody", "big")]
+    _cut_off(o, big)
+    left = Rec("excel", ["Tải file", "Mở file"], "stopped")   # the detour itself was left: no call, no offer
+    o.start(left)
+    assert o.end(left, cancelled=False) is None and len(asked) == 3
+
+
+def test_the_detour_question_goes_to_the_model_only_for_the_task_still_cut_off(tmp_path):
+    from screentutor.app import OFFER_AGE_S, detour_of
+    from screentutor.history import History
+
+    class Asker:
+        def __init__(self, verdict):
+            self.verdict, self.calls = verdict, []
+
+        def aside(self, *args):
+            self.calls.append(args)
+            return self.verdict
+
+    now = [1000.0]
+    h = History(tmp_path, clock=lambda: now[0])
+    big = h.start("tôi muốn làm theo tin nhắn này thì làm như thế nào?")
+    h.set_plan(big, ["Đọc dự thảo", "Ghi phiếu góp ý", "Điền biểu mẫu", "Nộp phiếu"], 1)
+    h.finish(big, "interrupted")
+    side = h.start("bây giờ tôi muốn tải file Excel trước thì làm thế nào?")
+    h.set_plan(side, ["Tải file", "Mở file"], 2)
+    h.finish(side, "done")
+    yes, no, unknown = Asker(True), Asker(False), Asker(None)
+    assert detour_of(h, yes, side, big.id, now[0]) is True
+    assert yes.calls == [(big.question, big.plan, 1, side.question, ["Tải file", "Mở file"])]
+    assert detour_of(h, no, side, big.id, now[0]) is False and detour_of(h, unknown, side, big.id, now[0]) is False
+    late = Asker(True)
+    assert detour_of(h, late, side, "another", now[0]) is False                    # not the task that was cut off
+    assert detour_of(h, late, side, big.id, now[0] + OFFER_AGE_S + 1) is False     # too old to offer by itself
+    assert late.calls == []
+
+
+def test_answered_at_once():
+    from screentutor.app import answered_at_once
+    from screentutor.session import Step
+
+    assert answered_at_once([Step(1, "Nút micro là của phần hướng dẫn, bạn cứ để yên.", None, target="none")])
+    assert not answered_at_once([Step(1, "Bạn bấm File.", (10, 10), target="click")])   # she never clicked it
+    assert not answered_at_once([Step(1, "Bạn bấm Ctrl+C.", None, target="keys")])       # a shortcut has no place
+    assert not answered_at_once([Step(1, "", None, error="timeout")])
+    assert not answered_at_once([Step(1, "Chờ trang tải.", None), Step(2, "Xong.", None)])
+    assert not answered_at_once([])
+
+
 class FakeCompanion:
     def __init__(self):
         self.on = self.away = self.looking = None
