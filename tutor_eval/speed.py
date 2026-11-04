@@ -81,8 +81,8 @@ def cmd_run(args) -> None:
     states = load_states()
     out = HERE / "results" / (datetime.now().strftime("%Y%m%d-%H%M%S") + "-speed")
     out.mkdir(parents=True)
-    tutors = {"low": Tutor(_api_key(), effort="low"), "none": Tutor(_api_key(), effort=None)}
-    default = Tutor(_api_key())
+    tutors = {"low": Tutor(_api_key(), effort="low", hedge=False), "none": Tutor(_api_key(), effort=None, hedge=False)}
+    default = Tutor(_api_key(), hedge=False)   # one call at a time, as measured on 03/11 before E2
     n, total = 0, len(items) * len(VARIANTS) * args.runs
     try:
         with (out / "calls.jsonl").open("w", encoding="utf-8") as log:

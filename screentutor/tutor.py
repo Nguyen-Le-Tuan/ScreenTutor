@@ -44,7 +44,10 @@ import httpx
 
 BASE_URL = "https://api.meta.ai/v1"
 MODEL = "muse-spark-1.3"  # Standard tier; never a Contributor variant
-HEDGE = False   # E2 (03/11): race two identical calls and keep the first to know where to point; see tutor_eval/hedge.py
+# E2 (03/11): race two identical calls and keep the first to know where to point (tutor_eval/hedge.py, 36 of each):
+# the mark came at a median of 3.24 s instead of 4.11 s, p90 4.94 s instead of 6.08 s, hits unchanged; each call of a
+# pair was no slower than one alone. It costs twice the calls; the founder allowed the spending (03/11).
+HEDGE = True
 EFFORT = "minimal"  # T12 R5 (02/11): "low" thought 650 tokens on the task prompt; the 12 cases stayed on target at this
 TIMEOUT_S = 30
 RETRY_STATUSES = (429, 500, 502, 503, 504)
@@ -506,14 +509,15 @@ class EarlyAnswer:
 
 class Tutor:
     def __init__(self, api_key: str, model: str = MODEL, effort: str | None = EFFORT,
-                 base_url: str = BASE_URL, timeout: float = TIMEOUT_S, task: bool = True, hedge: bool = HEDGE):
+                 base_url: str = BASE_URL, timeout: float = TIMEOUT_S, task: bool = True, hedge: bool | None = None):
         if not api_key:
             raise ValueError("MODEL_API_KEY is empty")
-        self.model, self.effort, self.task, self.hedge = model, effort, task, hedge
+        self.model, self.effort, self.task = model, effort, task
+        self.hedge = HEDGE if hedge is None else hedge
         make = lambda: httpx.Client(base_url=base_url, timeout=timeout,  # noqa: E731
                                     headers={"Authorization": f"Bearer {api_key}"})
         self._http = make()
-        self._http2 = make() if hedge else None   # the second of a raced pair, on its own connection
+        self._http2 = make() if self.hedge else None   # the second of a raced pair, on its own connection
 
     def close(self) -> None:
         self._http.close()
@@ -522,10 +526,12 @@ class Tutor:
 
     def warm(self) -> None:
         """Open the connection (DNS, TLS) before the first question; the pool keeps it for the first answer."""
-        try:
-            self._http.get("/models")
-        except httpx.HTTPError:
-            pass
+        for http in (self._http, self._http2):
+            if http is not None:
+                try:
+                    http.get("/models")
+                except httpx.HTTPError:
+                    pass
 
     def ask(self, question: str, image_data_url: str, state: str | None = None, pointer: str | None = None,
             on_mark=None, on_say=None, known: str | None = None) -> Reply:

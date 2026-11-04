@@ -16,6 +16,12 @@ For each of the 12 cases (tutor_eval.run's cases and states), per round, interle
 Rule, fixed before the run (03/11; Claude's proposal): racing two calls is adopted only if its
 median time until the mark (the first of the pair) is at least 0.5 s below single's, and the
 answer that won hits at least 10/12 in every round.
+
+Result (20261103-190520-hedge), 36 singles and 36 pairs: the mark at a median of 3.24 s raced, 4.11 s
+single (0.87 s sooner); p90 4.94 s against 6.08 s, and the two slowest singles (9.3 s, 9.9 s) have no
+match among the pairs (slowest 5.7 s). Hits per round: single 12, 12, 11; raced 11, 12, 11. Each call of a
+pair alone: median 3.80 s, so two at once did not slow the server. Passes: tutor.HEDGE is on.
+The harness calls Tutor(hedge=False) on both sides of a pair, so it measures the race itself.
 """
 
 from __future__ import annotations
@@ -49,7 +55,7 @@ def cmd_run(args) -> None:
     states = load_states()
     out = HERE / "results" / (datetime.now().strftime("%Y%m%d-%H%M%S") + "-hedge")
     out.mkdir(parents=True)
-    tutors = [Tutor(_api_key()), Tutor(_api_key())]   # one connection pool each, as two app calls would be
+    tutors = [Tutor(_api_key(), hedge=False), Tutor(_api_key(), hedge=False)]   # one connection pool each
     try:
         with (out / "calls.jsonl").open("w", encoding="utf-8") as log:
             for run in range(1, args.runs + 1):

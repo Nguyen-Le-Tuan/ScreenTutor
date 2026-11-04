@@ -11,3 +11,10 @@ def qt_app():
     from PySide6.QtWidgets import QApplication
 
     return QApplication.instance() or QApplication([])
+
+
+@pytest.fixture(autouse=True)
+def one_call_at_a_time(monkeypatch):
+    """Tests fake one connection; the raced pair (tutor.HEDGE) would reach the real API on the second.
+    The tests of the race itself ask for it with hedge=True."""
+    monkeypatch.setattr("screentutor.tutor.HEDGE", False)
