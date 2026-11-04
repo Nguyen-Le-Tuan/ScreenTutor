@@ -1,0 +1,86 @@
+T16: MUSESCORE TRÊN WINDOWS (thử trước khi quay demo)
+=====================================================
+Soạn 04/11/2026, 16:20 ET. Khoảng 55 phút. DỪNG LÚC 17:30, xong hay chưa.
+Code không đổi từ bản đã thử T15 (từ 5173648 chỉ đổi tài liệu). App không có dòng code nào riêng cho
+MuseScore: đây là lần đầu ScreenTutor gặp MuseScore.
+Để cửa sổ đen mở suốt; quay màn hình CÓ tiếng mọi lần thử (lần thử tốt nhất chính là cảnh demo).
+
+Luật chấm (ghi trước khi chạy; đề xuất của Claude). Trượt luật nào thì ghi lại, không sửa luật:
+  - Q-1 đạt (mục B): ít nhất 2/3 lần, bước đầu là bấm menu Tools, hoặc Ctrl+A để chọn cả bài,
+    và chấm nằm đúng chỗ đó.
+  - M-1 đạt (mục C): việc A tới đích ở ít nhất 2/3 lần, mỗi lần không quá 14 bước. Tới đích = bản nhạc
+    hạ một cung (Đô trưởng → Si giáng trưởng: hoá biểu 2 dấu giáng) VÀ có file PDF mới.
+  - M-2 đạt (mục C): không lần nào tutor bảo một thao tác phá bài (xoá nốt, gõ đè, Delete, Ctrl+X),
+    và không lần nào báo "xong" khi chưa xong.
+  - Quyết định: M-1 và M-2 đạt thì quay việc A. Chỉ 1/3 tới đích thì quay A bằng lần tốt nhất, README ghi
+    đúng 1/3. 0/3 hoặc M-2 trượt thì quay việc B (mục D).
+  - Chỉ ghi lại: Muse Spark hiểu "một cung" thành gì; mỗi bước mất bao lâu; có lần nào im lâu quá không.
+
+
+A. CHUẨN BỊ (10 phút)
+---------------------
+[ ] A1. PowerShell ở thư mục repo: git pull --ff-only ; git log --oneline -1 (commit Claude báo): ______
+        Không cần chạy lại pytest: code không đổi.
+[ ] A2. Bản nhạc. MuseScore 4 → New score → Treble clef, C major, 4/4, 8 ô nhịp. Bấm N, gõ giai điệu
+        Frère Jacques (dân gian, không lời):
+          C D E C | C D E C | E F G(nốt trắng) | E F G(nốt trắng) |
+          G A G F E C | G A G F E C | C G(thấp) C(nốt trắng) | C G(thấp) C(nốt trắng)
+        (sai nhịp vài chỗ cũng được: chỉ cần có nốt). Tiêu đề: "Frère Jacques". Lưu thành
+        Bai_hat_mau.mscz, rồi chép một bản Bai_hat_mau_GOC.mscz để mở lại mỗi lần thử.
+[ ] A3. Xuất PDF một lần (File > Export > PDF > Export > Save), để có sẵn PDF cũ cùng tên: lần thử
+        sẽ có bước ghi đè màu vàng. Đóng file PDF đó (không để Foxit mở nó).
+[ ] A4. Đóng hộp chào, Muse Hub, cập nhật của MuseScore. Bật Do not disturb của Windows.
+        Brave: đóng Messenger, Facebook, trang Billing. Zalo: thu nhỏ.
+[ ] A5. Bấm đúp ScreenTutor.bat. Viền sáng BẬT. MuseScore để toàn màn hình, bản nhạc ở giữa.
+
+
+B. THỬ NHANH MỘT ẢNH (5 phút, chưa cần app chạy)
+-------------------------------------------------
+Lệnh này chụp màn hình sau 5 giây, hỏi Muse Spark một lần, hiện chấm 3 giây, lưu ảnh có đánh dấu
+(pointed.png) và câu trả lời (reply.json, có cả kế hoạch) vào tutor_runs\<giờ>\. Chạy trong PowerShell
+thứ hai, rồi bấm sang MuseScore trong 5 giây đó:
+  py -m screentutor.tutor "Bài này cao quá với giọng học sinh lớp 6. Hạ xuống một cung rồi xuất ra PDF để in cho các em." --live --delay 5 --show 3
+[ ] B1. Lần 1. Tutor nói: ______ Chỉ vào: ______ Kế hoạch (reply.json, "plan"): ______
+[ ] B2. Lần 2. Tutor nói: ______ Chỉ vào: ______
+[ ] B3. Lần 3. Tutor nói: ______ Chỉ vào: ______
+        Q-1: ___/3. Nếu 0/3 hoặc 1/3: bỏ mục C, sang thẳng mục D.
+
+
+C. VIỆC A VỚI APP THẬT (30 phút, 3 lần)
+---------------------------------------
+Mỗi lần: File > Open > Bai_hat_mau_GOC.mscz, rồi File > Save As > Bai_hat_mau.mscz (đè lên), để tên PDF
+xuất ra trùng PDF cũ. Bắt đầu quay, giữ Ctrl+Alt, CHỜ ô hiện vạch "đang nghe" rồi mới nói:
+  "Bài này cao quá với giọng học sinh lớp 6. Hạ xuống một cung rồi xuất ra PDF để in cho các em."
+Làm theo tutor như mẹ: chờ nghe rồi mới bấm. Riêng lần 3: ở một bước, lúc viền sáng đang chạy, tự bấm
+trước bước đó (ví dụ tự mở File), để xem tutor có im và chỉ tiếp đúng màn hình mới không.
+Có gì bị xoá: Ctrl+Z ngay, ghi lại, tính M-2 trượt.
+
+[ ] C1. Lần 1. Nghe được: ______ Số bước: ___ Tới đích (2 dấu giáng + PDF mới)? ___
+        Bước vàng ở chỗ ghi đè? ___ Có bảo thao tác phá bài / báo xong sai? ___ Video: ______
+[ ] C2. Lần 2. Nghe được: ______ Số bước: ___ Tới đích? ___ Bước vàng? ___ Phá bài / xong sai? ___
+        Video: ______
+[ ] C3. Lần 3 (có bấm trước). Nghe được: ______ Số bước: ___ Tới đích? ___ Bước vàng? ___
+        Bấm trước: cửa sổ đen có "ĐÃ ĐỔI, không nói"? ___ Tutor chỉ tiếp đúng màn hình mới? ___ Video: ______
+        M-1: ___/3 tới đích. M-2: ______  → Quay việc: A / B
+
+
+D. VIỆC B, DỰ PHÒNG (chỉ khi mục B hay C trượt; 10 phút)
+--------------------------------------------------------
+Mở lại file GOC. Hỏi: "Xuất bài này ra PDF để in cho các em." Làm theo tới khi xong. Hai lần.
+[ ] D1. Lần 1. Số bước: ___ Tới đích? ___ Bước vàng ở ghi đè? ___ Video: ______
+[ ] D2. Lần 2. Số bước: ___ Tới đích? ___ Bước vàng? ___ Video: ______
+
+
+E. ĐOẠN DỪNG VÀ ĐOẠN KẾT (5 phút)
+---------------------------------
+[ ] E1. Hỏi lại việc A (hoặc B). Khi tutor chỉ bước đầu, nói "thôi để sau". Tutor nói câu dừng, ô thu lại? ___
+        Video: ______
+[ ] E2. Sau một lần tới đích: TỰ bấm Play của MuseScore (tutor đã báo xong, không hỏi gì thêm), quay
+        10 giây nhạc ở giọng mới. Đừng bấm Play khi tutor còn đang chỉ: nhạc chạy làm màn hình đổi liên
+        tục, tutor sẽ im (như "tạm dừng video" ở T15 G3). Video: ______
+
+
+F. LƯU LẠI
+----------
+[ ] F1. Chép cửa sổ đen vào console_T16.txt, để cùng chỗ với video. KHÔNG qua GitHub.
+[ ] F2. Điền kết quả vào file này. Nếu có mạng và còn giờ, commit và push (chỉ file này) trước khi đi.
