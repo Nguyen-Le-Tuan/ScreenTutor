@@ -2,7 +2,7 @@
 
 Tác tử nhiều bước trên Windows: nhìn màn hình, chỉ từng chỗ một, tự kiểm từng bước, để một cô giáo lớn tuổi mới dùng máy tính tự làm xong việc của mình. Nó không bao giờ bấm thay. Dự án thi Meta Global AI Developer Hackathon (hạn nộp 4/11/2026).
 
-**Mọi thứ từ dynamic island trở đi mới chạy trên Linux, với API thật và bản giả cho phần Windows; chưa chạy trên Windows** (phiếu `docs/tests/T13_WINDOWS.txt`).
+**Đã chạy trên Windows: T13 (03/11) và T15 (04/11)**, luật ghi trước khi chạy, kết quả trong `docs/tests/T15_WINDOWS.txt`. T15 đạt: màn hình đã đổi thì không nói (3/3 ca), dấu chấm đi theo chuột (4/4 luật), dừng khi bảo dừng (5/5). Nói và chỉ cùng lúc: 3/4 luật; luật còn lại trượt theo script đo, nhưng xem từng khung hình thì chấm đáp trong khoảng 0,15 s quanh tiếng (script làm cho vòng đỏ cũ). Trượt: link dạng chữ thường; đổi cỡ chữ cả bài (**Enter thừa sau Ctrl+A xoá trắng tài liệu rồi báo xong: chưa sửa, không dùng cho việc sửa cả bài**); bấm "Làm tiếp" thì tutor im (chưa rõ nguyên nhân). Mấy chữ đầu câu hỏi hay bị mất hoặc nghe sai.
 
 Repo được xây theo từng thành phần. Mỗi thành phần được thử riêng trước khi ráp vào nhau.
 
