@@ -132,3 +132,14 @@ def test_a_task_picked_up_again_keeps_its_file_and_its_steps(tmp_path):
     back = h.tasks()
     assert len(back) == 1 and [s.say for s in back[0].steps] == ["Bạn bấm Lưu.", "Bạn bấm Zalo."]
     assert back[0].outcome == "done" and back[0].notes == "Ghi chú đã đọc" and h.resumable(1000.0, 3600) is None
+
+
+def test_a_task_she_told_to_stop_is_dropped_and_never_picked_up(tmp_path):
+    h = History(tmp_path, clock=Clock())
+    big = h.start("Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?")
+    h.set_plan(big, ["Đọc dự thảo", "Ghi phiếu", "Điền biểu mẫu", "Nộp phiếu"], 1)
+    h.finish(big, "interrupted")
+    assert h.resumable(big.started_at + 60, 3600).id == big.id
+    assert h.drop(big.id) and h.resumable(big.started_at + 60, 3600) is None
+    assert [r.outcome for r in h.tasks()] == ["dropped"]
+    assert not h.drop("no-such-task")

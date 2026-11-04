@@ -38,6 +38,9 @@ class FakeIsland:
     def peek(self, seconds):
         self.peeks = getattr(self, "peeks", []) + [seconds]
 
+    def clear_task(self):
+        self.cleared = getattr(self, "cleared", 0) + 1
+
 
 class FakeButton:
     def __init__(self):
@@ -425,3 +428,29 @@ def test_the_dot_waits_beside_her_mouse_from_her_question_until_the_task_is_done
     assert dot.on is False
     feed.notice()                                       # the guard speaking up is not her task
     assert dot.on is False
+
+
+def test_when_she_says_stop_nothing_is_offered_after_and_the_island_lets_go(qt_app):
+    from screentutor.app import Feed, Offers
+
+    o = Offers()
+    big = Rec("big", ["Đọc dự thảo", "Ghi phiếu"], "interrupted")
+    o.start(big)
+    o.interrupt()                                     # she pressed the button to say "dừng"
+    o.offered = "older"                               # and "Làm tiếp" was up for another task
+    assert o.drop() == ["big", "older"]
+    assert o.cut_off is None and o.offered is None
+    o.end(big, cancelled=True)
+    mic = Rec("mic", outcome="stopped")               # even a one-turn answer after it offers nothing
+    o.start(mic)
+    assert o.end(mic, cancelled=False, answered=True) is None
+    o.offered = "x"
+    o.start(Rec("next"))                              # a new task: what was offered is no longer up
+    assert o.offered is None
+
+    isl = FakeIsland()
+    feed = Feed(isl)
+    feed.listen()
+    feed.hear("dừng hướng dẫn")
+    feed.stopped()
+    assert feed.task is None and isl.cleared == 1 and isl.states[-1][0] == "idle"

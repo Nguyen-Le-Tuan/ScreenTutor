@@ -52,6 +52,8 @@ NO_MIC = "Mình chưa nghe được micro. Bạn kiểm tra lại micro nhé."
 SETTINGS_POLL_MS = 2000
 PEEK_S, PART_PEEK_S = 5.0, 3.0   # the island opens by itself: on a new plan, and on each new part
 OFFER_SAY = "Bạn muốn làm tiếp việc lúc nãy thì bấm vào ô trên cùng màn hình nhé."   # approved by the founder, 02/11
+STOP_SAY = "Được, mình dừng nhé. Khi nào cần bạn cứ bấm nút tròn."                   # founder 03/11: a short sentence
+STOP_SAY_KEYS = "Được, mình dừng nhé. Khi nào cần bạn cứ giữ phím Ctrl và Alt rồi nói."   # the round button is hidden
 OFFER_AGE_S = 12 * 3600          # B7: how old a half-done task may be for the island to offer it by itself...
 RESUME_AGE_S = 7 * 86400         # ...and for her to ask for it in words
 OFFER_AFTER_S = 3.2              # leave the green "done" on the island for its 3 s first
@@ -113,15 +115,25 @@ class Offers:
     it for a question (answered_at_once). A side question
     with a plan of its own was taken for another task; now aside(side, big_id) asks the model whether it
     was a detour of the big task ("tải file Excel trước" in D3) or another task.
+
+    Founder 03/11: when she says "dừng" or presses × on the island, drop() gives up the tasks of the moment and
+    nothing is offered after; she had had to press Ctrl+C to get the tutor to leave her alone.
     """
 
     def __init__(self, aside=None):
         self.running = None      # the task being walked through now
         self.cut_off = None      # the id of the big task a new question cut off
+        self.offered = None      # the id of the task "Làm tiếp" is showing for, until another task starts
         self.aside = aside       # (side task, id of the cut-off task) -> bool; None: a side task with a plan never is
 
     def start(self, rec) -> None:
-        self.running = rec
+        self.running, self.offered = rec, None
+
+    def drop(self) -> list[str]:
+        """She told the tutor to stop (founder 03/11): the ids of the tasks it was on or would offer; none is offered."""
+        gone = [i for i in (self.cut_off, self.running.id if self.running is not None else None, self.offered) if i]
+        self.cut_off = self.offered = None
+        return list(dict.fromkeys(gone))
 
     def interrupt(self) -> None:
         """A new request is starting: if a big task was under way, it is the one cut off."""
@@ -233,6 +245,13 @@ class Feed:
             self.speaking = 0
             self._show()
 
+    def stopped(self) -> None:
+        """She told the tutor to stop: its task leaves the island; whatever comes next starts afresh."""
+        self.task = None
+        self.base, self.speaking = "idle", 0
+        self.island.clear_task()
+        self._show()
+
     def plan(self, parts: list[str], part: int) -> None:
         """The parts of a big task and the one being done, from 1: the island's card and "Phần k/n"."""
         if self.task is None:
@@ -317,7 +336,7 @@ def main(argv=None) -> None:
     from .inputs import Click, Combo, Drag, Hold, Trail, watch
     from .island import Island
     from .listen import Mic, _api_key, listen
-    from .memory import Memory, asks_to_resume, learn
+    from .memory import Memory, asks_to_resume, asks_to_stop, learn
     from .overlay import Companion, Overlay, _win_topmost
     from .session import ClickBox, Session
     from .speak import Speaker
@@ -562,6 +581,9 @@ def main(argv=None) -> None:
             say(NOT_HEARD)
             return
         post("hear", heard.text)
+        if asks_to_stop(heard.text):   # founder 03/11: never to the model, which asked back or pointed at a close button
+            stop_task()
+            return
         left = history.resumable(time.time(), RESUME_AGE_S) if asks_to_resume(heard.text) else None
         if left is not None:
             pick_up(left, cancel)
@@ -569,6 +591,23 @@ def main(argv=None) -> None:
         pointer = pointing(trail.between(asked_at - PRE_ASK_S, time.monotonic()), screen_size, own_rects())
         print(f"Chuột lúc hỏi: {pointer or 'không chỉ vào đâu'}", flush=True)
         run_task(history.start(heard.text), cancel, pointer, memory.context(heard.text))
+
+    dropped: set[str] = set()   # tasks she told to stop; a thread still finishing must not write them back as half done
+
+    def stop_task() -> None:
+        """She said "dừng" or pressed × (founder 03/11): the tasks of the moment go, nothing is offered after them,
+        the island lets go of them, and one short sentence. What she asks next starts afresh."""
+        gone = offers.drop()
+        latest = history.resumable(time.time(), OFFER_AGE_S)   # the big task a side question had cut off, too
+        if latest is not None and latest.id not in gone:
+            gone.append(latest.id)
+        for task_id in gone:
+            dropped.add(task_id)
+            history.drop(task_id)
+        print(f"Dừng theo lời người dùng; bỏ: {', '.join(gone) or 'không có việc nào'}", flush=True)
+        post("stopped")
+        post("recent", recent_items())
+        say(STOP_SAY if button_box[0] is not None else STOP_SAY_KEYS)
 
     def pick_up(rec, cancel: threading.Event) -> None:
         """B7: the plan, the part and the notes come back; the first turn looks at the screen as it is now."""
@@ -587,6 +626,7 @@ def main(argv=None) -> None:
             waited += 0.2
         if not cancel.wait(OFFER_AFTER_S):
             post("offer", left.title)
+            offers.offered = left.id
             # Not say(): the island would show "speaking" and let clicks through just as she is told to click it.
             threading.Thread(target=speaker.speak, args=(OFFER_SAY,), daemon=True).start()
 
@@ -645,7 +685,7 @@ def main(argv=None) -> None:
             save=save_step, status=lambda st: post("status", st), cancel=cancel, pointer=pointer, on_plan=on_plan,
             known=known, plan=list(rec.plan), part=rec.part, notes=rec.notes)
         steps = session.run(rec.question, last_say=last_say)
-        history.finish(rec, outcome_of(steps, cancel.is_set()), session.notes)
+        history.finish(rec, "dropped" if rec.id in dropped else outcome_of(steps, cancel.is_set()), session.notes)
         post("recent", recent_items())
         if rec.outcome != "error":  # in the background: she does not wait for her own notes
             threading.Thread(target=learn, args=(memory, rec, tutor.summarise), daemon=True).start()
@@ -687,6 +727,15 @@ def main(argv=None) -> None:
             current["thread"].start()
 
     island.on_offer = on_offer_clicked
+
+    def on_island_close() -> None:
+        """Founder 03/11: the × of the pinned island stops a task under way, as "dừng" does; with none, it only closes."""
+        thread = current["thread"]
+        if (thread is not None and thread.is_alive()) or offers.offered is not None or feed.speaking:
+            begin(None)
+            threading.Thread(target=stop_task, daemon=True).start()
+
+    island.on_close = on_island_close
 
     def on_click_qt(x: int, y: int) -> None:
         button_box[0] = physical(button)

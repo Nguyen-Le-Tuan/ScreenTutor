@@ -382,3 +382,16 @@ def test_resting_the_mouse_on_the_offer_does_not_open_the_island():
         isl.poll()
     assert isl.mode == "collapsed"
     isl.hide()
+
+
+def test_the_close_mark_tells_the_app_which_may_stop_the_task_and_a_stopped_task_leaves_the_island():
+    isl, fake = make()
+    closed = []
+    isl.on_close = lambda: closed.append(isl.mode)
+    isl.set_mode("pinned")
+    settle(isl, fake)
+    click(isl, island.close_center(isl.morph.shape(), isl.width() / 2))
+    assert closed == ["collapsed"] and isl.mode == "collapsed"
+    assert isl.view.task is not None
+    isl.clear_task()
+    assert isl.view.task is None and isl.view.title == ""

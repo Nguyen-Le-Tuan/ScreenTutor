@@ -201,3 +201,16 @@ def test_asking_to_go_on_is_understood_with_or_without_accents():
         assert asks_to_resume(text), text
     for text in ("Tiếp tục phát video", "làm tiếp bảng điểm lớp 7A", "Xuất giáo án ra PDF", "Mẹ muốn làm cái này", ""):
         assert not asks_to_resume(text), text
+
+
+def test_a_short_request_to_stop_is_told_from_a_thing_to_stop_on_the_screen():
+    from screentutor.memory import asks_to_resume, asks_to_stop
+
+    for text in ("tôi muốn dừng hướng dẫn", "Dừng lại đi.", "thôi không làm nữa", "thôi", "để sau nhé",
+                 "thôi để khi khác", "mẹ mệt rồi, thôi nhé", "tôi không muốn làm nữa", "đủ rồi cảm ơn",
+                 "ngừng hướng dẫn giúp tôi", "tạm dừng đã", "Thôi, cảm ơn bạn nhé"):
+        assert asks_to_stop(text) and not asks_to_resume(text), text
+    for text in ("tạm dừng video", "dừng bài hát này lại", "làm sao để dừng tải file", "tôi muốn dùng hướng dẫn",
+                 "làm tiếp", "dừng lại, mở Zalo cho tôi", "cảm ơn nhé", "cái nút micro này là để làm gì", "",
+                 "làm sao tắt máy tính"):
+        assert not asks_to_stop(text), text

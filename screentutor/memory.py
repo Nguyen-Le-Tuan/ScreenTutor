@@ -155,6 +155,27 @@ def asks_to_resume(text: str) -> bool:
     return any(w in bare for w in RESUME_WORDS) and set(bare.split()) <= RESUME_REST
 
 
+# Founder 03/11: "tutor biết khi nào dừng". Said to the model, "tôi muốn dừng hướng dẫn" made it ask back 3 times in 6
+# and once point at Zalo's close button; and since W-6 a one-turn answer is followed by "Làm tiếp". So a short request
+# to stop never goes to the model. Accents are kept: "dừng" (stop) is not "dùng" (use).
+QUIT_WORDS = frozenset(("dừng", "ngừng", "thôi", "nghỉ", "hủy", "huỷ"))
+QUIT_PAIRS = (("không", "nữa"), ("để", "sau"), ("đủ", "rồi"), ("khi", "khác"))   # "không làm nữa", "để khi khác"
+QUIT_REST = frozenset("""
+    tôi mình mẹ con em bạn muốn cho đã đi lại nhé nhá nha ạ à ơi bây giờ hướng dẫn việc này đó nữa không làm cần ở đây
+    luôn rồi hết được cái chỉ xin cảm ơn giúp vậy thì là nào đủ để sau tạm tắt đang cả mà mệt khi khác thôi
+""".split()) | QUIT_WORDS
+QUIT_MAX_WORDS = 12
+
+
+def asks_to_stop(text: str) -> bool:
+    """"Dừng", "thôi không làm nữa", "để sau nhé": she wants the tutor to stop, nothing else. A thing to stop on the
+    screen ("tạm dừng video", "dừng tải file") is a question of its own, and goes to the model as any other."""
+    words = WORD.findall(unicodedata.normalize("NFC", text).lower())
+    if not words or len(words) > QUIT_MAX_WORDS or not set(words) <= QUIT_REST:
+        return False
+    return bool(QUIT_WORDS & set(words)) or any(a in words and b in words for a, b in QUIT_PAIRS)
+
+
 def scrub(text: str) -> str:
     for pattern in FILTERS:
         text = pattern.sub(HIDDEN, text)

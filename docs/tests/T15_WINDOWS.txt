@@ -1,6 +1,6 @@
-T15: CHUYẾN WINDOWS (lời nói và cái chỉ cùng lúc; kiểm màn hình cũ; dấu chấm; kéo, phím tắt, gõ)
+T15: CHUYẾN WINDOWS (nói và chỉ cùng lúc; màn hình cũ; dấu chấm; kéo, phím tắt, gõ; làm tiếp; dừng)
 ===============================================================================================
-Soạn 03/11/2026. Năm phần, một chuyến: C1 (mục B), C2 (mục C), C4 (mục D), K (mục E), Làm tiếp (mục F). Khoảng 1,5 giờ.
+Soạn 03/11/2026. Sáu phần, một chuyến: C1 (mục B), C2 (mục C), C4 (mục D), K (mục E), Làm tiếp (mục F), Dừng (mục G). Khoảng 1,7 giờ.
 Để cửa sổ đen của ScreenTutor.bat mở suốt chuyến: cuối mỗi việc app in từng bước ra đó.
 Vòng đỏ cũ không còn: từ bản này, cái chỉ là dấu chấm (mục D). Mục B và C vẫn chấm như đã ghi.
 
@@ -189,3 +189,34 @@ gì?", chờ tutor nói "Việc này có ... phần" và chỉ bước đầu. C
         Có ô "Làm tiếp" không? Cửa sổ đen in gì? ______
         Rồi bấm nút tròn, nói "làm tiếp": tutor quay lại đúng phần nào? ______
 [ ] F4. Chép chữ trong cửa sổ đen của mục F vào file console_F.txt, để cùng chỗ với video (KHÔNG qua GitHub).
+
+
+G. DỪNG KHI BẠN BẢO DỪNG (10 phút)
+----------------------------------
+Bạn chốt 03/11: nói "dừng" thì xoá hẳn việc đang làm, không mời "Làm tiếp" (kể cả khi ghim ô), hỏi câu mới
+thì tự bắt đầu việc mới; sau khi dừng tutor nói một câu ngắn; bấm dấu × trên ô khi đang có việc cũng dừng.
+Trước đây câu "tôi muốn dừng hướng dẫn" đi thẳng tới model: thử 6 lần, model hỏi lại 3 lần và 1 lần chỉ vào nút
+đóng Zalo; sau bản sửa W-6 còn hiện ô "Làm tiếp". Giờ câu dừng ngắn ("dừng", "dừng lại", "thôi không làm nữa",
+"để sau nhé", "tạm dừng đã", "đủ rồi cảm ơn"...) được nhận ngay trên máy, không gửi cho model. Câu có đối tượng
+("tạm dừng video", "dừng tải file") vẫn đi tới model như câu hỏi thường. Việc đã dừng được ghi là "dropped": không
+bao giờ được mời lại và nói "làm tiếp" cũng không quay về nó.
+
+Luật chấm (ghi trước khi chạy; đề xuất của Claude):
+  - S-1 đạt: đang giữa một việc lớn, nói "dừng hướng dẫn": chấm biến mất, tutor nói "Được, mình dừng nhé. Khi nào
+    cần bạn cứ bấm nút tròn.", ô thu lại, cửa sổ đen in "Dừng theo lời người dùng; bỏ: ...". Trong 30 giây sau
+    KHÔNG có ô "Làm tiếp", kể cả khi rê chuột vào ô rồi bấm để ghim.
+  - S-2 đạt: ngay sau đó hỏi một câu mới: tutor làm việc mới, không nhắc việc cũ.
+  - S-3 đạt: đang có việc, rê chuột vào ô, bấm để ghim, bấm dấu × ở góc trên bên phải của ô: việc dừng như S-1.
+    Không có việc gì thì × chỉ thu ô lại.
+  - S-4 đạt: "tạm dừng video" lúc đang xem một video trên Brave KHÔNG bị coi là lệnh dừng (tutor không nói "mình
+    dừng nhé", mà chỉ chỗ tạm dừng hoặc trả lời).
+  - Chỉ ghi lại: sau khi dừng mà nói "làm tiếp" thì tutor nói gì (việc đã bỏ nên không có gì để quay lại).
+
+[ ] G1. (S-1, S-2) Việc 2 trong "Cloud của tôi", hỏi "Thầy hiệu trưởng nhắn cái này thì mình phải làm gì?". Khi
+        tutor chỉ bước đầu, bấm nút tròn nói "dừng hướng dẫn". Câu tutor nói? Có ô "Làm tiếp" trong 30 giây
+        không, kể cả khi bấm ghim ô? ______ Rồi hỏi "mở File Explorer cho tôi": tutor làm việc mới? ______
+[ ] G2. (S-3) Hỏi lại câu Việc 2. Khi tutor chỉ bước đầu: rê chuột vào ô, bấm ghim, bấm ×. Việc có dừng
+        như G1 không? ______ Không có việc gì, ghim ô rồi bấm ×: ô chỉ thu lại? ______
+[ ] G3. (S-4) Mở một video YouTube bất kỳ trên Brave, cho chạy, rồi hỏi "tạm dừng video". Tutor làm gì? ______
+[ ] G4. (ghi lại) Ngay sau G1, nói "làm tiếp". Tutor nói gì? ______
+[ ] G5. Chép chữ trong cửa sổ đen của mục G vào console_G.txt, để cùng chỗ với video (KHÔNG qua GitHub).

@@ -554,6 +554,7 @@ class Island(QWidget):
         self.show_button = True
         self.color = "#000000"
         self.on_color = self.on_button_toggle = self.on_clear = self.on_offer = None
+        self.on_close = None   # founder 03/11: the × of the pinned island; the app stops a task under way
         self._confirm_until = 0.0
         # A7: read from worker threads, so plain tuples swapped whole (logical x, y, w, h), or None
         self.cover: tuple[int, int, int, int] | None = None        # what to grey out for the stillness check
@@ -587,6 +588,17 @@ class Island(QWidget):
 
     def set_level(self, level: float | None) -> None:
         self.view.level = level
+
+    def close_clicked(self) -> None:
+        """The × of the pinned island: it closes, and the app decides whether a task stops with it."""
+        self.set_mode("collapsed")
+        if self.on_close:
+            self.on_close()
+
+    def clear_task(self) -> None:
+        """The task leaves the island (she told the tutor to stop): nothing of it is shown any more."""
+        self.view.task, self.view.title = None, ""
+        self._relayout()
 
     def task_changed(self) -> None:
         """Call after adding to the current task: the open island may need to grow."""
@@ -702,7 +714,7 @@ class Island(QWidget):
             pos = event.position()
             x = close_center(self.morph.shape(), self.width() / 2)
             if math.dist((pos.x(), pos.y()), (x.x(), x.y())) <= 12:
-                self.set_mode("collapsed")
+                self.close_clicked()
                 return
             self.footer_click(pos)
 

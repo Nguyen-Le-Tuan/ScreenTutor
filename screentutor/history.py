@@ -24,8 +24,8 @@ from .settings import ROOT
 
 DIR = ROOT / "history"
 KEEP = 500                       # the newest tasks kept; older files are removed
-OUTCOMES = ("done", "unfinished", "stopped", "error", "interrupted")
-LEFT_HALF_DONE = ("interrupted", "stopped", "unfinished")
+OUTCOMES = ("done", "unfinished", "stopped", "error", "interrupted", "dropped")
+LEFT_HALF_DONE = ("interrupted", "stopped", "unfinished")   # not "dropped": she told the tutor to stop (03/11)
 
 
 @dataclass
@@ -89,6 +89,16 @@ class History:
         rec.ended_at = self._clock()
         rec.notes = notes or rec.notes
         self.write(rec)
+
+    def drop(self, task_id: str) -> bool:
+        """She told the tutor to stop (founder 03/11): the task is gone, never offered or picked up again. It stays
+        in the history as "dropped", so what she did is not lost. False when there is no such task."""
+        for rec in self.tasks():
+            if rec.id == task_id:
+                rec.outcome, rec.ended_at = "dropped", rec.ended_at or self._clock()
+                self.write(rec)
+                return True
+        return False
 
     def resumable(self, now: float, max_age_s: float, skip: str | None = None) -> TaskRecord | None:
         """The latest big task left half done, if it is recent enough to mean anything to her."""
