@@ -10,7 +10,7 @@ Cases: D-1 is D3's own two questions (the plans are rebuilt from what the tutor 
 the T12 labels). The others are Claude's, written with this rule and before any run: five detours and six
 other tasks, one of them in the same app as the big task. Each case 5 times.
 
-  .venv/bin/python -m tutor_eval.aside run --runs 5        # 16 x 5 = 80 calls, words only, a few cents
+  .venv/bin/python -m tutor_eval.aside run --runs 5        # 18 x 5 = 90 calls, words only, a few cents
   .venv/bin/python -m tutor_eval.aside summary tutor_eval/results/<stamp>-aside
 
 Rules, fixed before the run (03/11; Claude's proposal):
@@ -33,6 +33,18 @@ added before the run, so that the new words cannot pass by matching words: G-2, 
 other tasks, G-5 is downloading a file sent somewhere else; G-1, G-4 are detours. The rules stay the same, at the
 same shares: each case at least 4 of 5; detours at least 23/25 of all (33 of 35), other tasks at least 28/30
 (42 of 45); at most 1 answer missing; p90 at most 5 s.
+
+Round 2 (20261103-220349-aside, commit bbfcc49): FAILED A-1 and A-4. D-1 again 0 of 5 (detours 30/35, 33 needed);
+every other case 5 of 5, the five guards too (A-2 45/45, A-3 0/80); median 3.29 s, p90 5.13 s (the longer prompt
+thought more: 318 reasoning tokens against 220). Claude's reading: the model answers "does the big task need it?",
+and in the T12 message none of the 4 parts uses the Excel file, so by that question "no" is fair. What the founder
+called a detour is that she will come back.
+
+Round 3, the last before asking the founder: aside asks whether she will likely come back to the big task after the
+side question ("làm trước một việc nhỏ rồi quay lại", or tied to the big task's files, pages or apps). Two more
+guards written before the run: G-6 deletes old files from Downloads (another task about files), G-7 prints the
+certificate first (a detour that the big task's parts do not need). Same rules, same shares: detours at least
+37 of 40, other tasks at least 47 of 50; at most 1 answer missing; p90 at most 5 s.
 """
 
 from __future__ import annotations
@@ -126,6 +138,14 @@ CASES = [
     Case("G-5 other_file", PRINCIPAL, 2, "Bạn bấm vào file phiếu góp ý trong tin nhắn để mở ra.",
          "tải cho tôi file ảnh kỷ yếu bạn cũ gửi trong nhóm lớp", ["Mở nhóm lớp cũ", "Tải file ảnh về"],
          "Bạn bấm vào nhóm lớp cũ ở danh sách chat bên trái.", False),
+    # round 3's guards, written before its run
+    Case("G-6 clean_downloads", PRINCIPAL, 1, "Việc này có bốn phần, bạn bấm vào nút mũi tên tải xuống ở phía bên phải "
+         "của dòng file dự thảo quy chế để tải về máy đọc trước.",
+         "tôi muốn xoá bớt file cũ trong Downloads cho nhẹ máy", ["Mở thư mục Downloads", "Chọn file cũ", "Xoá file"],
+         OPEN_EXPLORER, False),
+    Case("G-7 print_first", TRAINING, 6, "Bạn bấm vào nhóm Zalo của tổ ở danh sách bên trái.",
+         "tôi muốn in giấy chứng nhận ra giấy trước đã", ["Mở file giấy chứng nhận", "Bấm in"],
+         OPEN_EXPLORER, True),
 ]
 MIN_EACH, MAX_NONE, MAX_P90_S = 4, 1, 5.0
 DETOUR_SHARE, OTHER_SHARE = (23, 25), (28, 30)   # round 1's 23 of 25 and 28 of 30, kept as shares for round 2

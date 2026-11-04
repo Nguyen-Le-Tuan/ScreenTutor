@@ -152,14 +152,16 @@ LEARN_SCHEMA = {
 # W-6 (03/11, founder's choice c): a side question that got a plan of its own is offered "Làm tiếp" only if it was a
 # detour of the big task it cut off ("tải file Excel trước" in D3), not another task. Words only, after the side task
 # is done; the measured prompts are untouched. tutor_eval/aside.py measures it. Round 1 (questions and plans only)
-# called D3's own case another task 5 times in 5; round 2 adds what the tutor said in each and the words that come back.
+# called D3's own case another task 5 times in 5; round 2 added what the tutor said in each and the words that come
+# back, and D3's case stayed 0 of 5: the model asked "does the big task need it?", and the 4 parts never use the Excel
+# file. Round 3 asks what the founder meant: will she come back to the big task after this?
 ASIDE_PROMPT = (
     "Người dùng đang được hướng dẫn làm dở một việc lớn trên máy tính: \"{big}\"{big_plan}.{big_said}\n"
     "Giữa chừng, người dùng hỏi sang: \"{side}\"{side_plan}, và việc đó vừa làm xong.{side_said}\n"
-    "- aside: true nếu việc vừa hỏi là một bước chen ngang để làm được việc lớn, ví dụ tải về, mở hay tìm một file, "
-    "một trang hay một app mà việc lớn cần (kể cả file gửi kèm cùng tin nhắn giao việc), hoặc sửa một chỗ trước khi "
-    "làm tiếp. Người dùng nói \"trước\", \"khoan đã\", \"tạm\" về một việc nhỏ thường là sẽ quay lại việc lớn. false nếu "
-    "đó là một việc khác hẳn, không giúp gì cho việc lớn."
+    "- aside: true nếu người dùng nhiều khả năng sẽ quay lại làm tiếp việc lớn sau việc vừa hỏi: việc vừa hỏi là làm "
+    "trước một việc nhỏ rồi quay lại (người dùng thường nói \"trước\", \"khoan đã\", \"tạm\"), hoặc dính tới việc lớn, "
+    "ví dụ tải về, mở hay tìm một file, trang hay app của việc lớn, kể cả file gửi kèm cùng tin nhắn giao việc. false "
+    "nếu người dùng đã chuyển sang một việc khác hẳn, không dính gì tới việc lớn."
 )
 ASIDE_BIG_SAID = " Lúc bị ngắt, tutor vừa nói: \"{said}\""
 ASIDE_SIDE_SAID = " Tutor mở đầu việc đó bằng: \"{said}\""
