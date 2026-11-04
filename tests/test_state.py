@@ -29,7 +29,9 @@ def _touch(path, ts):
 
 
 def test_recent_files_skips_old_locks_partials_and_other_types(tmp_path):
-    now = time.time()
+    # Windows (Python 3.12+) also reads when a file was created, which os.utime cannot move back: every file here
+    # was created just now (T15, 04/11). So the test's "now" is 10 days ahead, and "just now" is 10 days old.
+    now = time.time() + 10 * 86400
     dl = tmp_path / "Downloads"
     dl.mkdir()
     _touch(dl / "Giáo án (1).docx", now - 60)
