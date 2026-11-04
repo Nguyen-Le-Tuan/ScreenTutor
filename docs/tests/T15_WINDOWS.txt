@@ -1,6 +1,6 @@
 T15: CHUYẾN WINDOWS (lời nói và cái chỉ cùng lúc; kiểm màn hình cũ; dấu chấm; kéo, phím tắt, gõ)
 ===============================================================================================
-Soạn 03/11/2026. Bốn phần, một chuyến: C1 (mục B), C2 (mục C), C4 (mục D), K (mục E). Khoảng 1,5 giờ.
+Soạn 03/11/2026. Năm phần, một chuyến: C1 (mục B), C2 (mục C), C4 (mục D), K (mục E), Làm tiếp (mục F). Khoảng 1,5 giờ.
 Để cửa sổ đen của ScreenTutor.bat mở suốt chuyến: cuối mỗi việc app in từng bước ra đó.
 Vòng đỏ cũ không còn: từ bản này, cái chỉ là dấu chấm (mục D). Mục B và C vẫn chấm như đã ghi.
 
@@ -151,3 +151,37 @@ Luật chấm trên Windows (ghi trước khi chạy; đề xuất của Claude)
         gõ 15 vào ô cỡ chữ và Enter không? Chấm có đáp vào phần chữ của ô (không phải mũi tên)? ______
         Tên video: K_word.mp4
 [ ] E3. Cảm nhận: phím hiện ra có dễ hiểu không? Giọng đọc tên phím có tự nhiên không? ______
+
+
+F. LÀM TIẾP (W-6) (10 phút)
+---------------------------
+W-6 trượt trong T13 ở hai chỗ, đã sửa theo lựa chọn của bạn (03/11):
+  - Câu phụ trả lời trong một lượt (C3b-3: "cái nút micro này là để làm gì") trước đây không bao giờ
+    được mời làm tiếp. Giờ được mời.
+  - Câu phụ có kế hoạch riêng (D-3: "bây giờ tôi muốn tải file Excel trước thì làm thế nào?") thì app hỏi
+    model: chen ngang để làm được việc lớn, hay việc khác hẳn. Bản chặt (A): trên Ubuntu không mời sai lần
+    nào trong 45, nhưng chính ca D3 thì 0/5 lần được mời (tutor_eval/aside.py). Ca đó bạn vẫn nói "làm tiếp".
+Cửa sổ đen in "Câu phụ có kế hoạch riêng: ..." mỗi khi app hỏi model câu này.
+Câu phụ phải hỏi TRONG LÚC tutor đang chờ bạn bấm ở việc lớn: để việc lớn đứng yên quá 3 phút thì nó tự
+dừng, không còn gì để mời (C3b-2, đúng như thiết kế).
+
+Luật chấm (ghi trước khi chạy; đề xuất của Claude):
+  - L-1 đạt: sau câu phụ một lượt, ô hiện "Làm tiếp: ..." đúng MỘT lần và tutor nói câu mời một lần.
+  - L-2 đạt: bấm vào ô đó thì tutor quay lại đúng phần đang làm của việc lớn.
+  - L-3 đạt: sau câu phụ có kế hoạch riêng mà là việc khác hẳn, KHÔNG có ô "Làm tiếp" và cửa sổ đen in
+    "việc khác hẳn, không mời". Không có dòng "Câu phụ có kế hoạch riêng" thì câu phụ không được lập kế
+    hoạch: ghi lại, không tính L-3.
+  - Chỉ ghi lại: ca D3 (đã biết là không mời); nói "làm tiếp" có quay lại đúng phần không.
+
+Việc lớn cho cả ba ca: Việc 2 trong "Cloud của tôi", hỏi "Thầy hiệu trưởng nhắn cái này thì mình phải làm
+gì?", chờ tutor nói "Việc này có ... phần" và chỉ bước đầu. Chưa bấm theo, hỏi câu phụ ngay.
+[ ] F1. (L-1, L-2) Câu phụ: "cái nút micro này là để làm gì". Nghe xong: ô có hiện "Làm tiếp: ..." không,
+        mấy lần? ______ Bấm vào ô: tutor quay lại đúng phần nào? ______
+[ ] F2. (L-3) Sau F1 việc lớn đang chạy lại; khi tutor chờ bạn bấm, hỏi câu phụ: "chỉ tôi cách xem ổ đĩa
+        còn trống bao nhiêu", làm theo TỚI KHI tutor báo xong (chỉ xem, không đổi gì trên máy; câu phụ
+        không xong thì app không hỏi model). Có ô "Làm tiếp" không? Cửa sổ đen in gì? ______
+[ ] F3. (chỉ ghi lại) Bấm nút tròn, nói "làm tiếp" để về lại việc lớn. Khi tutor chờ bạn bấm, hỏi câu phụ
+        như D3: "bây giờ tôi muốn tải file Excel trước thì làm thế nào?", làm tới khi tutor báo xong.
+        Có ô "Làm tiếp" không? Cửa sổ đen in gì? ______
+        Rồi bấm nút tròn, nói "làm tiếp": tutor quay lại đúng phần nào? ______
+[ ] F4. Chép chữ trong cửa sổ đen của mục F vào file console_F.txt, để cùng chỗ với video (KHÔNG qua GitHub).

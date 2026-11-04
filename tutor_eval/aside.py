@@ -50,6 +50,10 @@ Round 3 (20261103-220937-aside, commit 6396746): FAILED A-2 and A-4. Every detou
 the guards caught what they were there for: G-2 ("trước khi quên", an alarm) and G-3 ("khoan đã", a bus ticket)
 were called detours 5 times in 5, X-6 2 of 5 and G-6 1 of 5 too (A-2 37/50, 47 needed); A-3 0/90; median 3.49 s,
 p90 7.57 s (360 reasoning tokens). No round passed. Stopped here and asked the founder (03/11).
+
+Founder's choice (03/11, "Chọn A (chặt)", among round 2, round 3, always offer, never offer): round 2's text is the
+app's. No wrong offer in 45; D3's own case is not offered, and she can still say "làm tiếp". To run that text
+again, the cases of rounds 1 and 2 are the first 16 (G-6, G-7 were written for round 3).
 """
 
 from __future__ import annotations
