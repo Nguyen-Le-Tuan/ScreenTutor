@@ -10,6 +10,7 @@
 
 <p align="center">
 <a href="https://youtu.be/jDSKgcugi4U"><b>Demo video</b></a> ·
+<a href="https://x.com/thanath1839/status/2118137790831501663"><b>Post on X</b></a> ·
 <a href="#what-it-does"><b>What it does</b></a> ·
 <a href="#how-it-works"><b>How it works</b></a> ·
 <a href="#run-it"><b>Run it</b></a> ·
@@ -24,6 +25,7 @@ Built for the Meta Global AI Developer Hackathon (26 Oct – 4 Nov 2026) on two 
 
 <p align="center">
 <a href="https://youtu.be/jDSKgcugi4U"><img alt="Watch the 3-minute demo on YouTube" src="https://img.shields.io/badge/Watch%20the%20demo-3%20min-FF0000?logo=youtube&logoColor=white&style=for-the-badge"></a>
+<a href="https://x.com/thanath1839/status/2118137790831501663"><img alt="Read the post on X" src="https://img.shields.io/badge/Read%20the%20post-on%20X-000000?logo=x&logoColor=white&style=for-the-badge"></a>
 </p>
 
 <p align="center"><img src="docs/assets/demo.gif" alt="Real screen recording in MuseScore: her question in Vietnamese appears as a subtitle; after the wait for the model (sped up 8x, marked on screen) the tutor says the task has 3 parts, a red dot and the keys Ctrl + A appear, she presses them herself, the whole score turns blue, and the edge light shows the tutor checking the screen for the next step" width="100%"></p>

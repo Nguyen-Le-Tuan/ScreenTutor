@@ -2,6 +2,7 @@
 
 <p align="center">
 <a href="https://youtu.be/jDSKgcugi4U"><b>Video demo</b></a> ·
+<a href="https://x.com/thanath1839/status/2118137790831501663"><b>Bài trên X</b></a> ·
 <a href="#tutor-làm-gì"><b>Tutor làm gì</b></a> ·
 <a href="#cách-hoạt-động"><b>Cách hoạt động</b></a> ·
 <a href="#chạy-thử"><b>Chạy thử</b></a> ·
@@ -16,6 +17,7 @@ Dự án thi Meta Global AI Developer Hackathon (26/10 – 4/11/2026), dùng hai
 
 <p align="center">
 <a href="https://youtu.be/jDSKgcugi4U"><img alt="Xem video demo 3 phút trên YouTube" src="https://img.shields.io/badge/Xem%20video%20demo-3%20ph%C3%BAt-FF0000?logo=youtube&logoColor=white&style=for-the-badge"></a>
+<a href="https://x.com/thanath1839/status/2118137790831501663"><img alt="Đọc bài trên X" src="https://img.shields.io/badge/%C4%90%E1%BB%8Dc%20b%C3%A0i-tr%C3%AAn%20X-000000?logo=x&logoColor=white&style=for-the-badge"></a>
 </p>
 
 <p align="center"><img src="assets/demo.gif" alt="Bản quay màn hình thật trong MuseScore: câu hỏi tiếng Việt hiện thành phụ đề; sau đoạn chờ model (tua nhanh 8 lần, có nhãn trên hình) tutor nói việc có 3 phần, chấm đỏ và phím Ctrl + A hiện ra, người dùng tự bấm, cả bản nhạc chuyển xanh, viền sáng cho thấy tutor đang kiểm bước tiếp" width="100%"></p>
