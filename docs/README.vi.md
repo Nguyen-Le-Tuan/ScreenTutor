@@ -1,99 +1,119 @@
-<p align="center"><img src="assets/hero.png" alt="ScreenTutor" width="100%"></p>
+<p align="center"><img src="assets/hero.png" alt="Hình minh hoạ: ScreenTutor. Mẹ hỏi bằng tiếng Việt. Tutor chỉ từng chỗ bấm. Mẹ tự bấm." width="100%"></p>
+
+<p align="center">
+<a href="https://youtu.be/jDSKgcugi4U"><b>Video demo</b></a> ·
+<a href="#tutor-làm-gì"><b>Tutor làm gì</b></a> ·
+<a href="#cách-hoạt-động"><b>Cách hoạt động</b></a> ·
+<a href="#chạy-thử"><b>Chạy thử</b></a> ·
+<a href="../README.md"><b>English</b></a>
+</p>
 
 # ScreenTutor (tiếng Việt)
 
-Tác tử nhiều bước trên Windows: nhìn màn hình, chỉ từng chỗ một, tự kiểm từng bước, để một cô giáo lớn tuổi mới dùng máy tính tự làm xong việc của mình. Nó không bao giờ bấm thay. Dự án thi Meta Global AI Developer Hackathon (hạn nộp 4/11/2026).
+**Tác tử hướng dẫn bằng giọng nói trên Windows: nhìn màn hình, chỉ từng chỗ một và kiểm từng bước, để một cô giáo lớn tuổi mới dùng máy tính tự làm xong việc của mình. Nó không bao giờ bấm thay.**
 
-**Đã chạy trên Windows: T13 (03/11) và T15 (04/11)**, luật ghi trước khi chạy, kết quả trong `docs/tests/T15_WINDOWS.txt`. T15 đạt: màn hình đã đổi thì không nói (3/3 ca), dấu chấm đi theo chuột (4/4 luật), dừng khi bảo dừng (5/5). Nói và chỉ cùng lúc: 3/4 luật; luật còn lại trượt theo script đo, nhưng xem từng khung hình thì chấm đáp trong khoảng 0,15 s quanh tiếng (script làm cho vòng đỏ cũ). Trượt: link dạng chữ thường; đổi cỡ chữ cả bài (**Enter thừa sau Ctrl+A xoá trắng tài liệu rồi báo xong: chưa sửa, không dùng cho việc sửa cả bài**); bấm "Làm tiếp" thì tutor im (chưa rõ nguyên nhân). Mấy chữ đầu câu hỏi hay bị mất hoặc nghe sai.
+Dự án thi Meta Global AI Developer Hackathon (26/10 – 4/11/2026), dùng hai model của Meta: **Muse Spark 1.3** và **Muse Voice Transcribe**.
 
-Repo được xây theo từng thành phần. Mỗi thành phần được thử riêng trước khi ráp vào nhau.
+<p align="center">
+<a href="https://youtu.be/jDSKgcugi4U"><img alt="Xem video demo 3 phút trên YouTube" src="https://img.shields.io/badge/Xem%20video%20demo-3%20ph%C3%BAt-FF0000?logo=youtube&logoColor=white&style=for-the-badge"></a>
+</p>
 
-| Thư mục | Thành phần | Trạng thái |
+<p align="center"><img src="assets/demo.gif" alt="Bản quay màn hình thật trong MuseScore: câu hỏi tiếng Việt hiện thành phụ đề; sau đoạn chờ model (tua nhanh 8 lần, có nhãn trên hình) tutor nói việc có 3 phần, chấm đỏ và phím Ctrl + A hiện ra, người dùng tự bấm, cả bản nhạc chuyển xanh, viền sáng cho thấy tutor đang kiểm bước tiếp" width="100%"></p>
+<p align="center"><sub>Bản quay màn hình thật trên Windows 11, 04/11/2026, cắt từ video demo. Đoạn chờ model tua nhanh 8 lần (có ghi trên hình); giọng tutor và cú bấm chạy tốc độ thường.</sub></p>
+
+## Tóm tắt
+
+- **Dành cho ai.** Mẹ tôi, một cô giáo người Việt mới dùng máy tính. Công việc của mẹ giờ đi qua Zalo, Word, Google Sheets và trình duyệt, và những chuyện nhỏ làm mẹ bị kẹt: giáo án sửa hôm qua "mất rồi" vì mẹ mở nhầm bản tạm, hay bấm link "không thấy mở" vì trang hiện ra sau một cửa sổ khác.
+- **Tutor làm gì.** Mẹ hỏi thành tiếng, bằng tiếng Việt. ScreenTutor nhìn màn hình, nói một bước và đặt một dấu chấm lên đúng chỗ cần bấm. **Mẹ tự bấm; tutor không bao giờ bấm hay gõ thay.** Khi màn hình đứng yên, tutor kiểm bước vừa làm có đúng không rồi chỉ bước tiếp, cho tới khi xong việc.
+- **Vai trò hai model Meta.** **Muse Voice Transcribe** nghe câu hỏi theo thời gian thực. **Muse Spark 1.3** đọc ảnh màn hình cùng một bản tóm tắt trạng thái Windows, quyết định chỉ vào đâu và nói gì, lập kế hoạch cho việc nhiều phần, và sau mỗi cú bấm thì kiểm bước đó và cả việc đã xong chưa.
+- **Chạy thử.** Windows 10/11, Python 3.10+, micro và key Meta Model API. Xem [Chạy thử](#chạy-thử).
+
+## Vấn đề
+
+Câu hỏi của mẹ cho thấy mẹ bị kẹt ở đâu. Tám câu đã được ghi âm bằng chính giọng mẹ:
+
+- **"Giáo án hôm qua mình sửa mất rồi."** Một file có thể có nhiều bản, và bản mẹ mở chưa chắc có phần đã sửa. Một đường dẫn tới chuyện này, đã xác nhận trên máy cài giống máy mẹ: bấm thẳng vào file trong Zalo thì Word mở *bản tạm chỉ đọc* trong `AppData\Local\Temp\Zalo Temp\TempDownloads`, nên phần sửa không bao giờ vào file thật.
+- **"Bấm link mà không thấy gì."** Google Sheet thật ra đã mở, trong một cửa sổ trình duyệt nằm sau Zalo.
+- Mẹ cần gửi file PDF cho tiệm in, gặp tên file "không hợp lệ", hay phải thêm một dòng vào bảng.
+
+Với người biết chỗ bấm, mỗi việc chỉ vài cú bấm; với mẹ thì là ngõ cụt. Làm thay thì giải quyết được hôm nay; chỉ từng bước thì mai mẹ tự làm được.
+
+## Tutor làm gì
+
+1. **Mẹ hỏi bằng lời của mình.** Bấm nút micro tròn, hoặc giữ **Ctrl+Alt**, rồi nói tiếng Việt. Mẹ có thể trỏ chuột vào một chỗ, hoặc khoanh một vùng, rồi nói "cái này".
+2. **Tutor đọc màn hình và cả máy.** Cùng với ảnh màn hình, tutor nhận một **bản tóm tắt trạng thái Windows**: những gì ảnh không cho thấy, như cửa sổ nào nằm sau cửa sổ nào, app mặc định, thư mục thật và các file mới nhất.
+3. **Chỉ từng bước một.** Một giọng tiếng Việt nhẹ nhàng nói cần làm gì và vì sao, và dấu chỉ di chuyển đúng lúc giọng bắt đầu:
+   - **chấm đỏ** đứng chờ cạnh chuột khi tutor đang xem, rồi bay tới đúng chỗ cần bấm;
+   - **chấm vàng** khi cú bấm sẽ gửi đi hoặc ghi đè một file;
+   - **khung** quanh chỗ cần đọc, phần còn lại của màn hình tối đi;
+   - **con chuột nhỏ có bánh xe quay** ở chỗ cần cuộn;
+   - phím tắt hiện thành phím, ví dụ **[Ctrl] + [A]**.
+4. **Mẹ làm, tutor kiểm.** Tutor chờ màn hình đứng yên, kiểm bước vừa làm, hiện **dấu tích xanh** ở chỗ mẹ bấm, rồi chỉ bước tiếp.
+5. **Lập kế hoạch cho việc nhiều phần.** Kế hoạch hiện trên dynamic island ở đầu màn hình, và tutor tự đi từ phần này sang phần kia, không cần hỏi lại. Khi việc cần làm nằm trong một tin nhắn dài, tutor bảo mẹ cuộn tới cuối và lập kế hoạch từ chính tin nhắn đó.
+6. **Theo kịp mẹ.** Ngay trước khi nói, tutor so một ảnh màn hình mới với ảnh nó vừa dựa vào để trả lời. Nếu mẹ đã tự bấm trước, hoặc có hộp thoại mới mở, tutor im và xem lại.
+7. **Tự lên tiếng khi thấy bẫy quen.** Khi Word đang mở bản tạm của Zalo, tutor nói một lần, chỉ dựa vào tín hiệu trên máy, và dẫn mẹ tới file thật nếu mẹ muốn.
+8. **Nhớ việc của mẹ.** Sau mỗi việc, một ghi chú ngắn vào kho kiến thức trên máy mẹ, tìm ngay trên máy, để câu "gửi cái này cho tiệm in như lần trước" có nghĩa.
+9. **Dừng khi mẹ bảo.** Một câu ngắn như "dừng" hay "để sau", hoặc dấu × trên island, sẽ dừng việc ngay trên máy, không gọi model.
+
+Mục tiêu là mẹ tự làm xong việc, và thuộc đường đi qua mỗi lần làm.
+
+## Cách hoạt động
+
+<p align="center"><img src="assets/how-it-works.png" alt="Hình minh hoạ. Cách hoạt động: 1 mẹ hỏi (Muse Voice Transcribe), 2 tutor đọc màn hình (Muse Spark 1.3), 3 chấm và giọng cùng lúc (trên máy mẹ), 4 mẹ bấm và tutor kiểm (Muse Spark 1.3)" width="100%"></p>
+<p align="center"><sub>Hình minh hoạ theo màu của app. Ảnh đầu trang cũng là hình minh hoạ; GIF ở trên là bản quay thật.</sub></p>
+
+### Hai model Meta được dùng thế nào
+
+| Model | Vai trò trong ScreenTutor | Vì sao chọn |
 |---|---|---|
-| `grounding_test/` | Phép thử "bấm vào đâu" với Muse Spark / Wonder. Kết quả: dùng Spark qua image understanding, `reasoning_effort` low; từ 02/11 app dùng `minimal` kèm stream (xem dòng T12) | Xong |
-| `screentutor/state.py`, `winstate.py` | Bản tóm tắt trạng thái Windows gửi kèm ảnh: cửa sổ đang ở trước, các cửa sổ phía sau, app mặc định, thư mục chuẩn, file mới | T2b đạt trên Windows (`docs/tests/T2_STATE_SENSORS_WINDOWS.txt`) |
-| `tts_eval/` | Giọng đọc tiếng Việt VieNeu-TTS v3 Turbo chạy local trên CPU: đo tốc độ, tạo mẫu nghe thử | Đã chốt giọng Hải Đăng, bản int8. T7 trên Windows: âm thanh đầu tiên 0,15 s, RTF 0,29 |
-| `stt_eval/` | Nhận giọng bằng Muse Voice Transcribe (gửi file) | T3 đạt: 8/8 câu thật của mẹ còn ý (`docs/tests/T3_MOM_VOICE.txt`) |
-| `screentutor/tutor.py`, `screen.py` | Một lượt tutor: ảnh màn hình + trạng thái + câu mẹ hỏi → chỗ cần chỉ, loại bước, câu nói, kế hoạch, ghi chú (Spark, effort minimal, stream). `tutor_eval/` là phép thử T4 trên 12 ca thật | T4 trước khi có việc lớn (02/11): trúng 11/12 và 12/12, trễ trung vị 4,91 s |
-| T12 phần R5, R6 (`tutor_eval/run.py`) | Luật việc lớn có làm hỏng 12 ca thật không; luật ghi trong docstring | Lần đầu **trượt**: trễ 11,1 s. Lần cuối: trúng 11/12 và 11/12, 24/24 câu (có bộ lọc bằng code nhưng lần này không phải đổi câu nào), tổng 5,35 s, **vòng hiện sau 3,15 s**, ca link sau Zalo 5/5. Chưa độc lập: quy tắc trạng thái viết sau khi xem ca đó. 6 lần chạy, 1 lần huỷ vì lỗi DNS |
-| `tutor_eval/big_task.py`, `fake_zalo.py` | Việc lớn trên màn hình Zalo giả, chữ bịa, Session và Spark thật. **Không phải T12** | Lần cuối **trượt luật kế hoạch 7/9** (cần 8/9); khung đọc 3/3, bảo kéo 9/9, câu nói 21/21 |
-| `screentutor/island.py`, `conversation.py`, `ui.py`, `levels.py` | Dynamic island 12 trạng thái, hội thoại, thẻ kế hoạch tự mở, nút tròn, sóng âm | Xem trước đã được founder duyệt; chưa chạy trên Windows |
-| `screentutor/overlay.py` (B3) | Khung đọc có làm tối, gợi ý kéo xuống, dấu tích sau khi kiểm bước, viền sáng khi đang xem | Như trên |
-| `screentutor/gesture.py` | Đường chuột khi mẹ chỉ hay khoanh: tính trên máy, gửi một dòng toạ độ | Test trên đường giả; ngưỡng chưa đo trên tay thật |
-| `screentutor/guards.py` | Tự lên tiếng khi Word mở bản tạm của Zalo, chỉ dùng tín hiệu trên máy | Bản giả đạt; Spark dẫn đúng 4/4 lần thăm dò; chữ thật trên thanh tiêu đề Word chưa biết |
-| `screentutor/memory.py`, `history.py` | Lịch sử từng việc; kho kiến thức riêng: BM25 trên máy, hồ sơ, bộ lọc | T14: 9/10, 5/5, 20/20, 0,2 ms; A/B 5/5 so với 0/5 trên ca dựng. Kho không làm trả lời nhanh hơn |
-| `session.py` (B7), `tutor_eval/resume.py` | Làm tiếp việc đang dở từ đúng phần đã dừng | 5/5 ở lần chạy thứ hai, trên màn hình giả |
-| `screentutor/overlay.py` | Lớp phủ chỉ chỗ (PySide6): vòng đỏ rỗng bay từ con trỏ chuột tới đích rồi nhấp nháy, luôn nằm trên cùng, cú bấm và phím gõ đi xuyên qua; vòng vàng khi bấm sẽ gửi đi hoặc ghi đè | T5 trên Windows: vòng trùng đầu chuột 5/5, bấm và gõ xuyên qua được; Start menu vẫn che vòng. Vòng vàng chưa thử ở bước gửi hay ghi đè thật (T13) |
-| `screentutor/inputs.py`, `still.py`, `session.py` | Bước 4: nghe click và phím giữ Ctrl+Alt (chỉ quan sát, không cài hook), chờ màn hình đứng yên, lượt kiểm bước (`Tutor.follow_up`), vòng lặp một phiên nhiều bước. `tutor_eval/steps.py` là phép thử T6a | T6a chạy lại đạt (02/11): bước đúng 24/24, việc xong đúng 22/24, trỏ 16/18, trễ trung vị 4,26 s. T6 trên Windows: nghe click đạt; chờ đứng yên 4/6, chưa đạt ngưỡng 5/6 (`docs/tests/T6_CLICK_STILL_WINDOWS.txt`) |
-| `screentutor/speak.py`, `listen.py` | Bước 5: giọng đọc VieNeu int8 Hải Đăng (có sửa cách đọc tên file, "OK", giờ), nghe bằng Muse realtime (nút tròn: ENDPOINTING có ghép các đoạn cách nhau dưới 1 s; giữ Ctrl+Alt: PUSH_TO_TALK). `tutor_eval/voice.py` là phép thử T7a | T7a đạt (31/10): 8/8 câu của mẹ còn ý khi ghép trong 1 s (không ghép: 5/8). T7 trên Windows: giọng và micro đạt (`docs/tests/T7_VOICE_WINDOWS.txt`) |
-| `screentutor/app.py` | Cả app: nút tròn hoặc giữ Ctrl+Alt → nghe → nhìn màn hình → vòng hay khung chỉ chỗ và giọng nói → chờ mẹ làm → kiểm bước → bước tiếp. `tutor_eval/e2e.py` là phép thử T8a và T8b (giọng thật của mẹ qua cả chuỗi) | T8 trên Windows, founder đóng vai mẹ: chạy trọn vòng, xuất PDF đủ 6 bước. T8b (02/11): 4 đoạn ghi âm × 2, trỏ trúng 8/8 (trước đó 4/8, sau khi thêm ghi chú về nút WPS nên không phải mẫu mới); ngừng nói → nghe tiếng tutor trung vị 7,5 s. Các bản sửa ngày 02/11 chờ thử trên Windows (`docs/tests/T13_WINDOWS.txt`) |
-| `session.py`, `speak.py` (C1), `tutor_eval/voice_sync.py` | Vòng chỉ hiện cùng lúc với tiếng đầu tiên của câu, không hiện ngay khi model vừa biết chỗ. `voice_sync.py` đo độ lệch trên video quay màn hình có tiếng | Trước C1, trên 4 video T13: tiếng tới sau vòng trung vị 2,85 s (29 lượt), 26 lượt lệch quá 1 s, 2 lượt có vòng mà không có tiếng. Sau C1: chờ thử trên Windows (`docs/tests/T15_WINDOWS.txt`) |
-| `fresh.py`, `session.py` (C2), `tutor_eval/stale_replay.py` | Ngay trước khi nói, so màn hình với ảnh vừa trả lời; đã đổi (thông báo tắt, hộp mới, mẹ tự làm trước) thì không nói, im lặng xem lại, tối đa 2 lần liền | Phát lại trên 4 video T13: bắt 5/5 lượt màn hình đã cũ, báo nhầm 1/24 (ngưỡng chọn trên chính các lượt này, chưa độc lập). Chờ thử trên Windows (T15 mục C) |
-| `overlay.py` (C4: `Companion`, `dot_at`), `app.py` | Dấu chấm thay vòng đỏ: từ lúc mẹ hỏi tới lúc việc xong, chấm đứng cạnh mũi chuột và đi theo, thở khi tutor đang xem, bay theo đường cong tới chỗ chỉ đúng lúc tutor nói, bấm xong thì quay về. Tắt thoáng lúc chụp màn hình gửi model | Trên Ubuntu: chấm dời 60 px làm đổi 24 ô ảnh, dưới ngưỡng 41 ô của phần chờ màn hình đứng yên. CPU, nhấp nháy lúc chụp, chấm có lọt vào ảnh không: chờ T15 mục D |
-| `tutor.py`, `session.py`, `inputs.py`, `textsnap.py`, `overlay.py` (K), `tutor_eval/actions.py` | Ý của founder trong T13: dạy cả kéo bôi đen, phím tắt (Ctrl+A/C/V/X/Z/L/T, Enter, Tab), gõ vào ô; link dạng chữ thường thì bôi đen, sao chép, dán vào trình duyệt; bước không làm màn hình đổi thì không bảo làm lại y hệt. App chỉ đọc 9 phím đó, không đọc chữ gõ. Hai đầu cú kéo được hít vào ranh giới chữ, đếm theo đoạn chữ model ghi | Trên ảnh thật T13, 8 ca × 5 lần: prompt cũ đạt 1/7 ca (bấm lại vào chữ thường 5/5 lần, đúng vòng lặp T13); prompt K đạt cả 8/8 ca, 39/40 lượt. 12 ca T4 vẫn đạt mọi luật R5 (trúng 11/11, tổng 6,18 s so với 6,16 s của prompt cũ chạy cùng lúc; vòng hiện chậm hơn 0,4 s). Chờ thử trên Windows (T15 mục E) |
-| `tutor_eval/speed.py` (E1), `tutor_eval/hedge.py` (E2) | Ý "attention vào pixel đã đổi": ít pixel hơn hay ít suy nghĩ hơn có nhanh hơn không; hỏi hai lần cùng lúc lấy câu về trước | E1: ảnh thu nửa trượt 5/12 và còn chậm hơn; thời gian đi theo token suy nghĩ (319 ở minimal, 656 ở low, 1.834 khi không đặt). Giữ PNG đầy đủ, minimal. E2: gửi đôi lấy câu về trước làm vòng hiện sau 3,24 s thay vì 4,11 s (trung vị 36 lần), p90 4,94 s thay vì 6,08 s, trúng như cũ: đã bật, tốn gấp đôi lượt gọi |
-| `app.py` (`Offers`), `tutor.py` (`aside`), `tutor_eval/aside.py` (W-6) | "Làm tiếp" trượt trong T13: câu phụ trả lời một lượt không bao giờ được mời; câu phụ có kế hoạch riêng bị coi là việc khác. Giờ câu phụ một lượt được mời; câu phụ có kế hoạch riêng thì hỏi model (chỉ có chữ, sau khi câu phụ xong) xem đó là bước chen ngang của việc lớn hay việc khác hẳn | Ba lượt, luật ghi trước mỗi lượt, không lượt nào đạt. Bản đang dùng (founder chọn bản chặt): việc khác đúng 45/45, chen ngang 30/35, nhưng ca thật D3 "tải file Excel trước" 0/5 (mẹ vẫn nói "làm tiếp" được); p90 5,13 s. Bản hỏi "có quay lại không" bắt hết chen ngang nhưng mời sai 13/50. Chờ thử trên Windows (T15 mục F) |
-| `memory.py` (`asks_to_stop`), `app.py` (`stop_task`), `island.py` (dấu ×) | Tutor biết dừng khi mẹ bảo dừng: câu dừng ngắn ("dừng", "thôi không làm nữa", "để sau") được nhận trên máy, không gửi cho model; bấm × trên ô ghim lúc đang có việc cũng vậy. Việc bị xoá hẳn (file lịch sử, dòng "Việc trước", ghi chú trong kho kiến thức), không mời "Làm tiếp", tutor nói một câu ngắn. Nói "làm tiếp" mà không còn việc nào dở thì tutor nói "Không còn việc nào đang dở", không gọi model | Gửi cho model thì 6 lần: hỏi lại 3, chỉ vào nút đóng Zalo 1. Bộ nhận câu: 16 câu dừng đều nhận, 12 câu trông giống không nhận nhầm. Chờ T15 mục G |
-| `tutor_eval/sam.py`, `segment.py` | Phép thử T11: SAM 3.1 vẽ viền ôm chỗ cần bấm. **Không nằm trong app** | T11 trượt (02/11): 15/21 viền đúng, ngưỡng 90%. Giữ vòng đỏ, bỏ SAM |
+| **Muse Spark 1.3**: hiểu ảnh, trả JSON trên lưới 0–1000, stream, `reasoning_effort: "minimal"` | Một lần gọi trả về chỗ cần chỉ, câu cần nói, loại bước, khung cần đọc, kế hoạch và ghi chú. Sau khi mẹ làm, một lần gọi tiếp quyết định bước và việc đã xong chưa, tiếp theo là gì. Lần gọi thứ ba, chỉ có chữ, biến mỗi việc đã xong thành một ghi chú cho kho kiến thức. | So với Muse Wonder trên ảnh chụp thật có đánh nhãn của các app mẹ dùng, Spark chỉ đúng hơn và trả lời nhanh hơn. |
+| **Muse Voice Transcribe**: WebSocket thời gian thực | Nút tròn dùng ENDPOINTING, để model tự nghe khi mẹ ngừng nói. **Ctrl+Alt** dùng PUSH_TO_TALK. Cả hai có bias tiếng Việt cùng từ khoá tên app và người nhà, và các đoạn ngắt ngắn được ghép thành một lượt. | Các câu hỏi ghi âm của mẹ giữ đúng ý khi có bias, từ khoá và ghép lượt. |
 
-```bash
-py -m screentutor.state --delay 6 --out t2_results\S-1         # trên Windows, chỉ cần Python
-uv venv --python 3.12 tts_eval/.venv && uv pip install --python tts_eval/.venv/bin/python -r tts_eval/requirements.txt
-cd tts_eval && .venv/bin/python bench.py speed                 # đo tốc độ fp32 và int8
-.venv/bin/python -m stt_eval.transcribe --refs refs.tsv audio/*.m4a   # cần ffmpeg
-.venv/bin/python -m tutor_eval.run run --yes                       # T4: 24 lần gọi, khoảng $0.15
-py -m screentutor.tutor --live --delay 5 "Mẹ bấm vào đâu?"         # trên Windows: chụp, hỏi, lưu ảnh có đánh dấu
-py -m screentutor.tutor --live --delay 5 --show 15 "Mẹ bấm vào đâu?"  # như trên, và hiện vòng chỉ chỗ 15 giây
-py -m screentutor.overlay --follow-mouse                          # trên Windows: vòng có nằm đúng đầu chuột không
-py -m screentutor.session --delay 6 "Mẹ muốn xuất giáo án ra PDF"  # trên Windows: cả phiên nhiều bước
-py -m screentutor.app                                             # trên Windows: cả app
+**Stream câu trả lời có cấu trúc.** API viết khoá JSON theo thứ tự chữ cái bất kể schema, và chữ hoa đứng trước. Vì vậy các khoá định vị bước được đặt tên `Box, Caution, Goal_done, Step_done, Target, X, Y`, sau đó là `say` và các khoá khác, các trường `task_*` ở cuối. Vị trí có ngay khi `Y` xong, giọng có thể bắt đầu ngay khi `say` xong, trong lúc kế hoạch và ghi chú vẫn đang về. Chấm bay đúng lúc tiếng đầu tiên phát ra, nên mẹ nghe và thấy bước cùng lúc.
+
+**Phần chạy trên máy mẹ.** Chỉ dùng model hạng Standard, không dùng bản Contributor. Meta API không có chuyển chữ thành giọng nói hay model embedding, nên giọng đọc là **VieNeu-TTS v3 Turbo** (Apache-2.0) chạy trên CPU (int8), và kho kiến thức được tìm bằng BM25 ngay trên máy.
+
+## Quyền riêng tư và an toàn
+
+- **Không bao giờ bấm hay gõ thay.** Mẹ luôn là người thao tác. Cú bấm chỉ được *quan sát*, bằng cách đọc trạng thái nút chuột; không cài hook toàn hệ thống.
+- **Không gửi gì cho tới khi mẹ hỏi**, bằng nút tròn hoặc Ctrl+Alt. Lúc đó giọng mẹ được gửi tới Muse Voice Transcribe. Trong một việc mẹ đã bắt đầu, mỗi bước gửi Muse Spark một ảnh màn hình và bản tóm tắt trạng thái, trong đó có tiêu đề cửa sổ và tên file gần đây. Giọng tutor được tạo ngay trên máy.
+- **Chỗ mẹ trỏ chuột** được tính trên máy và gửi đi dưới dạng một dòng toạ độ, không bao giờ là hình.
+- **Phần canh bản tạm của Zalo** chỉ đọc cửa sổ đang ở trước và tên file trong một thư mục. Nó không chụp màn hình và không gửi gì.
+- **Sau mỗi việc, phần chữ được gửi tới Muse Spark** để tóm tắt, không kèm hình, và một câu hỏi mới có thể mang theo ghi chú ngắn của các việc tương tự trước đó. Một bộ lọc trên máy bỏ mật khẩu, số điện thoại, email và họ tên đầy đủ trước. Bộ lọc không bắt được hết, và không đụng tới ảnh màn hình.
+- **Những gì ở lại trên máy mẹ:** ảnh từng bước (`tutor_runs/`), các việc (`history/`) và kho kiến thức (`history/memory/`), đều được gitignore. Một nút trên island xoá lịch sử và kho kiến thức. Ngoài GIF MuseScore ngắn ở trên, repo không chứa ảnh màn hình thật, bản quay hay câu trả lời gốc của API.
+- Model được dặn đánh dấu cú bấm **gửi đi hoặc ghi đè**, để chấm chuyển vàng và câu nói báo trước điều sẽ xảy ra.
+
+## Chạy thử
+
+Windows 10/11, Python 3.10+, micro, loa và key Meta Model API. Mở PowerShell ở thư mục repo:
+
+```powershell
+py -m pip install -r requirements.txt
+Copy-Item .env.example .env
+# Trong Notepad, dán key sau MODEL_API_KEY= rồi lưu
+notepad .env
+.\ScreenTutor.bat
 ```
 
-## Thành phần 1: phép thử grounding với model Meta (`grounding_test/`)
+`ScreenTutor.bat` chạy `py -m screentutor.app` trong một cửa sổ thu nhỏ (bấm đúp vào file cũng được; đóng cửa sổ đó là tắt ScreenTutor). Lần chạy đầu tải mô hình giọng nói khoảng 250 MB. Sau đó bấm nút micro tròn, hoặc giữ **Ctrl+Alt**, rồi hỏi.
 
-Phép thử này trả lời: model Meta có chỉ đúng chỗ cần bấm trên giao diện Windows không, theo quy ước toạ độ nào, và mất bao lâu, tốn bao nhiêu cho mỗi lần hỏi?
-
-Script **chỉ gọi API và chấm điểm**. Nó không bấm chuột hay gõ phím trên máy nào.
-
-| File | Vai trò |
-|---|---|
-| `config.py` | Endpoint, model, bảng giá, ngưỡng quyết định |
-| `meta_api.py` | Hai cách hỏi. **M1:** computer use (Responses API, tool `computer`), chỉ đọc hành động đầu tiên. **M2:** image understanding, trả về JSON toạ độ |
-| `scoring.py` | Chấm trúng / sát / trượt. Mỗi câu trả lời được chấm theo **cả hai quy ước**, pixel và thang 0–1000, vì docs Meta mâu thuẫn ở điểm này |
-| `datasets.py` | Đọc ảnh hiệu chuẩn và 12 ca thật, chuẩn bị ảnh để gửi |
-| `report.py` | Tổng hợp `calls.jsonl` thành `summary.md` |
-| `run.py` | Dòng lệnh `check` / `plan` / `run` |
-| `calibration/` | 2 ảnh tổng hợp có đáp án biết trước. Tạo lại bằng `tools/make_calibration.py` |
-| `cases/cases.json` | Mô tả 12 ca thật và khung đúng. Ảnh `.png` của các ca **không commit**, vì repo công khai |
-
-### Cài đặt
+Phát triển cũng chạy được trên Linux: mọi phần riêng của Windows nằm sau giao diện nhỏ, kiểm được.
 
 ```bash
-uv venv .venv && uv pip install --python .venv/bin/python -r requirements.txt
-cp .env.example .env   # rồi điền MODEL_API_KEY
+python -m pytest -q    # hơn 300 test, không cần mạng
 ```
 
-### Chạy
+## Lộ trình
 
-```bash
-.venv/bin/python -m pytest -q                                         # kiểm tra logic chấm điểm, không gọi API
-.venv/bin/python -m grounding_test.run check                          # key có hợp lệ không, model nào dùng được (không tốn tiền)
-.venv/bin/python -m grounding_test.run plan --stage calibration       # xem trước sẽ gọi gì, ước tính chi phí
-.venv/bin/python -m grounding_test.run run --stage calibration --yes  # bước 0: hiệu chuẩn
-.venv/bin/python -m grounding_test.run run --stage cases --yes        # bước 1: 12 ca thật (spark/m1, spark/m2, wonder/m2)
-.venv/bin/python -m grounding_test.run run --stage cases --models spark --methods m1 --effort low --yes  # bước 1: spark/m1 effort low
-.venv/bin/python -m grounding_test.run run --stage cases --models spark --methods m1 --resize 1366x768 --yes
-.venv/bin/python -m grounding_test.run run --stage cases --only case_01,case_06,case_09,case_11 --lang en --yes
-```
+- Chặn Enter, Tab và Delete khi cả tài liệu đang được chọn, để việc sửa cả tài liệu an toàn.
+- Quay lại việc lớn ngay từ nút "Làm tiếp" trên island sau một câu hỏi phụ.
+- Thử cùng mẹ trên chính việc của mẹ, để xem mẹ có cần ít trợ giúp hơn qua mỗi lần không.
+- Thêm app, cấu hình màn hình và ngôn ngữ.
 
-Kết quả nằm ở `grounding_test/results/<thời điểm>-<giai đoạn>/`, gồm `summary.md`, `calls.jsonl` và `raw/`. Thư mục này không được commit.
+## Làm trong thời gian hackathon
 
-### Quyền riêng tư
+Mọi thứ trong repo được viết trong thời gian sự kiện: commit đầu tiên ngày 27/10/2026, công việc kéo dài từ 28/10 tới 4/11/2026. Lịch sử commit cho thấy từng bước. ScreenTutor không tồn tại trước hackathon.
 
-- Chỉ dùng model **Standard**. Không dùng bản Contributor, vì Meta được phép dùng nội dung gửi tới bản đó để huấn luyện.
-- Ảnh chụp màn hình thật và phản hồi gốc của API chỉ lưu trên máy.
-- Key nằm trong `.env`. File này đã được gitignore.
+Không phải của dự án, dùng nguyên trạng qua gói hoặc API công khai: Muse Spark 1.3 và Muse Voice Transcribe của Meta qua Meta Model API; VieNeu-TTS v3 Turbo (Apache-2.0) chạy trên máy; Qt for Python (PySide6, LGPL), Pillow, httpx, websockets và sounddevice. Video demo dùng MuseScore 4 như một app bình thường, với giai điệu dân gian *Frère Jacques*; ScreenTutor không có dòng code nào riêng cho MuseScore.
 
-### Tài liệu gốc
-
-Kế hoạch giấy, các ngưỡng quyết định và nhật ký thảo luận nằm trong ghi chú Obsidian của founder (`GROUNDING_TEST_PLAN.md`), không nằm trong repo này.
+Giấy phép MIT, xem [LICENSE](../LICENSE).
